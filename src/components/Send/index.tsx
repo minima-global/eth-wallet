@@ -23,13 +23,11 @@ const Send = () => {
     return null;
   }
 
-  console.log("hello");
-
   return (
     _currentNavigation === "send" &&
     createPortal(
       <Dialog dismiss={() => handleNavigation("balance")}>
-        <div className="h-full grid items-start mt-[80px]">
+        <div className="h-[100vh_-_64px] grid items-start mt-[80px]">
           <animated.div className={styles["tokens"]} style={springProps}>
             <div className="bg-white shadow-xl dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
               <h3 className="px-4 text-lg font-bold">Send</h3>
@@ -83,6 +81,23 @@ const Send = () => {
                           {errors.amount}
                         </span>
                       )}
+                    </div>
+
+                    <div className={styles["button__navigation"]}>
+                      <nav>
+                        <button
+                          onClick={() => handleNavigation("balance")}
+                          className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          disabled={true}
+                          className="dark:bg-white bg-black bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                        >
+                          Next
+                        </button>
+                      </nav>
                     </div>
                   </form>
                 )}
