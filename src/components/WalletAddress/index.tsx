@@ -42,7 +42,7 @@ const WalletAddress = () => {
         onClick={handleCopy}
         onKeyDown={handleKeyDown}
         onDoubleClick={handleDoubleClick}
-        className="p-2 text-left rounded-full focus:bg-teal-200 focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
+        className="p-2 text-left font-bold rounded-full focus:bg-teal-200 focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
         value={
           _wallet && _wallet.address
             ? _wallet.address.substring(0, 8) +
@@ -73,7 +73,7 @@ const WalletAddress = () => {
         width="18"
         height="18"
         viewBox="0 0 24 24"
-        stroke-width="2.5"
+        stroke-width="3.5"
         stroke="#2c3e50"
         fill="none"
         stroke-linecap="round"
@@ -98,7 +98,7 @@ const WalletAddress = () => {
         width="24"
         height="24"
         viewBox="0 0 24 24"
-        strokeWidth="2"
+        strokeWidth="3"
         stroke="currentColor"
         fill="none"
         strokeLinecap="round"

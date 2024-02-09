@@ -88,3 +88,8 @@ select {
   -webkit-appearance: none;
   -moz-appearance: none;
 }
+
+.temporary-animate {
+  -webkit-animation-iteration-count: 2;
+  animation-iteration-count: 2;
+}

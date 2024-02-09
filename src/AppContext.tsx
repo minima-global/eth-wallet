@@ -20,6 +20,7 @@ const AppProvider = ({ children }: IProps) => {
     new JsonRpcProvider("http://127.0.0.1:8545")
   ); // mainnet, sepolia, hardhat, etc...
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
+  const [_currentNavigation, setCurrentNavigation] = useState("balance");
   const [_currencyFormat, setCurrencyFormat] = useState<{
     decimal: string;
     thousands: string;
@@ -39,6 +40,10 @@ const AppProvider = ({ children }: IProps) => {
       });
     }
   }, [loaded]);
+
+  const handleNavigation = (page: string) => {
+    setCurrentNavigation(page);
+  };
 
   const promptSelectNetwork = () => {
     setSelectNetwork((prevState) => !prevState);
@@ -67,6 +72,9 @@ const AppProvider = ({ children }: IProps) => {
       value={{
         _promptSelectNetwork,
         promptSelectNetwork,
+
+        _currentNavigation,
+        handleNavigation,
 
         _provider,
         setProvider,
