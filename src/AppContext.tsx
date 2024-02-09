@@ -3,7 +3,6 @@ import { createContext, useRef, useEffect, useState } from "react";
 
 export const appContext = createContext({} as any);
 
-import * as utils from "./utils"
 
 interface IProps {
   children: any;
@@ -21,6 +20,13 @@ const AppProvider = ({ children }: IProps) => {
     new JsonRpcProvider("http://127.0.0.1:8545")
   ); // mainnet, sepolia, hardhat, etc...
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
+  const [_currencyFormat, setCurrencyFormat] = useState<{
+    decimal: string;
+    thousands: string;
+  }>({
+    decimal: ".",
+    thousands: ",",
+  });
 
   useEffect(() => {
     if (!loaded.current) {
@@ -28,11 +34,7 @@ const AppProvider = ({ children }: IProps) => {
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           // do something Minim-y
-        (async () => {
-            
-          utils.log("" + await _provider.getBlockNumber())
-
-        })()
+        
         }
       });
     }
@@ -69,7 +71,8 @@ const AppProvider = ({ children }: IProps) => {
         _provider,
         setProvider,
         setRPCNetwork,
-        verifyRPCNetwork
+        verifyRPCNetwork,
+        _currencyFormat
 
       }}
     >

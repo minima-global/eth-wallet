@@ -81,7 +81,7 @@ const DesktopNav = () => {
             Send
           </p>
         </button>
-        <button
+        {/* <button
           className={`bg-black flex items-center justify-center gap-3 transition-all delay-100 duration-100 font-bold ${
             _currentNavigation === "receive" ? " outline outline-teal-500" : ""
           }`}
@@ -118,7 +118,7 @@ const DesktopNav = () => {
           >
             Receive
           </p>
-        </button>
+        </button> */}
       </nav>
     </section>
   );

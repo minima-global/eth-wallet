@@ -24,7 +24,6 @@ const SelectNetwork = () => {
   const [network, setNetwork] = useState("unknown");
   const [step, setStep] = useState(1);
 
-  console.log("_provider  ", _provider.getNetwork());
 
   const springProps = useSpring({
     opacity: _promptSelectNetwork ? 1 : 0,
@@ -48,7 +47,6 @@ const SelectNetwork = () => {
     (async () => {
       const p = await _provider.getNetwork();
 
-      console.log(p.name);
       setNetwork(p.name);
     })();
   }, [_provider]);
@@ -56,7 +54,7 @@ const SelectNetwork = () => {
   return (
     <>
       <div
-        className="mx-auto bg-gray-300 p-2 px-3 rounded-full hover:bg-opacity-70 hover:cursor-pointer"
+        className="mx-auto bg-gray-300 dark:bg-black text-black dark:text-white dark:text-opacity-90 p-2 px-3 rounded-full hover:bg-opacity-70 hover:cursor-pointer"
         onClick={promptSelectNetwork}
       >
         {network === "mainnet" && <EthereumNetwork />}
@@ -80,7 +78,7 @@ const SelectNetwork = () => {
                         <ul>
                           <li
                             onClick={() => handleNetworkChange("mainnet")}
-                            className={`flex items-center gap-2 hover:bg-gray-200 p-4 ${network === 'mainnet' ? "bg-slate-300":""}`}
+                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${network === 'mainnet' ? "bg-slate-300 dark:bg-slate-600 ":""}`}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -118,9 +116,10 @@ const SelectNetwork = () => {
                         <ul className="mb-4">
                           <li
                             onClick={() => handleNetworkChange("sepolia")}
-                            className={`flex items-center gap-2 hover:bg-gray-200 p-4 ${network === 'sepolia' ? "bg-slate-300":""}`}
+                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${network === 'sepolia' ? "bg-slate-300 dark:bg-slate-600":""}`}
                           >
                             <svg
+                              className="dark:fill-white dark:bg-opacity-80"
                               xmlns="http://www.w3.org/2000/svg"
                               width="32"
                               height="32"
@@ -145,7 +144,7 @@ const SelectNetwork = () => {
 
                         <button
                           onClick={() => setStep(2)}
-                          className="bg-black mx-4 text-white p-4 font-bold"
+                          className="bg-black mx-4 text-white p-4 font-bold dark:bg-white dark:text-black"
                         >
                           Add Custom
                         </button>
@@ -212,7 +211,7 @@ const SelectNetwork = () => {
                             <button
                               type="submit"
                               disabled={!isValid}                              
-                              className="bg-black text-white p-4 font-bold disabled:bg-slate-300"
+                              className="bg-black text-white dark:bg-white dark:text-black p-4 font-bold disabled:bg-slate-300"
                             >
                               Add
                             </button>

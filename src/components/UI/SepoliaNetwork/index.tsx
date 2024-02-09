@@ -2,6 +2,7 @@ const SepoliaNetwork = () => {
   return (
     <div className="flex items-center gap-1 font-bold">
       <svg
+        className="dark:fill-white dark:bg-opacity-80"
         xmlns="http://www.w3.org/2000/svg"
         width="32"
         height="32"

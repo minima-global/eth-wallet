@@ -8,8 +8,9 @@
   }
   .desktop__navigation nav {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 180px);
     grid-template-rows: 69px;
+    justify-content: center;
     gap: 16px;
   }  
 }
