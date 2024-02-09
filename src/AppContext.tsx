@@ -3,13 +3,19 @@ import { createContext, useRef, useEffect, useState } from "react";
 
 export const appContext = createContext({} as any);
 
+import * as utils from "./utils"
+
 interface IProps {
   children: any;
 }
 // http://127.0.0.1:8545
-// https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
+
+  const networks = {
+    mainnet: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
+    sepolia: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
+  }
 
   const [_provider, setProvider] = useState<JsonRpcProvider>(
     new JsonRpcProvider("http://127.0.0.1:8545")
@@ -22,6 +28,11 @@ const AppProvider = ({ children }: IProps) => {
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           // do something Minim-y
+        (async () => {
+            
+          utils.log("" + await _provider.getBlockNumber())
+
+        })()
         }
       });
     }
@@ -31,6 +42,24 @@ const AppProvider = ({ children }: IProps) => {
     setSelectNetwork((prevState) => !prevState);
   };
 
+  const setRPCNetwork = (network: string) => {
+    setProvider(networks[network] ? new JsonRpcProvider(networks[network]) : new JsonRpcProvider(network));
+  }
+
+  const verifyRPCNetwork = async (network: string) => {
+    
+    try {
+      const _temp = new JsonRpcProvider(network);
+
+      await _temp.getBlockNumber();
+      
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+    
+  }
+
   return (
     <appContext.Provider
       value={{
@@ -39,6 +68,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _provider,
         setProvider,
+        setRPCNetwork,
+        verifyRPCNetwork
+
       }}
     >
       {children}

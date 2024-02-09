@@ -52,12 +52,13 @@ button {
   font-family: inherit;    
   cursor: pointer;
   transition: border-color 0.25s;
+  font-family: 500;
 }
 input:focus {
   color: rgba(255, 255, 255, 0.87);
 }
 button:hover {
-  border-color: #646cff;
+  
 }
 button:focus,
 button:focus-visible {

@@ -6,13 +6,11 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { HDNodeWallet, Wallet, JsonRpcProvider, parseUnits } from "ethers";
+import {  Wallet,  parseUnits } from "ethers";
 
-import aes from "crypto-js/aes";
-import * as cryptoJs from "crypto-js";
 import * as utils from "../../utils";
 import { appContext } from "../../AppContext";
-import { Signer } from "ethers";
+
 
 type Props = {
   children: React.ReactNode;
@@ -42,17 +40,13 @@ export const WalletContextProvider = ({ children }: Props) => {
   const [_balance, setBalance] = useState("");
   const [step, setStep] = useState(1);
 
-  // const key = localStorage.getItem("encryptedPrivateKey");
-  // const provider: JsonRpcProvider = new JsonRpcProvider(
-  //   "http://localhost:8545"
-  // );
   // const [slushing, setSlush] = useState(false);
 
   // when provider changes change wallet
   useMemo(() => {
     utils.log("Changing network...");
     const generatedKey =
-      "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6";
+      "0x689af8efa8c651a91ad287602527f3af2fe9f6501a7ac4b061667b5a93e037fd";
     const wallet = new Wallet(generatedKey, _provider);
 
     setWallet(wallet);
@@ -166,14 +160,7 @@ export const WalletContextProvider = ({ children }: Props) => {
         step,
         setStep,
         _balance,
-        transfer,
-
-        // key,
-        // phrase,
-        // createWallet,
-
-        // anitaMoney,
-        // loadWallet,
+        transfer
       }}
     >
       {children}
