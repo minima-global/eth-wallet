@@ -67,7 +67,7 @@ const SelectNetwork = () => {
           <Dialog dismiss={promptSelectNetwork}>
             <div className="h-full grid items-center">
               <animated.div style={springProps}>
-                <div className="bg-white shadow-xl dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
+                <div className="bg-white shadow-lg  shadow-slate-300  dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
                   {step === 1 && (
                     <div>
                       <h1 className="text-lg md:text-xl px-4 mb-4">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWalletContext } from "../../providers/wallet/WalletProvider";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 
 import * as utils from "../../utils";
 

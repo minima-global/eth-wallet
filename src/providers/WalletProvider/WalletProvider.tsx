@@ -16,22 +16,14 @@ type Props = {
   children: React.ReactNode;
 };
 type Context = {
-  // key: string | null;
-  // phrase: string | null;
-
   _wallet: Wallet | null;
   _balance: string;
   _netWorth: number;
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
   transfer: (address: string, amount: string) => void;
-
-  // createWallet: (_password: string) => void;
-  // anitaMoney: () => Promise<string>;
-  // loadWallet: (_password: string) => void;
 };
 
-// Just find-replace "XContext" with whatever context name you like. (ie. DankContext)
 const WalletContext = createContext<Context | null>(null);
 
 export const WalletContextProvider = ({ children }: Props) => {
@@ -42,7 +34,6 @@ export const WalletContextProvider = ({ children }: Props) => {
   const [_netWorth, setNetWorth] = useState(0);
   const [step, setStep] = useState(1);
 
-  // when provider changes change wallet
   useMemo(async () => {
     utils.log("Changing network...");
     const generatedKey =
@@ -74,6 +65,7 @@ export const WalletContextProvider = ({ children }: Props) => {
 
     return `https://sepolia.etherscan.io/tx/${tx!.hash}`;
   };
+
 
   const calculateUSDNetWorth = async (address: string) => {
     try {      

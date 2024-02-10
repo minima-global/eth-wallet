@@ -1,7 +1,7 @@
 import "./App.css";
 import { useState } from "react";
 import { Formik, FormikValues } from "formik";
-import { useWalletContext } from "./providers/wallet/WalletProvider";
+import { useWalletContext } from "./providers/WalletProvider/WalletProvider";
 import { formatEther } from "ethers";
 import * as utils from "./utils";
 import Transfer from "./components/Transfer";

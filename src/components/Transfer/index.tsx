@@ -1,5 +1,5 @@
 import { Formik } from "formik";
-import { useWalletContext } from "../../providers/wallet/WalletProvider";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { useState } from "react";
 
 import * as utils from "../../utils";

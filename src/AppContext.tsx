@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from "ethers";
 import { createContext, useRef, useEffect, useState } from "react";
+import { sql } from "./utils/SQL";
 
 export const appContext = createContext({} as any);
 
@@ -16,6 +17,7 @@ const AppProvider = ({ children }: IProps) => {
     sepolia: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
   }
 
+  const [_addressBook, setAddressBook] = useState([]);
   const [_provider, setProvider] = useState<JsonRpcProvider>(
     new JsonRpcProvider("http://127.0.0.1:8545")
   ); // mainnet, sepolia, hardhat, etc...
@@ -36,6 +38,19 @@ const AppProvider = ({ children }: IProps) => {
         if (msg.event === "inited") {
           // do something Minim-y
         
+          (async () => {
+            await sql(
+              `CREATE TABLE IF NOT EXISTS cache (name varchar(255), data longtext);`
+            );
+
+            const addressBook: any = await sql(
+              `SELECT * FROM cache WHERE name = 'ADDRESSBOOK'`
+            );
+
+            if (addressBook) {
+              setAddressBook(JSON.parse(addressBook.DATA));
+            }
+          })();
         }
       });
     }
@@ -67,6 +82,31 @@ const AppProvider = ({ children }: IProps) => {
     
   }
 
+  const updateAddressBook = async (address: string, nickname: string) => {
+    const updatedData = {
+      ..._addressBook,
+      [address]: nickname,
+    };
+
+    setAddressBook(updatedData);
+
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'ADDRESSBOOK'`);
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('ADDRESSBOOK', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'ADDRESSBOOK'`
+      );
+    }
+  };
+
   return (
     <appContext.Provider
       value={{
@@ -75,6 +115,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _currentNavigation,
         handleNavigation,
+
+        _addressBook,
+        updateAddressBook,
 
         _provider,
         setProvider,

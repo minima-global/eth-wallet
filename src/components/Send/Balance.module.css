@@ -46,14 +46,21 @@
 }
 
 
-
 .button__navigation {
   display: block;
-  margin-top: 48px;
+  margin: auto;
+  padding: 0 16px;
 }
 .button__navigation nav {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 48px;
+  justify-content: center;
+  gap: 16px;
+}  
+.button__navigation_one nav {
+  display: grid;
+  grid-template-columns: 1fr;
   grid-template-rows: 48px;
   justify-content: center;
   gap: 16px;

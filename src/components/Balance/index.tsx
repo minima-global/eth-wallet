@@ -1,4 +1,4 @@
-import { useWalletContext } from "../../providers/wallet/WalletProvider";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import useFormatMinimaNumber from "../../utils/useMakeNumber";
 
 

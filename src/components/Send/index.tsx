@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSpring, animated, config } from "react-spring";
 import { appContext } from "../../AppContext";
@@ -6,9 +6,14 @@ import Dialog from "../UI/Dialog";
 import { Formik } from "formik";
 
 import styles from "./Balance.module.css";
+import GasEstimation from "../GasFeeEstimate";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import AddressBook from "../AddressBook";
 
 const Send = () => {
   const { _currentNavigation, handleNavigation } = useContext(appContext);
+  const { _wallet } = useWalletContext();
+  const [step, setStep] = useState(1);
 
   const springProps = useSpring({
     opacity: _currentNavigation === "send" ? 1 : 0,
@@ -29,74 +34,219 @@ const Send = () => {
       <Dialog dismiss={() => handleNavigation("balance")}>
         <div className="h-[100vh_-_64px] grid items-start mt-[80px]">
           <animated.div className={styles["tokens"]} style={springProps}>
-            <div className="bg-white shadow-xl dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
-              <h3 className="px-4 text-lg font-bold">Send</h3>
+            <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
+              <h3 className="px-4 text-lg font-bold text-center">
+                {step === 1 && "Sent to"}
+                {step === 2 && "Enter amount"}
+              </h3>
               <Formik
                 initialValues={{ amount: "", address: "" }}
                 onSubmit={() => console.log("send")}
               >
                 {({
                   handleSubmit,
+                  setFieldValue,
                   isSubmitting,
                   getFieldProps,
                   touched,
                   errors,
+                  values,
+                  isValid,
                 }) => (
-                  <form onSubmit={handleSubmit} className="m-4">
-                    <input
-                      disabled={isSubmitting}
-                      required
-                      {...getFieldProps("address")}
-                      type="text"
-                      placeholder="Recipient Ethereum Address"
-                      className={`mb-2 ${
-                        touched.address && errors.address
-                          ? "outline !outline-red-500"
-                          : ""
-                      }`}
-                    />
-                    {touched.address && errors.address && (
-                      <span className="my-2 bg-red-500 rounded px-4 py-1">
-                        {errors.address}
-                      </span>
+                  <form onSubmit={handleSubmit}>
+                    {step === 1 && (
+                      <div className="mb-4">
+                        <div className="px-4 py-4">
+                          <input
+                            disabled={isSubmitting}
+                            required
+                            {...getFieldProps("address")}
+                            type="text"
+                            placeholder="Recipient public (0x) Address or ENS name"
+                            className={`mb-2 ${
+                              touched.address && errors.address
+                                ? "outline !outline-red-500"
+                                : ""
+                            }`}
+                          />
+                          {touched.address && errors.address && (
+                            <span className="my-2 bg-red-500 rounded px-4 py-1">
+                              {errors.address}
+                            </span>
+                          )}
+                        </div>
+                        <AddressBook setStep={setStep} />
+                      </div>
                     )}
-                    <div className="relative">
-                      <input
-                        disabled={isSubmitting}
-                        required
-                        {...getFieldProps("amount")}
-                        type="text"
-                        placeholder="Amount"
-                        className={`mb-2 ${
-                          touched.amount && errors.amount
-                            ? "outline !outline-red-500"
-                            : ""
-                        }`}
-                      />
-                      <button className="p-1 px-2 text-sm hover:bg-opacity-80 dark:hover:bg-opacity-30 text-white dark:text-slate-300 font-bold rounded-full absolute right-4 top-4 bg-black dark:bg-white dark:bg-opacity-10">
-                        Max
-                      </button>
-                      {touched.amount && errors.amount && (
-                        <span className="my-2 bg-red-500 rounded px-4 py-1">
-                          {errors.amount}
-                        </span>
-                      )}
-                    </div>
+                    {step === 2 && (
+                      <div className="pb-4 mt-4">
+                        <div className="relative mx-4">
+                          <input
+                            disabled={isSubmitting}
+                            required
+                            {...getFieldProps("address")}
+                            type="text"
+                            readOnly
+                            placeholder="Recipient public (0x) Address or ENS name"
+                            className={`mb-2 !pr-10 ${
+                              touched.address && errors.address
+                                ? "outline !outline-red-500"
+                                : ""
+                            }`}
+                          />
+                          <svg
+                            onClick={() => {setFieldValue("address", ""); setStep(1)}}
+                            className="absolute top-5 right-3"
+                            xmlns="http://www.w3.org/2000/svg"                            
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="#7f5345"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path
+                              d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-6.489 5.8a1 1 0 0 0 -1.218 1.567l1.292 1.293l-1.292 1.293l-.083 .094a1 1 0 0 0 1.497 1.32l1.293 -1.292l1.293 1.292l.094 .083a1 1 0 0 0 1.32 -1.497l-1.292 -1.293l1.292 -1.293l.083 -.094a1 1 0 0 0 -1.497 -1.32l-1.293 1.292l-1.293 -1.292l-.094 -.083z"
+                              stroke-width="0"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </div>
+                        <div className="relative px-4">
+                          <input
+                            disabled={isSubmitting}
+                            required
+                            {...getFieldProps("amount")}
+                            type="text"
+                            placeholder="Amount"
+                            className={`mb-2 ${
+                              touched.amount && errors.amount
+                                ? "outline !outline-red-500"
+                                : ""
+                            }`}
+                          />
+                          <button className="p-1 px-2 text-sm hover:bg-opacity-80 dark:hover:bg-opacity-30 text-white dark:text-slate-300 font-bold rounded-full absolute right-7 top-4 bg-black dark:bg-white dark:bg-opacity-10">
+                            Max
+                          </button>
+                          {touched.amount && errors.amount && (
+                            <span className="my-2 bg-red-500 rounded px-4 py-1">
+                              {errors.amount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
-                    <div className={styles["button__navigation"]}>
+                    {step === 3 && (
+                      <div className="pb-4">
+                        <div className="mt-4 mb-4 bg-teal-500 px-4 flex items-center justify-between">
+                          <h3 className="text-sm font-bold">
+                            {_wallet!.address.substring(0, 7)}...
+                            {_wallet!.address.substring(
+                              _wallet!.address.length - 5,
+                              _wallet!.address.length
+                            )}
+                          </h3>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="34"
+                            height="34"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="#7f5345"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path
+                              d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
+                              stroke-width="0"
+                              fill="currentColor"
+                            />
+                            <path
+                              d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                              stroke-width="0"
+                              fill="currentColor"
+                            />
+                            <path
+                              d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                              stroke-width="0"
+                              fill="currentColor"
+                            />
+                          </svg>
+                          <h3 className="text-sm font-bold">
+                            {values.address.substring(0, 7)}...
+                            {values.address.substring(
+                              values.address.length - 5,
+                              values.address.length
+                            )}
+                          </h3>
+                        </div>
+                        <div className="flex justify-between items-center mx-4">
+                          <h3 className="font-bold">Asset</h3>
+                          <p>Ethereum</p>
+                        </div>
+                        <div className="flex justify-between items-center mx-4">
+                          <h3 className="font-bold">Amount</h3>
+                          <p>{values.amount}</p>
+                        </div>
+
+                        <GasEstimation
+                          recipientAddress={values.address}
+                          value={values.amount}
+                        />
+                      </div>
+                    )}
+                    <div className={`${styles["button__navigation"]} ${step === 1 ? styles.button__navigation_one : ''}`}>
                       <nav>
-                        <button
-                          onClick={() => handleNavigation("balance")}
-                          className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          disabled={true}
-                          className="dark:bg-white bg-black bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
-                        >
-                          Next
-                        </button>
+                        {step === 1 && (
+                          <>
+                            <button
+                              onClick={() => handleNavigation("balance")}
+                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                        {step === 2 && (
+                          <>
+                            <button
+                              onClick={() => setStep(1)}
+                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => setStep(3)}
+                              disabled={!isValid}
+                              className="bg-teal-300 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Next
+                            </button>
+                          </>
+                        )}
+                        {step === 3 && (
+                          <>
+                            <button
+                              onClick={() => setStep(1)}
+                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Reject
+                            </button>
+                            <button
+                              type='submit'
+                              disabled={!isValid}
+                              className="bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Send
+                            </button>
+                          </>
+                        )}
                       </nav>
                     </div>
                   </form>
