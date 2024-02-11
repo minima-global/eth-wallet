@@ -24,6 +24,11 @@ const Send = () => {
     config: config.wobbly,
   });
 
+  const handleClearButton = (setFieldValueRef: any) => {
+    setFieldValueRef("address", "");
+    setStep(1);
+  };
+
   if (_currentNavigation !== "send") {
     return null;
   }
@@ -79,43 +84,47 @@ const Send = () => {
                       </div>
                     )}
                     {step === 2 && (
-                      <div className="pb-4 mt-4">
-                        <div className="relative mx-4">
+                      <div className="mt-4">
+                        <div className={styles["input_button_wrapper"]}>
                           <input
                             disabled={isSubmitting}
                             required
                             {...getFieldProps("address")}
                             type="text"
                             readOnly
+                            autoFocus={true}
                             placeholder="Recipient public (0x) Address or ENS name"
-                            className={`mb-2 !pr-10 ${
+                            className={`${
                               touched.address && errors.address
                                 ? "outline !outline-red-500"
                                 : ""
                             }`}
                           />
-                          <svg
-                            onClick={() => {setFieldValue("address", ""); setStep(1)}}
-                            className="absolute top-5 right-3"
-                            xmlns="http://www.w3.org/2000/svg"                            
-                            width="22"
-                            height="22"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="#7f5345"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                          <button
+                            onClick={() => handleClearButton(setFieldValue)}
                           >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path
-                              d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-6.489 5.8a1 1 0 0 0 -1.218 1.567l1.292 1.293l-1.292 1.293l-.083 .094a1 1 0 0 0 1.497 1.32l1.293 -1.292l1.293 1.292l.094 .083a1 1 0 0 0 1.32 -1.497l-1.292 -1.293l1.292 -1.293l.083 -.094a1 1 0 0 0 -1.497 -1.32l-1.293 1.292l-1.293 -1.292l-.094 -.083z"
-                              stroke-width="0"
-                              fill="currentColor"
-                            />
-                          </svg>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="32"
+                              height="32"
+                              viewBox="0 0 22 22"
+                              strokeWidth="1.5"
+                              stroke="currentColor"
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              />
+                              <path d="M18 6l-12 12" />
+                              <path d="M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
-                        <div className="relative px-4">
+                        <div className="relative px-4 mt-4">
                           <input
                             disabled={isSubmitting}
                             required
@@ -186,22 +195,28 @@ const Send = () => {
                             )}
                           </h3>
                         </div>
-                        <div className="flex justify-between items-center mx-4">
-                          <h3 className="font-bold">Asset</h3>
-                          <p>Ethereum</p>
-                        </div>
-                        <div className="flex justify-between items-center mx-4">
-                          <h3 className="font-bold">Amount</h3>
-                          <p>{values.amount}</p>
-                        </div>
+                        <div className="animate-pulse temporary-animate">
+                          <div className="flex justify-between items-center mx-4">
+                            <h3 className="font-bold">Asset</h3>
+                            <p>Ethereum</p>
+                          </div>
+                          <div className="flex justify-between items-center mx-4">
+                            <h3 className="font-bold">Amount</h3>
+                            <p>{values.amount}</p>
+                          </div>
 
-                        <GasEstimation
-                          recipientAddress={values.address}
-                          value={values.amount}
-                        />
+                          <GasEstimation
+                            recipientAddress={values.address}
+                            value={values.amount}
+                          />
+                        </div>
                       </div>
                     )}
-                    <div className={`${styles["button__navigation"]} ${step === 1 ? styles.button__navigation_one : ''}`}>
+                    <div
+                      className={`${styles["button__navigation"]} ${
+                        step === 1 ? styles.button__navigation_one : ""
+                      }`}
+                    >
                       <nav>
                         {step === 1 && (
                           <>
@@ -239,7 +254,7 @@ const Send = () => {
                               Reject
                             </button>
                             <button
-                              type='submit'
+                              type="submit"
                               disabled={!isValid}
                               className="bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
