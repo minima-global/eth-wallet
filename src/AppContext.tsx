@@ -23,6 +23,7 @@ const AppProvider = ({ children }: IProps) => {
   ); // mainnet, sepolia, hardhat, etc...
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
   const [_promptAccountNameUpdate, setPromptAccountNameUpdate] = useState(false);
+  const [_promptAddressBookAdd, setPromptAddressBookAdd] = useState(false);
   const [_currentNavigation, setCurrentNavigation] = useState("balance");
   const [_currencyFormat, setCurrencyFormat] = useState<{
     decimal: string;
@@ -68,6 +69,10 @@ const AppProvider = ({ children }: IProps) => {
   const promptAccountNameUpdate = () => {
     setPromptAccountNameUpdate((prevState) => !prevState);
   };
+  
+  const promptAddressBookAdd = () => {
+    setPromptAddressBookAdd((prevState) => !prevState);
+  };
 
   const setRPCNetwork = (network: string) => {
     setProvider(networks[network] ? new JsonRpcProvider(networks[network]) : new JsonRpcProvider(network));
@@ -112,6 +117,7 @@ const AppProvider = ({ children }: IProps) => {
     }
 
     setPromptAccountNameUpdate(false);
+    setPromptAddressBookAdd(false);
   };
 
   return (
@@ -125,6 +131,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _addressBook,
         updateAddressBook,
+
+        _promptAddressBookAdd,
+        promptAddressBookAdd,
 
         _promptAccountNameUpdate,
         promptAccountNameUpdate,

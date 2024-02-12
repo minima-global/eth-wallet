@@ -10,6 +10,30 @@ import GasEstimation from "../GasFeeEstimate";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
+import AddressBookContact from "../AddressBookContact";
+
+import { getAddress } from "ethers";
+
+import * as yup from "yup";
+
+const schema = yup.object().shape({
+  address: yup
+    .string()
+    .required("Address is required")
+    .test("testing address checksum", function (val) {
+      const { path, createError } = this;
+      
+      try {
+        getAddress(val);        
+        return true;
+      } catch (error) {
+        return createError({
+          path,
+          message: "Invalid Ethereum address",
+        });
+      }
+    }),
+});
 
 const Send = () => {
   const { _currentNavigation, handleNavigation } = useContext(appContext);
@@ -47,6 +71,7 @@ const Send = () => {
                 {step === 3 && "Transaction details"}
               </h3>
               <Formik
+                validationSchema={schema}
                 initialValues={{ amount: "", address: "" }}
                 onSubmit={() => console.log("send")}
               >
@@ -55,6 +80,7 @@ const Send = () => {
                   setFieldValue,
                   isSubmitting,
                   getFieldProps,
+                  handleChange,
                   touched,
                   errors,
                   values,
@@ -64,22 +90,35 @@ const Send = () => {
                     {step === 1 && (
                       <div className="mb-4">
                         <div className="px-4 py-4">
-                          <input
-                            disabled={isSubmitting}
-                            required
-                            {...getFieldProps("address")}
-                            type="text"
-                            placeholder="Recipient public (0x) Address or ENS name"
-                            className={`mb-2 ${
-                              touched.address && errors.address
-                                ? "outline !outline-red-500"
-                                : ""
-                            }`}
-                          />
+                          <div className="mb-2">
+                            <input                              
+                              disabled={isSubmitting}
+                              required
+                              name="address"
+                              type="text"
+                              placeholder="Recipient public (0x) Address or ENS name"
+                              className={`mb-2 ${
+                                touched.address && errors.address
+                                  ? "outline !outline-red-500"
+                                  : ""
+                              }`}
+                              onChange={(e) => {
+                                handleChange(e);
+                                try {
+                                  getAddress(e.target.value);
+                                  console.log('address OK');
+                                  setStep(2);
+                                } catch (error) {
+                                  // BAD
+                                }
+                              }}
+                            />
+                          </div>
+
                           {touched.address && errors.address && (
-                            <span className="my-2 bg-red-500 rounded px-4 py-1">
+                            <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
                               {errors.address}
-                            </span>
+                            </div>
                           )}
                         </div>
                         <AddressBook setStep={setStep} />
@@ -96,11 +135,6 @@ const Send = () => {
                             readOnly
                             autoFocus={true}
                             placeholder="Recipient public (0x) Address or ENS name"
-                            className={`${
-                              touched.address && errors.address
-                                ? "outline !outline-red-500"
-                                : ""
-                            }`}
                           />
                           <button
                             onClick={() => handleClearButton(setFieldValue)}
@@ -171,13 +205,7 @@ const Send = () => {
                     {step === 3 && (
                       <div className="pb-4">
                         <div className="mt-4 mb-4 bg-teal-500 px-4 flex items-center justify-between">
-                          <h3 className="text-sm font-bold">
-                            {_wallet!.address.substring(0, 7)}...
-                            {_wallet!.address.substring(
-                              _wallet!.address.length - 5,
-                              _wallet!.address.length
-                            )}
-                          </h3>
+                          <AddressBookContact address={_wallet!.address} />
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="34"
@@ -206,13 +234,10 @@ const Send = () => {
                               fill="currentColor"
                             />
                           </svg>
-                          <h3 className="text-sm font-bold">
-                            {values.address.substring(0, 7)}...
-                            {values.address.substring(
-                              values.address.length - 5,
-                              values.address.length
-                            )}
-                          </h3>
+                          <AddressBookContact
+                            contact
+                            address={values.address}
+                          />
                         </div>
                         <div>
                           <div className="flex justify-between items-center mx-4">
