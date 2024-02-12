@@ -14,7 +14,7 @@ const AddressBook = ({ setStep }: IProps) => {
   console.log(_addressBook);
 
   // Define the filter condition
-  const filterCondition = ([key, value]) => key !== _wallet!.address;
+  const filterCondition = ([key]) => key !== _wallet!.address;
 
   // Filter out entries based on the condition
   const filteredEntries = Object.entries(_addressBook).filter(filterCondition);
@@ -24,6 +24,7 @@ const AddressBook = ({ setStep }: IProps) => {
       <h3 className="mx-4 font-bold text-sm mb-2 text-purple-500">Address book</h3>
       <ul className="max-h-[50%] h-[250px] overflow-y-scroll">
         <li
+          key={_wallet!.address}
           onClick={() => {
             formik.setFieldValue("address", _wallet!.address);
             setStep(2);
@@ -36,6 +37,7 @@ const AddressBook = ({ setStep }: IProps) => {
         {_addressBook &&
          filteredEntries.map(([key, value]: any) => (
             <li
+              key={key}
               onClick={() => {
                 formik.setFieldValue("address", key);
                 setStep(2);

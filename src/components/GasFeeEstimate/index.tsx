@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther, formatUnits } from "ethers";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import ConversionRateUSD from "../ConversionRateUSD";
 
 interface IProps {
   recipientAddress: string;
@@ -13,8 +14,7 @@ function GasEstimation({ recipientAddress, value }: IProps) {
   const [total, setTotal] = useState("");
   const { _wallet } = useWalletContext();
 
-  async function estimateGas() {
-    console.log("Re-estimating gas...");
+  async function estimateGas() {    
     setLoading(true);
     try {
       // Create a transaction object (this can be tailored according to your specific transaction)
@@ -68,7 +68,10 @@ function GasEstimation({ recipientAddress, value }: IProps) {
         }`}
       >
         <h3 className="font-bold">Total</h3>
-        <p>{total && total.length ? formatEther(total) : "N/A"}</p>
+        <div>
+          <p>{total && total.length ? formatEther(total) : "N/A"}</p>
+          <div className="text-right text-teal-500"><ConversionRateUSD amount={total ? formatEther(total) : "0"} asset="eth" /></div>
+        </div>
       </div>
       {loading && (
         <div className="mx-4 flex items-center gap-1">

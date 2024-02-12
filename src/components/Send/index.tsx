@@ -27,6 +27,7 @@ const schema = yup.object().shape({
         getAddress(val);        
         return true;
       } catch (error) {
+        console.log('bad!')
         return createError({
           path,
           message: "Invalid Ethereum address",
@@ -81,10 +82,12 @@ const Send = () => {
                   isSubmitting,
                   getFieldProps,
                   handleChange,
+                  handleBlur,
                   touched,
                   errors,
                   values,
                   isValid,
+                  dirty
                 }) => (
                   <form onSubmit={handleSubmit}>
                     {step === 1 && (
@@ -94,11 +97,13 @@ const Send = () => {
                             <input                              
                               disabled={isSubmitting}
                               required
+                              id="address"
                               name="address"
                               type="text"
+                              onBlur={handleBlur}
                               placeholder="Recipient public (0x) Address or ENS name"
                               className={`mb-2 ${
-                                touched.address && errors.address
+                                dirty && errors.address
                                   ? "outline !outline-red-500"
                                   : ""
                               }`}
@@ -114,8 +119,8 @@ const Send = () => {
                               }}
                             />
                           </div>
-
-                          {touched.address && errors.address && (
+                            
+                          {dirty && errors.address && (
                             <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
                               {errors.address}
                             </div>
@@ -186,12 +191,12 @@ const Send = () => {
                               ETH
                             </span>
                           </label>
-                          <span>
+                          <div className="mx-4 text-teal-500">
                             <ConversionRateUSD
                               amount={values.amount}
                               asset="eth"
                             />
-                          </span>
+                          </div>
 
                           {touched.amount && errors.amount && (
                             <span className="my-2 bg-red-500 rounded px-4 py-1">
