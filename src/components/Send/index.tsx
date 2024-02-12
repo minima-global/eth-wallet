@@ -9,6 +9,7 @@ import styles from "./Balance.module.css";
 import GasEstimation from "../GasFeeEstimate";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import AddressBook from "../AddressBook";
+import ConversionRateUSD from "../ConversionRateUSD";
 
 const Send = () => {
   const { _currentNavigation, handleNavigation } = useContext(appContext);
@@ -43,6 +44,7 @@ const Send = () => {
               <h3 className="px-4 text-lg font-bold text-center">
                 {step === 1 && "Sent to"}
                 {step === 2 && "Enter amount"}
+                {step === 3 && "Transaction details"}
               </h3>
               <Formik
                 initialValues={{ amount: "", address: "" }}
@@ -124,22 +126,39 @@ const Send = () => {
                             </svg>
                           </button>
                         </div>
-                        <div className="relative px-4 mt-4">
-                          <input
-                            disabled={isSubmitting}
-                            required
-                            {...getFieldProps("amount")}
-                            type="text"
-                            placeholder="Amount"
-                            className={`mb-2 ${
-                              touched.amount && errors.amount
-                                ? "outline !outline-red-500"
-                                : ""
-                            }`}
-                          />
-                          <button className="p-1 px-2 text-sm hover:bg-opacity-80 dark:hover:bg-opacity-30 text-white dark:text-slate-300 font-bold rounded-full absolute right-7 top-4 bg-black dark:bg-white dark:bg-opacity-10">
-                            Max
-                          </button>
+                        <div className="mt-2 mx-4">
+                          <div className="flex justify-end gap-1">
+                            <button
+                              type="button"
+                              className="p-0 mr-4 text-teal-500 focus:border-none focus:outline-none text-sm font-bold"
+                            >
+                              Max
+                            </button>
+                          </div>
+                          <label className="relative">
+                            <input
+                              disabled={isSubmitting}
+                              required
+                              {...getFieldProps("amount")}
+                              type="text"
+                              placeholder="Amount"
+                              className={`font-mono mb-2 !pr-16 ${
+                                touched.amount && errors.amount
+                                  ? "outline !outline-red-500"
+                                  : ""
+                              }`}
+                            />
+                            <span className="absolute right-4 top-0 font-bold">
+                              ETH
+                            </span>
+                          </label>
+                          <span>
+                            <ConversionRateUSD
+                              amount={values.amount}
+                              asset="eth"
+                            />
+                          </span>
+
                           {touched.amount && errors.amount && (
                             <span className="my-2 bg-red-500 rounded px-4 py-1">
                               {errors.amount}
@@ -173,17 +192,17 @@ const Send = () => {
                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                             <path
                               d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
-                              stroke-width="0"
+                              strokeWidth="0"
                               fill="currentColor"
                             />
                             <path
                               d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                              stroke-width="0"
+                              strokeWidth="0"
                               fill="currentColor"
                             />
                             <path
                               d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                              stroke-width="0"
+                              strokeWidth="0"
                               fill="currentColor"
                             />
                           </svg>
@@ -195,14 +214,14 @@ const Send = () => {
                             )}
                           </h3>
                         </div>
-                        <div className="animate-pulse temporary-animate">
+                        <div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Asset</h3>
-                            <p>Ethereum</p>
+                            <p className="font-mono">Ethereum</p>
                           </div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Amount</h3>
-                            <p>{values.amount}</p>
+                            <p className="font-mono">{values.amount}</p>
                           </div>
 
                           <GasEstimation

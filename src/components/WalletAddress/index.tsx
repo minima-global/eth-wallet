@@ -3,7 +3,7 @@ import { useWalletContext } from "../../providers/WalletProvider/WalletProvider"
 
 import * as utils from "../../utils";
 
-const WalletAddress = () => {
+const WalletAddress = ({ fullAddress = false }) => {
   const { _wallet } = useWalletContext();
 
   const [copied, setCopied] = useState(false);
@@ -23,13 +23,14 @@ const WalletAddress = () => {
   // Event handler for key down
   const handleKeyDown = (event) => {
     // Check if Ctrl key and C key are pressed simultaneously
-    if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+    if ((event.ctrlKey || event.metaKey) && event.key === "c") {
       handleCopy();
     }
   };
 
   return (
-    <div style={{
+    <div
+      style={{
         appearance: "none",
         padding: 8,
         border: 0,
@@ -37,27 +38,36 @@ const WalletAddress = () => {
         cursor: "pointer",
       }}
       className="mx-auto text-center relative dark:text-black"
-      >
-      <input
-        onClick={handleCopy}
-        onKeyDown={handleKeyDown}
-        onDoubleClick={handleDoubleClick}
-        className="p-2 text-left font-bold rounded-full focus:bg-teal-200 focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
-        value={
-          _wallet && _wallet.address
-            ? _wallet.address.substring(0, 8) +
-              "..." +
-              _wallet.address.substring(
-                _wallet.address.length - 8,
-                _wallet.address.length
-              )
-            : "N/A"
-        }
-      />
+    >
+      {fullAddress && (
+        <input
+          onClick={handleCopy}
+          onKeyDown={handleKeyDown}
+          onDoubleClick={handleDoubleClick}
+          className="p-2 text-left font-bold rounded-full focus:bg-teal-200 pr-10 truncate focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
+          value={_wallet && _wallet.address ? _wallet.address : "N/A"}
+        />
+      )}
+      {!fullAddress && (
+        <input
+          onClick={handleCopy}
+          onKeyDown={handleKeyDown}
+          onDoubleClick={handleDoubleClick}
+          className="p-2 text-left font-bold rounded-full focus:bg-teal-200 focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
+          value={
+            _wallet && _wallet.address
+              ? _wallet.address.substring(0, 8) +
+                "..." +
+                _wallet.address.substring(
+                  _wallet.address.length - 8,
+                  _wallet.address.length
+                )
+              : "N/A"
+          }
+        />
+      )}
       <svg
-        onInput={() => {
-
-        }}
+        onInput={() => {}}
         className="absolute right-2 top-2"
         style={{
           color: "#0809ab",
@@ -73,11 +83,11 @@ const WalletAddress = () => {
         width="18"
         height="18"
         viewBox="0 0 24 24"
-        stroke-width="3.5"
+        strokeWidth="3.5"
         stroke="#2c3e50"
         fill="none"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z" />
@@ -106,7 +116,7 @@ const WalletAddress = () => {
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M5 12l5 5l10 -10" />
-      </svg>
+      </svg>      
     </div>
   );
 };

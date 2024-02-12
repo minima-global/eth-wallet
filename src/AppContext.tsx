@@ -22,6 +22,7 @@ const AppProvider = ({ children }: IProps) => {
     new JsonRpcProvider("http://127.0.0.1:8545")
   ); // mainnet, sepolia, hardhat, etc...
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
+  const [_promptAccountNameUpdate, setPromptAccountNameUpdate] = useState(false);
   const [_currentNavigation, setCurrentNavigation] = useState("balance");
   const [_currencyFormat, setCurrencyFormat] = useState<{
     decimal: string;
@@ -62,6 +63,10 @@ const AppProvider = ({ children }: IProps) => {
 
   const promptSelectNetwork = () => {
     setSelectNetwork((prevState) => !prevState);
+  };
+  
+  const promptAccountNameUpdate = () => {
+    setPromptAccountNameUpdate((prevState) => !prevState);
   };
 
   const setRPCNetwork = (network: string) => {
@@ -105,6 +110,8 @@ const AppProvider = ({ children }: IProps) => {
         )}' WHERE name = 'ADDRESSBOOK'`
       );
     }
+
+    setPromptAccountNameUpdate(false);
   };
 
   return (
@@ -118,6 +125,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _addressBook,
         updateAddressBook,
+
+        _promptAccountNameUpdate,
+        promptAccountNameUpdate,
 
         _provider,
         setProvider,
