@@ -34,6 +34,7 @@ const schema = yup.object().shape({
         });
       }
     }),
+  amount: yup.string().required("Amount is required")
 });
 
 const Send = () => {
@@ -62,7 +63,7 @@ const Send = () => {
   return (
     _currentNavigation === "send" &&
     createPortal(
-      <Dialog dismiss={() => handleNavigation("balance")}>
+      <Dialog>
         <div className="h-[100vh_-_64px] grid items-start mt-[80px]">
           <animated.div className={styles["tokens"]} style={springProps}>
             <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
@@ -199,9 +200,9 @@ const Send = () => {
                           </div>
 
                           {touched.amount && errors.amount && (
-                            <span className="my-2 bg-red-500 rounded px-4 py-1">
+                            <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
                               {errors.amount}
-                            </span>
+                            </div>
                           )}
                         </div>
                       </div>
