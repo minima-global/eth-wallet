@@ -15,6 +15,7 @@ import AddressBookContact from "../AddressBookContact";
 import { getAddress } from "ethers";
 
 import * as yup from "yup";
+import SelectAsset from "../SelectAsset";
 
 const schema = yup.object().shape({
   address: yup
@@ -39,7 +40,7 @@ const schema = yup.object().shape({
 
 const Send = () => {
   const { _currentNavigation, handleNavigation } = useContext(appContext);
-  const { _wallet, transfer } = useWalletContext();
+  const { _wallet, transfer, transferToken } = useWalletContext();
   const [step, setStep] = useState(1);
 
   const springProps = useSpring({
@@ -74,11 +75,19 @@ const Send = () => {
               </h3>
               <Formik
                 validationSchema={schema}
-                initialValues={{ amount: "", address: "" }}
-                onSubmit={async ({ amount, address }) => {
+                initialValues={{ amount: "", asset: "ether", address: "" }}
+                onSubmit={async ({ amount, address, asset }) => {
                   try {
-                    const resp = await transfer(address, amount);
-                    console.log(resp);
+                    if (asset === "ether") {
+                      const resp = await transfer(address, amount);
+                      console.log(resp);
+                    }
+
+                    if (asset === 'minima') {
+                      const resp = await transferToken(address, amount);
+                      console.log(JSON.stringify(resp));
+                    }
+
                   } catch (error) {
                     console.error(error);
                   }
@@ -173,6 +182,15 @@ const Send = () => {
                           </button>
                         </div>
                         <div className="mt-2 mx-4">
+                          <SelectAsset />
+
+                          {touched.asset && errors.asset && (
+                            <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
+                              {errors.asset}
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-2 mx-4">
                           <div className="flex justify-end gap-1">
                             <button
                               type="button"
@@ -196,13 +214,14 @@ const Send = () => {
                               }`}
                             />
                             <span className="absolute right-4 top-0 font-bold">
-                              ETH
+                              {values.asset === 'ether' && "ETH"}
+                              {values.asset === 'minima' && "WMINIMA"}
                             </span>
                           </label>
                           <div className="mx-4 text-purple-500 flex items-center justify-end">
                             <ConversionRateUSD
                               amount={values.amount}
-                              asset="eth"
+                              asset={values.asset}
                             />
                           </div>
 
@@ -214,7 +233,6 @@ const Send = () => {
                         </div>
                       </div>
                     )}
-
                     {step === 3 && (
                       <div className="pb-4">
                         <div className="mt-4 mb-4 bg-teal-500 px-4 flex items-center justify-between">
@@ -255,7 +273,7 @@ const Send = () => {
                         <div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Asset</h3>
-                            <p className="font-mono">Ethereum</p>
+                            <p className="font-mono">{values.asset === 'ether' && "Ethereum"}{values.asset === 'minima' && "wMinima"}</p>
                           </div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Amount</h3>
@@ -337,7 +355,6 @@ const Send = () => {
 };
 
 export default Send;
-
 
 // normal transfer json receipt
 /**

@@ -99,12 +99,14 @@ export const WalletContextProvider = ({ children }: Props) => {
     const currentNetwork = await _provider.getNetwork();
     const wrappedMinimaAddress = WRAPPEDMINIMANETWORK[currentNetwork.name].address;
     const wrappedMinimaABI = WRAPPEDMINIMANETWORK[currentNetwork.name].abi;
-    console.log('wrapped minima abi', wrappedMinimaABI);
+    utils.log(wrappedMinimaABI);
+    utils.log('wrappedMinimaAddress: ' + wrappedMinimaABI);
     const _contract = new Contract(
       wrappedMinimaAddress,
       wrappedMinimaABI,
-      _provider
+      await _provider.getSigner()
     );
+
 
     const tx = await _contract.transfer(address, amount);
 
