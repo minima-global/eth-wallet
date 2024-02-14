@@ -108,7 +108,7 @@ export const WalletContextProvider = ({ children }: Props) => {
     );
 
 
-    const tx = await _contract.transfer(address, amount);
+    const tx = await _contract.transfer(address, parseUnits(amount, "ether"));
 
     // return the receipt
     return tx;
