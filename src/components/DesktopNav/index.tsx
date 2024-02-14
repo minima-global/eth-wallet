@@ -81,7 +81,7 @@ const DesktopNav = () => {
             Send
           </p>
         </button>
-        {/* <button
+        <button
           className={`bg-black flex items-center justify-center gap-3 transition-all delay-100 duration-100 font-bold ${
             _currentNavigation === "receive" ? " outline outline-teal-500" : ""
           }`}
@@ -98,17 +98,16 @@ const DesktopNav = () => {
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            strokeWidth="2"
+            stroke-width="1.5"
             stroke="currentColor"
             fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M4 18v3h16v-14l-8 -4l-8 4v3" />
-            <path d="M4 14h9" />
-            <path d="M10 11l3 3l-3 3" />
+            <path d="M3 12h4l3 8l4 -16l3 8h4" />
           </svg>
+
           <p
             className={`${
               _currentNavigation === "receive"
@@ -116,9 +115,9 @@ const DesktopNav = () => {
                 : ""
             }`}
           >
-            Receive
+            Activity
           </p>
-        </button> */}
+        </button>
       </nav>
     </section>
   );

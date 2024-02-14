@@ -42,14 +42,14 @@ const UserAccount = () => {
     transform: promptUserAccountDetails
       ? "translateY(0%) scale(1)"
       : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config.gentle,
   });
 
   return (
     <>
       <div
         onClick={() => setPromptUserAccountDetails(true)}
-        className="ml-8 max-w-[120px] sm:max-w-[200px] md:max-w-[260px] bg-white flex items-center bg-opacity-90 px-4 py-2 pr-2 rounded-lg text-center"
+        className="bg-white hover:cursor-pointer hover:bg-opacity-80 flex items-center w-max gap-2 justify-between bg-opacity-90 px-4 py-2 pr-2 rounded-lg text-center"
       >
         <h3 className="truncate font-bold dark:text-black">
           {_wallet &&

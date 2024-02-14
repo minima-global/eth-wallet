@@ -22,24 +22,24 @@ const schema = yup.object().shape({
     .required("Address is required")
     .test("testing address checksum", function (val) {
       const { path, createError } = this;
-      
+
       try {
-        getAddress(val);        
+        getAddress(val);
         return true;
       } catch (error) {
-        console.log('bad!')
+        console.log("bad!");
         return createError({
           path,
           message: "Invalid Ethereum address",
         });
       }
     }),
-  amount: yup.string().required("Amount is required")
+  amount: yup.string().required("Amount is required"),
 });
 
 const Send = () => {
   const { _currentNavigation, handleNavigation } = useContext(appContext);
-  const { _wallet } = useWalletContext();
+  const { _wallet, transfer } = useWalletContext();
   const [step, setStep] = useState(1);
 
   const springProps = useSpring({
@@ -68,14 +68,21 @@ const Send = () => {
           <animated.div className={styles["tokens"]} style={springProps}>
             <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
               <h3 className="px-4 text-lg font-bold text-center">
-                {step === 1 && "Sent to"}
+                {step === 1 && "Send to"}
                 {step === 2 && "Enter amount"}
                 {step === 3 && "Transaction details"}
               </h3>
               <Formik
                 validationSchema={schema}
                 initialValues={{ amount: "", address: "" }}
-                onSubmit={() => console.log("send")}
+                onSubmit={async ({ amount, address }) => {
+                  try {
+                    const resp = await transfer(address, amount);
+                    console.log(resp);
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }}
               >
                 {({
                   handleSubmit,
@@ -88,14 +95,14 @@ const Send = () => {
                   errors,
                   values,
                   isValid,
-                  dirty
+                  dirty,
                 }) => (
                   <form onSubmit={handleSubmit}>
                     {step === 1 && (
                       <div className="mb-4">
                         <div className="px-4 py-4">
                           <div className="mb-2">
-                            <input                              
+                            <input
                               disabled={isSubmitting}
                               required
                               id="address"
@@ -112,7 +119,7 @@ const Send = () => {
                                 handleChange(e);
                                 try {
                                   getAddress(e.target.value);
-                                  console.log('address OK');
+                                  console.log("address OK");
                                   setStep(2);
                                 } catch (error) {
                                   // BAD
@@ -120,7 +127,7 @@ const Send = () => {
                               }}
                             />
                           </div>
-                            
+
                           {dirty && errors.address && (
                             <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
                               {errors.address}
@@ -139,7 +146,6 @@ const Send = () => {
                             {...getFieldProps("address")}
                             type="text"
                             readOnly
-                            autoFocus={true}
                             placeholder="Recipient public (0x) Address or ENS name"
                           />
                           <button
@@ -181,6 +187,7 @@ const Send = () => {
                               required
                               {...getFieldProps("amount")}
                               type="text"
+                              autoFocus
                               placeholder="Amount"
                               className={`font-mono mb-2 !pr-16 ${
                                 touched.amount && errors.amount
@@ -192,7 +199,7 @@ const Send = () => {
                               ETH
                             </span>
                           </label>
-                          <div className="mx-4 text-teal-500">
+                          <div className="mx-4 text-purple-500 flex items-center justify-end">
                             <ConversionRateUSD
                               amount={values.amount}
                               asset="eth"
@@ -281,12 +288,14 @@ const Send = () => {
                         {step === 2 && (
                           <>
                             <button
+                              type="button"
                               onClick={() => setStep(1)}
                               className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
                               Cancel
                             </button>
                             <button
+                              type="button"
                               onClick={() => setStep(3)}
                               disabled={!isValid}
                               className="bg-teal-300 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
@@ -298,6 +307,7 @@ const Send = () => {
                         {step === 3 && (
                           <>
                             <button
+                              type="button"
                               onClick={() => setStep(1)}
                               className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
@@ -327,3 +337,33 @@ const Send = () => {
 };
 
 export default Send;
+
+
+// normal transfer json receipt
+/**
+ * {
+    "_type": "TransactionReceipt",
+    "accessList": [],
+    "blockNumber": null,
+    "blockHash": null,
+    "chainId": "31337",
+    "data": "0x",
+    "from": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+    "gasLimit": "21001",
+    "gasPrice": null,
+    "hash": "0x194ecbb10687e63b70eb105ba6f9cc09a23773d4c150ea7ea4e9d9dc1647da20",
+    "maxFeePerGas": "2750000000",
+    "maxPriorityFeePerGas": "1000000000",
+    "nonce": 1,
+    "signature": {
+        "_type": "signature",
+        "networkV": null,
+        "r": "0x42919c2e0360cda36f948ad2bd01f04ae07cd766ccd171e0afae2c852d322c86",
+        "s": "0x4ae5bfe941f9c4a9a75dee1c1ba87ab6f8ae1d905abe1afe617f01ae565cdedf",
+        "v": 28
+    },
+    "to": "0x95Eea59d1130f0A71afDE7a33d1fe4aFC3b63d9A",
+    "type": 2,
+    "value": "55000000000000000000"
+}
+ */

@@ -4,7 +4,6 @@ import { sql } from "./utils/SQL";
 
 export const appContext = createContext({} as any);
 
-
 interface IProps {
   children: any;
 }
@@ -15,14 +14,25 @@ const AppProvider = ({ children }: IProps) => {
   const networks = {
     mainnet: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
     sepolia: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
-  }
+  };
 
   const [_addressBook, setAddressBook] = useState([]);
   const [_provider, setProvider] = useState<JsonRpcProvider>(
     new JsonRpcProvider("http://127.0.0.1:8545")
   ); // mainnet, sepolia, hardhat, etc...
+  const [_promptLogin, setPromptLogin] = useState<boolean>(true);
+  const [loginForm, setLoginForm] = useState<{
+    _seedPhrase: string;
+    _rememberMe: boolean;
+    _secret: string;
+  }>({
+    _seedPhrase: "",
+    _rememberMe: false,
+    _secret: "",
+  });
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
-  const [_promptAccountNameUpdate, setPromptAccountNameUpdate] = useState(false);
+  const [_promptAccountNameUpdate, setPromptAccountNameUpdate] =
+    useState(false);
   const [_promptAddressBookAdd, setPromptAddressBookAdd] = useState(false);
   const [_currentNavigation, setCurrentNavigation] = useState("balance");
   const [_currencyFormat, setCurrencyFormat] = useState<{
@@ -39,7 +49,7 @@ const AppProvider = ({ children }: IProps) => {
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           // do something Minim-y
-        
+
           (async () => {
             await sql(
               `CREATE TABLE IF NOT EXISTS cache (name varchar(255), data longtext);`
@@ -65,32 +75,33 @@ const AppProvider = ({ children }: IProps) => {
   const promptSelectNetwork = () => {
     setSelectNetwork((prevState) => !prevState);
   };
-  
+
   const promptAccountNameUpdate = () => {
     setPromptAccountNameUpdate((prevState) => !prevState);
   };
-  
+
   const promptAddressBookAdd = () => {
     setPromptAddressBookAdd((prevState) => !prevState);
   };
 
   const setRPCNetwork = (network: string) => {
-    setProvider(networks[network] ? new JsonRpcProvider(networks[network]) : new JsonRpcProvider(network));
-  }
+    setProvider(
+      networks[network]
+        ? new JsonRpcProvider(networks[network])
+        : new JsonRpcProvider(network)
+    );
+  };
 
   const verifyRPCNetwork = async (network: string) => {
-    
     try {
       const _temp = new JsonRpcProvider(network);
 
       await _temp.getBlockNumber();
-      
     } catch (error) {
       console.error(error);
       throw error;
     }
-    
-  }
+  };
 
   const updateAddressBook = async (address: string, nickname: string) => {
     const updatedData = {
@@ -142,8 +153,7 @@ const AppProvider = ({ children }: IProps) => {
         setProvider,
         setRPCNetwork,
         verifyRPCNetwork,
-        _currencyFormat
-
+        _currencyFormat,
       }}
     >
       {children}

@@ -12,6 +12,7 @@ const AddressBookContact = ({ contact = false, address }: IProps) => {
   return (
     <div className="flex items-center gap-2 my-2">
       <svg
+        className="fill-teal-400"
         xmlns="http://www.w3.org/2000/svg"
         width="32"
         height="32"
