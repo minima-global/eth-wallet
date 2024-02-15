@@ -70,7 +70,7 @@ function GasEstimation({ recipientAddress, value }: IProps) {
         <h3 className="font-bold">Total</h3>
         <div>
           <p>{total && total.length ? formatEther(total) : "N/A"}</p>
-          <div className="text-right text-teal-500"><ConversionRateUSD amount={total ? formatEther(total) : "0"} asset="eth" /></div>
+          <div className="text-right text-teal-500"><ConversionRateUSD amount={total ? formatEther(total) : "0"} asset="ether" /></div>
         </div>
       </div>
       {loading && (

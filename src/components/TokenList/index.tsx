@@ -5,7 +5,7 @@ import ConversionRateUSD from "../ConversionRateUSD";
 
 const TokenList = () => {
   const { _currentNavigation } = useContext(appContext);
-  const {_balance, _wrappedMinimaBalance} = useWalletContext();
+  const { _balance, _wrappedMinimaBalance } = useWalletContext();
 
   if (_currentNavigation !== "balance") {
     return null;
@@ -40,7 +40,7 @@ const TokenList = () => {
               <p className="font-mono text-sm">{_balance}</p>
             </div>
             <div>
-              <ConversionRateUSD asset="eth" amount={_balance} />
+              <ConversionRateUSD asset="ether" amount={_balance} />
             </div>
           </div>
         </li>
@@ -54,10 +54,14 @@ const TokenList = () => {
           <div className="flex justify-between ml-2">
             <div>
               <h3 className="font-bold">wMinima</h3>
-              <p className="font-mono text-sm">{_wrappedMinimaBalance} WMINIMA</p>
+              <p className="font-mono text-sm">
+                {_wrappedMinimaBalance} WMINIMA
+              </p>
             </div>
             <div>
-              <h3 className="font-mono">0 USD</h3>
+              <h3 className="font-mono">
+                <ConversionRateUSD asset="minima" amount={_wrappedMinimaBalance} />
+              </h3>
             </div>
           </div>
         </li>

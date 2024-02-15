@@ -121,7 +121,7 @@ const Send = () => {
                               placeholder="Recipient public (0x) Address or ENS name"
                               className={`mb-2 ${
                                 dirty && errors.address
-                                  ? "outline !outline-red-500"
+                                  ? "!border-4 !border-red-500"
                                   : ""
                               }`}
                               onChange={(e) => {
@@ -138,7 +138,7 @@ const Send = () => {
                           </div>
 
                           {dirty && errors.address && (
-                            <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
+                            <div className="my-2 bg-red-500 text-white rounded px-4 py-1">
                               {errors.address}
                             </div>
                           )}
@@ -185,7 +185,7 @@ const Send = () => {
                           <SelectAsset />
 
                           {touched.asset && errors.asset && (
-                            <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
+                            <div className="mx-4 my-2 bg-red-500 text-white rounded px-4 py-1">
                               {errors.asset}
                             </div>
                           )}
@@ -209,7 +209,7 @@ const Send = () => {
                               placeholder="Amount"
                               className={`font-mono mb-2 !pr-16 ${
                                 touched.amount && errors.amount
-                                  ? "outline !outline-red-500"
+                                  ? "!border-4 !border-red-500"
                                   : ""
                               }`}
                             />
@@ -226,7 +226,7 @@ const Send = () => {
                           </div>
 
                           {touched.amount && errors.amount && (
-                            <div className="mx-4 my-2 bg-red-500 rounded px-4 py-1">
+                            <div className="mb-2 bg-red-500 text-white rounded px-4 py-1">
                               {errors.amount}
                             </div>
                           )}
