@@ -1,20 +1,46 @@
-import { useEffect, useMemo, useState } from "react";
-import { formatEther, parseEther, formatUnits } from "ethers";
+import { useEffect, useState } from "react";
+import { formatEther, parseEther } from "ethers";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import ConversionRateUSD from "../ConversionRateUSD";
 
 interface IProps {
   recipientAddress: string;
   value: string;
+  asset: string;
 }
-function GasEstimation({ recipientAddress, value }: IProps) {
+function GasEstimation({ recipientAddress, value, asset }: IProps) {
   const [loading, setLoading] = useState(false);
 
   const [gasEstimate, setGasEstimate] = useState("");
   const [total, setTotal] = useState("");
-  const { _wallet } = useWalletContext();
+  const { _wallet, _minimaContract } = useWalletContext();
 
-  async function estimateGas() {    
+  async function estimateGasMinimaTransaction() {
+    setLoading(true);
+
+    try {
+      const gasLimit = await _minimaContract!.transfer.estimateGas(
+        recipientAddress,
+        value
+      );
+      // convert gas to ether val, then add ether value
+      const transactionTotal = gasLimit + parseEther(value);
+      console.log("TransactionTotal: " + transactionTotal);
+      // set the string representation of the gas
+      setGasEstimate(gasLimit.toString());
+      // set the string representation of the total
+      setTotal(transactionTotal.toString());
+
+      setTimeout(() => {
+        setLoading(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error estimating gas:", error);
+      setLoading(false);
+    }
+  }
+
+  async function estimateGas() {
     setLoading(true);
     try {
       // Create a transaction object (this can be tailored according to your specific transaction)
@@ -37,11 +63,18 @@ function GasEstimation({ recipientAddress, value }: IProps) {
       }, 5000);
     } catch (error) {
       console.error("Error estimating gas:", error);
+      setLoading(false);
     }
   }
   useEffect(() => {
     // Call your function initially
-    estimateGas();
+    if (asset === "minima") {
+      estimateGasMinimaTransaction();
+    }
+
+    if (asset === "ether") {
+      estimateGas();
+    }
 
     // Set up an interval to call your function every 15 seconds
     const intervalId = setInterval(estimateGas, 15000);
@@ -50,7 +83,7 @@ function GasEstimation({ recipientAddress, value }: IProps) {
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
+  }, [asset]);
 
   return (
     <div>
@@ -70,13 +103,17 @@ function GasEstimation({ recipientAddress, value }: IProps) {
         <h3 className="font-bold">Total</h3>
         <div>
           <p>{total && total.length ? formatEther(total) : "N/A"}</p>
-          <div className="text-right text-teal-500"><ConversionRateUSD amount={total ? formatEther(total) : "0"} asset="ether" /></div>
+          <div className="text-right text-teal-500">
+            <ConversionRateUSD
+              amount={total ? formatEther(total) : "0"}
+              asset="ether"
+            />
+          </div>
         </div>
       </div>
       {loading && (
         <div className="mx-4 flex items-center gap-1">
           <svg
-            
             xmlns="http://www.w3.org/2000/svg"
             className="animate-spin text-teal-500"
             width="18"

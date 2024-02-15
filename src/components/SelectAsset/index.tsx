@@ -49,8 +49,8 @@ const SelectAsset = () => {
   const springProps = useSpring({
     opacity: active ? 1 : 0,
     transform: active
-      ? "translateY(0%) scale(1)"
-      : "translateY(-50%) scale(0.8)",
+      ? "translateY(0%)"
+      : "translateY(-50%)",
     config: config.stiff,
   });
 

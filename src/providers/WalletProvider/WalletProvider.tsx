@@ -34,6 +34,7 @@ type Context = {
   _balance: string;
   _wrappedMinimaBalance: string;
   _netWorth: number;
+  _minimaContract: Contract | null;
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
   transfer: (address: string, amount: string) => void;
@@ -47,6 +48,7 @@ export const WalletContextProvider = ({ children }: Props) => {
   const [_wallet, setWallet] = useState<Wallet | null>(null);
   const [_balance, setBalance] = useState(""); // ether balance
   const [_netWorth, setNetWorth] = useState(0);
+  const [_minimaContract, setMinimaContract] = useState<Contract | null>(null);
   const [_wrappedMinimaBalance, setWrappedMinimaBalance] = useState(""); // minima wrapped ether balance
   const [step, setStep] = useState(1);
 
@@ -89,7 +91,8 @@ export const WalletContextProvider = ({ children }: Props) => {
     );
     const _b = await _contract.balanceOf(wallet.address);
     utils.log("Minima balance: " + balance);
-
+    
+    setMinimaContract(_contract);
     setWrappedMinimaBalance(formatEther(_b));
   }, [_provider]);
 
@@ -138,6 +141,7 @@ export const WalletContextProvider = ({ children }: Props) => {
         _balance,
         _wrappedMinimaBalance,
         _netWorth,
+        _minimaContract,
 
         transfer,
         transferToken,

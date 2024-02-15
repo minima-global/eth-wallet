@@ -283,6 +283,7 @@ const Send = () => {
                           <GasEstimation
                             recipientAddress={values.address}
                             value={values.amount}
+                            asset={values.asset}
                           />
                         </div>
                       </div>

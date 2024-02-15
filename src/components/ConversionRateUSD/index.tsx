@@ -26,7 +26,7 @@ const ConversionRateUSD = ({ amount, asset }: IProps) => {
         setConversionRate(conversion.toString());
       }
     })();
-  }, [amount]);
+  }, [amount, asset]);
 
   return (
     <div className="mb-2">
