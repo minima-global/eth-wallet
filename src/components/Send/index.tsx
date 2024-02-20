@@ -12,35 +12,26 @@ import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import { getAddress } from "ethers";
+import {
+  getAddress,
+  TransactionResponse,
+  ContractTransactionResponse,
+} from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
-
-const schema = yup.object().shape({
-  address: yup
-    .string()
-    .required("Address is required")
-    .test("testing address checksum", function (val) {
-      const { path, createError } = this;
-
-      try {
-        getAddress(val);
-        return true;
-      } catch (error) {
-        console.log("bad!");
-        return createError({
-          path,
-          message: "Invalid Ethereum address",
-        });
-      }
-    }),
-  amount: yup.string().required("Amount is required"),
-});
+import Decimal from "decimal.js";
+import { useGasContext } from "../../providers/GasProvider";
 
 const Send = () => {
-  const { _currentNavigation, handleNavigation } = useContext(appContext);
+  const { transactionTotal, gas} = useGasContext();
+  const { _currentNavigation, handleNavigation, updateActivities } =
+    useContext(appContext);
+  const { _balance, _wrappedMinimaBalance } = useWalletContext();
   const { _wallet, transfer, transferToken } = useWalletContext();
+  const [transactionReceipt, setTransactionReceipt] = useState<
+    TransactionResponse | ContractTransactionResponse | null
+  >(null);
   const [step, setStep] = useState(1);
 
   const springProps = useSpring({
@@ -72,22 +63,79 @@ const Send = () => {
                 {step === 1 && "Send to"}
                 {step === 2 && "Enter amount"}
                 {step === 3 && "Transaction details"}
+                {step === 4 && "Transaction receipt"}
               </h3>
               <Formik
-                validationSchema={schema}
-                initialValues={{ amount: "", asset: "ether", address: "" }}
+                validationSchema={yup.object().shape({
+                  address: yup
+                    .string()
+                    .required("Address is required")
+                    .test("testing address checksum", function (val) {
+                      const { path, createError } = this;
+
+                      try {
+                        getAddress(val);
+                        return true;
+                      } catch (error) {
+                        return createError({
+                          path,
+                          message: "Invalid Ethereum address",
+                        });
+                      }
+                    }),
+                  amount: yup
+                    .string()
+                    .required("Amount is required")
+                    .test("has funds", function (val) {
+                      const { path, createError, parent } = this;
+
+                      try {
+                        if (
+                          parent.asset === "ether" &&
+                          new Decimal(val).gt(_balance)
+                          // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
+                        ) {
+                          throw new Error();
+                        }
+
+                        if (
+                          parent.asset === "minima" &&
+                          new Decimal(val).gt(_wrappedMinimaBalance)
+                          // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
+                        ) {
+                          throw new Error();
+                        }
+
+                        return true;
+                      } catch (error) {
+                        return createError({
+                          path,
+                          message: "Insufficient funds",
+                        });
+                      }
+                    }),
+                })}
+                initialValues={{
+                  amount: "",
+                  asset: "ether",
+                  address: "",
+                }}
                 onSubmit={async ({ amount, address, asset }) => {
                   try {
                     if (asset === "ether") {
-                      const resp = await transfer(address, amount);
-                      console.log(resp);
+                      const resp = await transfer(address, amount, gas);
+                      setStep(4);
+                      // setTransactionReceipt(resp!);
+                      updateActivities(resp!);
                     }
 
-                    if (asset === 'minima') {
+                    if (asset === "minima") {
                       const resp = await transferToken(address, amount);
+                      setStep(4);
+                      // setTransactionReceipt(resp);
+                      updateActivities(resp!);
                       console.log(JSON.stringify(resp));
                     }
-
                   } catch (error) {
                     console.error(error);
                   }
@@ -105,6 +153,7 @@ const Send = () => {
                   values,
                   isValid,
                   dirty,
+                  resetForm,
                 }) => (
                   <form onSubmit={handleSubmit}>
                     {step === 1 && (
@@ -214,8 +263,8 @@ const Send = () => {
                               }`}
                             />
                             <span className="absolute right-4 top-0 font-bold">
-                              {values.asset === 'ether' && "ETH"}
-                              {values.asset === 'minima' && "WMINIMA"}
+                              {values.asset === "ether" && "ETH"}
+                              {values.asset === "minima" && "WMINIMA"}
                             </span>
                           </label>
                           <div className="mx-4 text-purple-500 flex items-center justify-end">
@@ -273,24 +322,38 @@ const Send = () => {
                         <div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Asset</h3>
-                            <p className="font-mono">{values.asset === 'ether' && "Ethereum"}{values.asset === 'minima' && "wMinima"}</p>
+                            <p className="font-mono">
+                              {values.asset === "ether" && "Ethereum"}
+                              {values.asset === "minima" && "wMinima"}
+                            </p>
                           </div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Amount</h3>
-                            <p className="font-mono">{values.amount}</p>
+                            <div className="text-right">
+                              <p className="font-mono font-bold">
+                                {values.amount}
+                              </p>
+                              <ConversionRateUSD
+                                asset={values.asset}
+                                amount={values.amount}
+                              />
+                            </div>
                           </div>
 
-                          <GasEstimation
-                            recipientAddress={values.address}
-                            value={values.amount}
-                            asset={values.asset}
-                          />
+                          <GasEstimation />
                         </div>
+                      </div>
+                    )}
+                    {step === 4 && (
+                      <div className="pb-4 mt-4">
+                        {/* <TransactionReceipt receipt={transactionReceipt} /> */}
                       </div>
                     )}
                     <div
                       className={`${styles["button__navigation"]} ${
-                        step === 1 ? styles.button__navigation_one : ""
+                        step === 1 || step === 4
+                          ? styles.button__navigation_one
+                          : ""
                       }`}
                     >
                       <nav>
@@ -338,6 +401,21 @@ const Send = () => {
                               className="bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
                               Send
+                            </button>
+                          </>
+                        )}
+                        {step === 4 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleNavigation("balance");
+                                setStep(1);
+                                resetForm();
+                              }}
+                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Dismiss
                             </button>
                           </>
                         )}

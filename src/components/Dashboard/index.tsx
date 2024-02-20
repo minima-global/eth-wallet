@@ -13,6 +13,7 @@ import WalletAddress from "../WalletAddress";
 import Send from "../Send";
 import UserAccount from "../UserAccount";
 import TokenList from "../TokenList";
+import Activity from "../Activities";
 
 const Dashboard = () => {
   const {
@@ -251,6 +252,7 @@ const Dashboard = () => {
             <Send />
             <DesktopNav />
             <TokenList />
+            <Activity />
           </section>
         </main>
         <footer>

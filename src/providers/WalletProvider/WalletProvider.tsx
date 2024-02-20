@@ -14,17 +14,19 @@ import SimpleMinimaABIHardHat from "../../abis/wMinimaHardhat.json";
 import * as utils from "../../utils";
 import { appContext } from "../../AppContext";
 import { Contract } from "ethers";
+import { TransactionReceipt } from "ethers";
+import { GasFeeCalculated } from "../GasProvider/GasFeeInterface";
 
 const WRAPPEDMINIMANETWORK = {
-  "mainnet": {
+  mainnet: {
     abi: MinimaABI,
-    address: "0x669c01CAF0eDcaD7c2b8Dc771474aD937A7CA4AF"
+    address: "0x669c01CAF0eDcaD7c2b8Dc771474aD937A7CA4AF",
   },
-  "unknown": {
+  unknown: {
     abi: SimpleMinimaABIHardHat,
-    address: "0x5FbDB2315678afecb367f032d93F642f64180aa3" // edit this after deploying Minima on hardhat
-  }
-}
+    address: "0x5FbDB2315678afecb367f032d93F642f64180aa3", // edit this after deploying Minima on hardhat
+  },
+};
 
 type Props = {
   children: React.ReactNode;
@@ -37,8 +39,11 @@ type Context = {
   _minimaContract: Contract | null;
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
-  transfer: (address: string, amount: string) => void;
-  transferToken: (address: string, amount: string) => void;
+  transfer: (address: string, amount: string, gas: GasFeeCalculated) => any;
+  transferToken: (
+    address: string,
+    amount: string
+  ) => Promise<TransactionReceipt>;
 };
 
 const WalletContext = createContext<Context | null>(null);
@@ -58,9 +63,9 @@ export const WalletContextProvider = ({ children }: Props) => {
       try {
         const etherPriceUSD = await utils.getEthereumPrice();
         const etherHoldings = await _provider.getBalance(address);
-  
+
         const netWorthUSD = Number(formatEther(etherHoldings)) * etherPriceUSD;
-  
+
         return netWorthUSD;
       } catch (error) {
         console.error(error);
@@ -69,7 +74,7 @@ export const WalletContextProvider = ({ children }: Props) => {
     };
 
     const generatedKey =
-      "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+      "b741b12a135882375f901d52ee9cc2415c20919729abe85fd63d39ec375244a5";
     const wallet = new Wallet(generatedKey, _provider);
     const balance = await _provider.getBalance(wallet.address);
     utils.log("Wallet balance: " + balance);
@@ -80,58 +85,76 @@ export const WalletContextProvider = ({ children }: Props) => {
 
     const currentNetwork = await _provider.getNetwork();
 
-    // we get contract for wMinima.. then we can check balance for user...    
-    const wrappedMinimaAddress = WRAPPEDMINIMANETWORK[currentNetwork.name].address;
-    const wrappedMinimaABI = WRAPPEDMINIMANETWORK[currentNetwork.name].abi;
-    console.log('wrapped minima abi', wrappedMinimaABI);
-    const _contract = new Contract(
-      wrappedMinimaAddress,
-      wrappedMinimaABI,
-      _provider
-    );
-    const _b = await _contract.balanceOf(wallet.address);
-    utils.log("Minima balance: " + balance);
-    
-    setMinimaContract(_contract);
-    setWrappedMinimaBalance(formatEther(_b));
+    try {
+      // we get contract for wMinima.. then we can check balance for user...
+      const wrappedMinimaAddress =
+        WRAPPEDMINIMANETWORK[currentNetwork.name].address;
+      const wrappedMinimaABI = WRAPPEDMINIMANETWORK[currentNetwork.name].abi;
+      const _contract = new Contract(
+        wrappedMinimaAddress,
+        wrappedMinimaABI,
+        _provider
+      );
+
+      const _b = await _contract.balanceOf(wallet.address);
+      utils.log("Minima balance: " + balance);
+      setWrappedMinimaBalance(formatEther(_b));
+      setMinimaContract(_contract);
+    } catch (error) {
+      //
+    }
   }, [_provider]);
 
-  const transferToken = async (address: string, amount: string) => {
+  const transferToken = async (
+    address: string,
+    amount: string,
+    gas: GasFeeCalculated
+  ) => {
     utils.log(`Preparing a transfer from:${_wallet!.address} to -> ${address}`);
 
     const currentNetwork = await _provider.getNetwork();
-    const wrappedMinimaAddress = WRAPPEDMINIMANETWORK[currentNetwork.name].address;
+    const wrappedMinimaAddress =
+      WRAPPEDMINIMANETWORK[currentNetwork.name].address;
     const wrappedMinimaABI = WRAPPEDMINIMANETWORK[currentNetwork.name].abi;
     utils.log(wrappedMinimaABI);
-    utils.log('wrappedMinimaAddress: ' + wrappedMinimaABI);
+    utils.log("wrappedMinimaAddress: " + wrappedMinimaABI);
     const _contract = new Contract(
       wrappedMinimaAddress,
       wrappedMinimaABI,
       await _provider.getSigner()
     );
 
-
-    const tx = await _contract.transfer(address, parseUnits(amount, "ether"));
-
+    const tx = await _contract.transfer(address, parseUnits(amount, "ether"), {
+      maxFeePerGas: parseUnits(gas.baseFee, "gwei"),
+      maxPriorityFeePerGas: parseUnits(gas.priorityFee, "gwei"),
+    });
+    console.log(tx);
+    const txResponse = await tx.wait();
+    console.log(txResponse);
     // return the receipt
-    return tx;
-  }
+    return txResponse;
+  };
 
-  const transfer = async (address: string, amount: string) => {
-    utils.log("Preparing a transfer from " + _wallet!.address);
-
-    const tx = await _wallet
-      ?.sendTransaction({
+  const transfer = async (
+    address: string,
+    amount: string,
+    gas: GasFeeCalculated
+  ) => {
+    const tx = await _wallet!
+      .sendTransaction({
         to: address,
         value: parseUnits(amount, "ether"),
+        maxPriorityFeePerGas: parseUnits(gas.priorityFee, "gwei"), // wei
+        maxFeePerGas: parseUnits(gas.baseFee, "gwei"), // wei
       })
       .catch((err) => {
         console.log("Error caught...");
         throw err;
       });
     console.log(tx);
-
-    return `https://sepolia.etherscan.io/tx/${tx!.hash}`;
+    const txResponse = await tx?.wait();
+    console.log(txResponse);
+    return txResponse;
   };
 
   return (

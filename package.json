@@ -13,9 +13,11 @@
     "zip": "npm run build && npm run postbuild && npm run package"
   },
   "dependencies": {
+    "@ethereumjs/tx": "^5.2.1",
     "@vitejs/plugin-legacy": "^4.1.1",
     "@vitejs/plugin-react-swc": "^3.4.1",
     "autoprefixer": "^10.4.16",
+    "axios": "^1.6.7",
     "crypto-js": "^4.2.0",
     "decimal.js": "^10.4.3",
     "ethers": "^6.10.0",

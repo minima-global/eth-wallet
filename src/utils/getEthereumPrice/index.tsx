@@ -11,7 +11,7 @@ export function getEthereumPrice(): Promise<number> {
                 reject();
             }
 
-            console.log(resp);            
+                    
             // const ethereumPriceUSD = jsonResponse.ethereum.usd;
             const jsonResp = JSON.parse("{\"ethereum\":{\"usd\":2494.33}}");
             const ethereumPriceUSD = jsonResp.ethereum.usd;

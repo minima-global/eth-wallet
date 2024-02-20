@@ -83,26 +83,26 @@ const DesktopNav = () => {
         </button>
         <button
           className={`bg-black flex items-center justify-center gap-3 transition-all delay-100 duration-100 font-bold ${
-            _currentNavigation === "receive" ? " outline outline-teal-500" : ""
+            _currentNavigation === "activity" ? " outline outline-teal-500" : ""
           }`}
-          disabled={_currentNavigation === "receive"}
-          onClick={() => handleNavigation("receive")}
+          disabled={_currentNavigation === "activity"}
+          onClick={() => handleNavigation("activity")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className={`${
-              _currentNavigation === "receive"
+              _currentNavigation === "activity"
                 ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
                 : ""
             }`}
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            stroke-width="1.5"
+            strokeWidth="1.5"
             stroke="currentColor"
             fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M3 12h4l3 8l4 -16l3 8h4" />

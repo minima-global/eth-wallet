@@ -4,6 +4,14 @@ import "@nomicfoundation/hardhat-toolbox-viem";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.19",
+  networks: {
+    hardhat: {
+      initialBaseFeePerGas: 0,
+      forking: {
+        url: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
+      }
+    }
+  }
 };
 
 export default config;

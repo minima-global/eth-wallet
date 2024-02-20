@@ -1,25 +1,36 @@
 import { JsonRpcProvider } from "ethers";
 import { createContext, useRef, useEffect, useState } from "react";
 import { sql } from "./utils/SQL";
+import { TransactionResponse } from "ethers";
+import { ContractTransactionResponse } from "ethers";
 
 export const appContext = createContext({} as any);
 
 interface IProps {
   children: any;
 }
+export const networks = {
+  mainnet: {
+    rpc: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
+    chainId: 1,
+  },
+  sepolia: {
+    rpc: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
+    chainId: "11155111",
+  },
+};
 // http://127.0.0.1:8545
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
 
-  const networks = {
-    mainnet: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
-    sepolia: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
-  };
-
   const [_addressBook, setAddressBook] = useState([]);
+  const [_activities, setActivities] = useState<
+    (TransactionResponse | ContractTransactionResponse)[]
+  >([]);
+  // mainnet, sepolia, hardhat, etc...
   const [_provider, setProvider] = useState<JsonRpcProvider>(
-    new JsonRpcProvider("http://127.0.0.1:8545")
-  ); // mainnet, sepolia, hardhat, etc...
+    new JsonRpcProvider(networks["sepolia"].rpc)
+  );
   const [_promptLogin, setPromptLogin] = useState<boolean>(true);
   const [loginForm, setLoginForm] = useState<{
     _seedPhrase: string;
@@ -59,8 +70,16 @@ const AppProvider = ({ children }: IProps) => {
               `SELECT * FROM cache WHERE name = 'ADDRESSBOOK'`
             );
 
+            const activities: any = await sql(
+              `SELECT * FROM cache WHERE name = 'ACTIVITIES'`
+            );
+
             if (addressBook) {
               setAddressBook(JSON.parse(addressBook.DATA));
+            }
+
+            if (activities) {
+              setActivities(JSON.parse(activities.DATA));
             }
           })();
         }
@@ -87,7 +106,7 @@ const AppProvider = ({ children }: IProps) => {
   const setRPCNetwork = (network: string) => {
     setProvider(
       networks[network]
-        ? new JsonRpcProvider(networks[network])
+        ? new JsonRpcProvider(networks[network].rpc)
         : new JsonRpcProvider(network)
     );
   };
@@ -100,6 +119,28 @@ const AppProvider = ({ children }: IProps) => {
     } catch (error) {
       console.error(error);
       throw error;
+    }
+  };
+
+  const updateActivities = async (activity: TransactionResponse) => {
+    const updatedData = [..._activities, activity];
+
+    setActivities(updatedData);
+
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'ACTIVITIES'`);
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('ACTIVITIES', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'ACTIVITIES'`
+      );
     }
   };
 
@@ -142,6 +183,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _addressBook,
         updateAddressBook,
+
+        _activities,
+        updateActivities,
 
         _promptAddressBookAdd,
         promptAddressBookAdd,

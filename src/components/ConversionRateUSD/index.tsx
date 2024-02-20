@@ -31,7 +31,7 @@ const ConversionRateUSD = ({ amount, asset }: IProps) => {
   return (
     <div className="mb-2">
       {amount && (
-        <p className="text-sm font-mono">
+        <p className="text-sm text-purple-500 font-bold font-mono">
           ${makeMinimaNumber("" + conversionRate, 2)} USD
         </p>
       )}

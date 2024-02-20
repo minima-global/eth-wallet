@@ -11,7 +11,7 @@ export function getMinimaPrice(): Promise<number> {
                 reject();
             }
 
-            console.log(resp);            
+                     
             // const ethereumPriceUSD = jsonResponse.minima.usd;
             const jsonResp = JSON.parse("{\"minima\":{\"usd\":0.04}}");
             const minimaPriceUSD = jsonResp.minima.usd;

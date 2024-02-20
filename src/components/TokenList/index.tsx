@@ -55,7 +55,7 @@ const TokenList = () => {
             <div>
               <h3 className="font-bold">wMinima</h3>
               <p className="font-mono text-sm">
-                {_wrappedMinimaBalance} WMINIMA
+                {_wrappedMinimaBalance} 
               </p>
             </div>
             <div>
