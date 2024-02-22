@@ -5,9 +5,11 @@ import { useState } from "react";
 import * as utils from "../../utils";
 
 import styles from "./Balance.module.css";
+import { useGasContext } from "../../providers/GasProvider";
 
 const Transfer = () => {
   const { transfer } = useWalletContext();
+  const {gas} = useGasContext();
 
   const [error, setError] = useState<false | string>();
   const [etherscanLink, setEtherScanLink] = useState<false | string>();
@@ -20,7 +22,7 @@ const Transfer = () => {
       }}
       onSubmit={async ({ address, amount }, { setSubmitting }) => {
         try {
-          const etherScanLink = await transfer(address, amount);
+          const etherScanLink = await transfer(address, amount, gas!);
 
           setEtherScanLink(etherScanLink!);
         } catch (error) {

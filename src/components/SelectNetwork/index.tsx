@@ -14,6 +14,7 @@ import BackButton from "../UI/BackButton";
 
 const SelectNetwork = () => {
   const {
+
     _promptSelectNetwork,
     promptSelectNetwork,
     _provider,
@@ -24,33 +25,34 @@ const SelectNetwork = () => {
   const [network, setNetwork] = useState("unknown");
   const [step, setStep] = useState(1);
 
-
+  
   const springProps = useSpring({
     opacity: _promptSelectNetwork ? 1 : 0,
     transform: _promptSelectNetwork
-      ? "translateY(0%) scale(1)"
-      : "translateY(-50%) scale(0.8)",
+    ? "translateY(0%) scale(1)"
+    : "translateY(-50%) scale(0.8)",
     config: config.wobbly,
   });
-
+  
   const addCustomNetworkSpringProps = useSpring({
     opacity: step === 2 ? 1 : 0,
     config: config.gentle,
   });
-
+  
   const handleNetworkChange = (network: string) => {
     setRPCNetwork(network);
     promptSelectNetwork();
   };
-
+  
   useEffect(() => {
     (async () => {
       const p = await _provider.getNetwork();
-
+      
       setNetwork(p.name);
     })();
   }, [_provider]);
-
+  
+  
   return (
     <>
       <div
@@ -172,7 +174,6 @@ const SelectNetwork = () => {
                               setStep(1);
                               promptSelectNetwork();
                             } catch (error) {
-                              console.log('no.')
                               setErrors({network: "Invalid JSON-RPC URL.  Could not establish connection."});
                               console.error(error);
                             }

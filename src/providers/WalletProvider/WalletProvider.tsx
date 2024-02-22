@@ -24,7 +24,7 @@ const WRAPPEDMINIMANETWORK = {
   },
   unknown: {
     abi: SimpleMinimaABIHardHat,
-    address: "0x5FbDB2315678afecb367f032d93F642f64180aa3", // edit this after deploying Minima on hardhat
+    address: "0xd56e6f296352b03c3c3386543185e9b8c2e5fd0b", // edit this after deploying Minima on hardhat
   },
 };
 
@@ -39,17 +39,18 @@ type Context = {
   _minimaContract: Contract | null;
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
-  transfer: (address: string, amount: string, gas: GasFeeCalculated) => any;
+  transfer: (address: string, amount: string, gas: GasFeeCalculated) => Promise<TransactionReceipt>;
   transferToken: (
     address: string,
-    amount: string
+    amount: string,
+    gas: GasFeeCalculated
   ) => Promise<TransactionReceipt>;
 };
 
 const WalletContext = createContext<Context | null>(null);
 
 export const WalletContextProvider = ({ children }: Props) => {
-  const { _provider } = useContext(appContext);
+  const { _provider, _generatedKey } = useContext(appContext);
   const [_wallet, setWallet] = useState<Wallet | null>(null);
   const [_balance, setBalance] = useState(""); // ether balance
   const [_netWorth, setNetWorth] = useState(0);
@@ -57,8 +58,9 @@ export const WalletContextProvider = ({ children }: Props) => {
   const [_wrappedMinimaBalance, setWrappedMinimaBalance] = useState(""); // minima wrapped ether balance
   const [step, setStep] = useState(1);
 
+
   useMemo(async () => {
-    utils.log("Changing network... - " + _provider.name);
+    console.log('calling again');
     const calculateUSDNetWorth = async (address: string) => {
       try {
         const etherPriceUSD = await utils.getEthereumPrice();
@@ -73,11 +75,9 @@ export const WalletContextProvider = ({ children }: Props) => {
       }
     };
 
-    const generatedKey =
-      "b741b12a135882375f901d52ee9cc2415c20919729abe85fd63d39ec375244a5";
-    const wallet = new Wallet(generatedKey, _provider);
+    const wallet = new Wallet(_generatedKey, _provider);
     const balance = await _provider.getBalance(wallet.address);
-    utils.log("Wallet balance: " + balance);
+    // utils.log("Wallet balance: " + balance);
     const networth = await calculateUSDNetWorth(wallet.address);
     setNetWorth(networth);
     setBalance(formatEther(balance));
@@ -86,24 +86,24 @@ export const WalletContextProvider = ({ children }: Props) => {
     const currentNetwork = await _provider.getNetwork();
 
     try {
+      console.log('currentNetwork', currentNetwork);
       // we get contract for wMinima.. then we can check balance for user...
       const wrappedMinimaAddress =
-        WRAPPEDMINIMANETWORK[currentNetwork.name].address;
+        WRAPPEDMINIMANETWORK[currentNetwork.name].address;      
       const wrappedMinimaABI = WRAPPEDMINIMANETWORK[currentNetwork.name].abi;
       const _contract = new Contract(
         wrappedMinimaAddress,
         wrappedMinimaABI,
         _provider
       );
-
       const _b = await _contract.balanceOf(wallet.address);
-      utils.log("Minima balance: " + balance);
+      console.log('wrappedMinimaBalance', _b);
       setWrappedMinimaBalance(formatEther(_b));
       setMinimaContract(_contract);
     } catch (error) {
       //
     }
-  }, [_provider]);
+  }, [_provider, _generatedKey]);
 
   const transferToken = async (
     address: string,
@@ -116,8 +116,6 @@ export const WalletContextProvider = ({ children }: Props) => {
     const wrappedMinimaAddress =
       WRAPPEDMINIMANETWORK[currentNetwork.name].address;
     const wrappedMinimaABI = WRAPPEDMINIMANETWORK[currentNetwork.name].abi;
-    utils.log(wrappedMinimaABI);
-    utils.log("wrappedMinimaAddress: " + wrappedMinimaABI);
     const _contract = new Contract(
       wrappedMinimaAddress,
       wrappedMinimaABI,
@@ -139,7 +137,7 @@ export const WalletContextProvider = ({ children }: Props) => {
     address: string,
     amount: string,
     gas: GasFeeCalculated
-  ) => {
+  ): Promise<TransactionReceipt> => {
     const tx = await _wallet!
       .sendTransaction({
         to: address,
@@ -148,18 +146,20 @@ export const WalletContextProvider = ({ children }: Props) => {
         maxFeePerGas: parseUnits(gas.baseFee, "gwei"), // wei
       })
       .catch((err) => {
-        console.log("Error caught...");
         throw err;
       });
     console.log(tx);
-    const txResponse = await tx?.wait();
+    const txResponse = await tx.wait();
     console.log(txResponse);
-    return txResponse;
+    return txResponse as TransactionReceipt;
   };
+
+
 
   return (
     <WalletContext.Provider
       value={{
+
         _wallet,
         _balance,
         _wrappedMinimaBalance,

@@ -22,31 +22,25 @@ export const networks = {
 // http://127.0.0.1:8545
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
+  
+
 
   const [_addressBook, setAddressBook] = useState([]);
   const [_activities, setActivities] = useState<
     (TransactionResponse | ContractTransactionResponse)[]
   >([]);
+  const [_generatedKey, setGeneratedKey] = useState("");
   // mainnet, sepolia, hardhat, etc...
   const [_provider, setProvider] = useState<JsonRpcProvider>(
-    new JsonRpcProvider(networks["sepolia"].rpc)
+    new JsonRpcProvider("http://127.0.0.1:8545")
   );
-  const [_promptLogin, setPromptLogin] = useState<boolean>(true);
-  const [loginForm, setLoginForm] = useState<{
-    _seedPhrase: string;
-    _rememberMe: boolean;
-    _secret: string;
-  }>({
-    _seedPhrase: "",
-    _rememberMe: false,
-    _secret: "",
-  });
+
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
   const [_promptAccountNameUpdate, setPromptAccountNameUpdate] =
     useState(false);
   const [_promptAddressBookAdd, setPromptAddressBookAdd] = useState(false);
   const [_currentNavigation, setCurrentNavigation] = useState("balance");
-  const [_currencyFormat, setCurrencyFormat] = useState<{
+  const [_currencyFormat] = useState<{
     decimal: string;
     thousands: string;
   }>({
@@ -55,11 +49,18 @@ const AppProvider = ({ children }: IProps) => {
   });
 
   useEffect(() => {
+
     if (!loaded.current) {
       loaded.current = true;
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           // do something Minim-y
+          (window as any).MDS.keypair.get("_k", function(val) {
+            console.log(val);
+            if (val.status) {
+              createKey(val.value)            
+            }
+          });
 
           (async () => {
             await sql(
@@ -172,9 +173,17 @@ const AppProvider = ({ children }: IProps) => {
     setPromptAddressBookAdd(false);
   };
 
+
+  const createKey = (key: string) => {
+    setGeneratedKey(key);
+  }
+
   return (
     <appContext.Provider
       value={{
+        _generatedKey,
+        createKey,
+
         _promptSelectNetwork,
         promptSelectNetwork,
 

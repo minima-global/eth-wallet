@@ -41,6 +41,7 @@ const WalletAddress = ({ fullAddress = false }) => {
     >
       {fullAddress && (
         <input
+          readOnly
           onClick={handleCopy}
           onKeyDown={handleKeyDown}
           onDoubleClick={handleDoubleClick}
@@ -50,6 +51,7 @@ const WalletAddress = ({ fullAddress = false }) => {
       )}
       {!fullAddress && (
         <input
+          readOnly
           onClick={handleCopy}
           onKeyDown={handleKeyDown}
           onDoubleClick={handleDoubleClick}

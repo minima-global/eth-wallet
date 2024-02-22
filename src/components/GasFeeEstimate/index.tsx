@@ -164,11 +164,11 @@ function GasEstimation() {
             width="18"
             height="18"
             viewBox="0 0 24 24"
-            stroke-width="2.0"
+            strokeWidth="2.0"
             stroke="currentColor"
             fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M14 11h1a2 2 0 0 1 2 2v3a1.5 1.5 0 0 0 3 0v-7l-3 -3" />

@@ -5,7 +5,7 @@ import { appContext } from "../../AppContext";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
 import { GasFeeCalculated, GasFeesApiResponse } from "./GasFeeInterface";
 import Decimal from "decimal.js";
-import { parseEther } from "ethers";
+import {  formatUnits, parseEther } from "ethers";
 /**
  * @EIP1559
  * Calculating gas fee as with EIP1559,
@@ -22,8 +22,6 @@ const preAuth = encoder.encode(
 // Convert JSON object to Uint8Array
 const uint8Array = new Uint8Array(Object.values(preAuth));
 const Auth = btoa(String.fromCharCode.apply(null, Array.from(uint8Array)));
-
-
 
 type Props = {
   children: React.ReactNode;
@@ -57,60 +55,113 @@ export const GasContextProvider = ({ children }: Props) => {
 
   const { _provider } = useContext(appContext);
   const { _wallet, _minimaContract } = useWalletContext();
-  
+
   async function estimateGas(amount: string, address: string, asset: string) {
     setLoading(true);
     setAsset(asset);
     const currentNetwork = await _provider.getNetwork();
-    try {
-      const { data } = await axios.get(
-        `https://gas.api.infura.io/networks/${currentNetwork.chainId}/suggestedGasFees/`,
-        {
-          headers: {
-            Authorization: `Basic ${Auth}`,
-          },
-        }
-      );
-      // Set Gas Card data
-      setGasCard(data);
 
-      const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } =
-        data[defaultGas];
-
-      if (asset === "minima") {
-        const gasUnits = await _minimaContract!.transfer.estimateGas(
-          address,
-          amount
-        );
-
-        const gas = await utils.calculateGasFee(
-          gasUnits,
-          suggestedMaxFeePerGas,
-          suggestedMaxPriorityFeePerGas
-        );
-        setGas(gas);
-        setTransactionTotal(new Decimal(amount).plus(gas.finalGasFee).toString());
-      }
+    if (currentNetwork.name === "unknown") {
+      const gasFee = await _provider.getFeeData();
+      const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei 
 
       if (asset === "ether") {
+        console.log("gas", gasFee);
         const tx = {
           to: address,
           value: parseEther(amount),
         };
         // Estimate gas required for the transaction
-        const gasUnits = await _wallet!.estimateGas(tx); // gas units
-        const gas = await utils.calculateGasFee(
-          gasUnits,
-          suggestedMaxFeePerGas,
-          suggestedMaxPriorityFeePerGas
-        );
-        setGas(gas);
-        setTransactionTotal(new Decimal(amount).plus(gas.finalGasFee).toString());
+        const gasUnits = await _wallet!.estimateGas(tx); // gas units        
+        const maxBase = formatUnits(maxFeePerGas.toString(), "gwei"); // gwei        
+        const maxPriority = formatUnits(maxPriorityFeePerGas.toString(), "gwei"); // gwei
+        
+        const _gas = await utils.calculateGasFee(gasUnits, maxBase.toString(), maxPriority.toString());        
+        setGas({
+          gasUnits: gasUnits.toString(),
+          baseFee: _gas.baseFee.toString(),
+          priorityFee: _gas.priorityFee.toString(),
+          finalGasFee: _gas.finalGasFee.toString(),
+        });
+        setTransactionTotal(_gas.finalGasFee.toString());
       }
-    } catch (error) {
-      console.log("Server responded with:", error);
-    } finally {
-      setTimeout(() => setLoading(false), 3000);
+
+      if (asset === "minima") {
+        console.log("gas", gasFee);
+        const gasUnits = await _minimaContract!.transfer.estimateGas(
+          address,
+          amount
+        );
+        const maxBase = formatUnits(maxFeePerGas.toString(), "gwei"); // gwei        
+        const maxPriority = formatUnits(maxPriorityFeePerGas.toString(), "gwei"); // gwei
+        
+        const _gas = await utils.calculateGasFee(gasUnits, maxBase.toString(), maxPriority.toString());        
+        setGas({
+          gasUnits: gasUnits.toString(),
+          baseFee: _gas.baseFee.toString(),
+          priorityFee: _gas.priorityFee.toString(),
+          finalGasFee: _gas.finalGasFee.toString(),
+        });
+        setTransactionTotal(_gas.finalGasFee.toString());
+      }
+    }
+
+    if (currentNetwork.name !== "unknown") {
+      try {
+        const { data } = await axios.get(
+          `https://gas.api.infura.io/networks/${currentNetwork.chainId}/suggestedGasFees/`,
+          {
+            headers: {
+              Authorization: `Basic ${Auth}`,
+            },
+          }
+        );
+        console.log(data);
+        // Set Gas Card data
+        setGasCard(data);
+
+        const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } =
+          data[defaultGas];
+
+        if (asset === "minima") {
+          const gasUnits = await _minimaContract!.transfer.estimateGas(
+            address,
+            amount
+          );
+
+          const gas = await utils.calculateGasFee(
+            gasUnits,
+            suggestedMaxFeePerGas,
+            suggestedMaxPriorityFeePerGas
+          );
+          setGas(gas);
+          setTransactionTotal(
+            new Decimal(amount).plus(gas.finalGasFee).toString()
+          );
+        }
+
+        if (asset === "ether") {
+          const tx = {
+            to: address,
+            value: parseEther(amount),
+          };
+          // Estimate gas required for the transaction
+          const gasUnits = await _wallet!.estimateGas(tx); // gas units
+          const gas = await utils.calculateGasFee(
+            gasUnits,
+            suggestedMaxFeePerGas,
+            suggestedMaxPriorityFeePerGas
+          );
+          setGas(gas);
+          setTransactionTotal(
+            new Decimal(amount).plus(gas.finalGasFee).toString()
+          );
+        }
+      } catch (error) {
+        console.log("Server responded with:", error);
+      } finally {
+        setTimeout(() => setLoading(false), 3000);
+      }
     }
   }
 
@@ -121,13 +172,12 @@ export const GasContextProvider = ({ children }: Props) => {
   const clearGas = () => {
     setGas(null);
     setTransactionTotal(null);
-  }
-
+  };
 
   // user ability to select which card they want to use
   const selectGasCard = (level: string) => {
     setGasDefault(level);
-  }
+  };
 
   return (
     <GasContext.Provider
@@ -143,7 +193,7 @@ export const GasContextProvider = ({ children }: Props) => {
 
         selectGasCard,
         estimateGas,
-        clearGas
+        clearGas,
       }}
     >
       {children}

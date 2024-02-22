@@ -1,43 +1,81 @@
-import {  TransactionReceipt as TxReceipt, formatEther, parseUnits } from "ethers";
+import { TransactionReceipt as TxReceipt, formatEther, formatUnits } from "ethers";
 import AddressBookContact from "../AddressBookContact";
 import { useEffect, useState } from "react";
 import { TransactionResponse } from "ethers";
+import * as utils from "../../utils";
+import Decimal from "decimal.js";
 
 interface IProps {
   receipt: TxReceipt;
 }
-const TransactionReceipt = ({ receipt }: IProps) => {
-  
+const TransactionReceiptCard = ({ receipt }: IProps) => {
   const [tx, setTx] = useState<TransactionResponse | null>(null);
+  const [blockExplorer, setBlockExplorer] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     (async () => {
+      // set BlockExplorer link according to network.. keep null if not known
+      const network = await receipt.provider.getNetwork();
+      if (network.name === "mainnet") {
+        setBlockExplorer("https://etherscan.io/tx/");
+      } else if (network.name === "ropsten") {
+        setBlockExplorer("https://ropsten.etherscan.io/tx/");
+      } else if (network.name === "rinkeby") {
+        setBlockExplorer("https://rinkeby.etherscan.io/tx/");
+      } else if (network.name === "goerli") {
+        setBlockExplorer("https://goerli.etherscan.io/tx/");
+      } else if (network.name === "kovan") {
+        setBlockExplorer("https://kovan.etherscan.io/tx/");
+      } else {
+        setBlockExplorer(null);
+      }
+
       const _tx = await receipt?.getTransaction();
-      console.log('transaction', _tx)
-      console.log('receipt..', receipt);
+      console.log("transaction", _tx);
+      console.log("receipt..", receipt);
       setTx(_tx!);
-    })()
+    })();
   }, []);
 
+  const handleCopy = () => {
+    setCopied(true);
+    utils.copyToClipboard(receipt.hash);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  }
+
   if (!tx) {
-    return <div className="mx-4"><p className="text-sm">Loading transaction...</p></div>
+    return (
+      <div className="mx-4">
+        <p className="text-sm">Loading transaction...</p>
+      </div>
+    );
   }
 
   return (
     <div>
       <div className="flex justify-between px-4">
         <h3>Status</h3>
-        <a href={receipt.hash}>View on block explorer</a>
+        {blockExplorer && (
+          <a href={`${blockExplorer}${receipt.hash}`}>View on block explorer</a>
+        )}
+        {!blockExplorer && (
+          <p className="dark:text-orange-500">N/A</p>
+        )}
       </div>
       <div className="flex justify-between px-4">
         <h3></h3>
-        <a href={`${tx.hash}`}>Copy transaction ID</a>
+        <button className={`text-white p-0 focus:ring-transparent focus:outline-none focus:border-none ${copied ? 'animate-pulse text-teal-300' : ''}`} onClick={handleCopy}>
+          {copied? "Copied!" : "Copy transaction ID"}
+        </button>
       </div>
       <div className="flex justify-between px-4 mb-1 mt-3">
         <h3 className="font-bold">From</h3>
         <p className="font-bold">To</p>
       </div>
-      <div className="mb-1 bg-teal-500 px-4 flex items-center justify-between">
+      <div className="mb-1 bg-teal-500 px-4 flex items-center justify-between break-all">
         <AddressBookContact address={receipt.from} />
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -69,29 +107,28 @@ const TransactionReceipt = ({ receipt }: IProps) => {
         </svg>
         <AddressBookContact contact address={receipt.to!} />
       </div>
-      <div>
-        <h3 className="mx-4 font-bold text-center">Details</h3>
-        <ul>
-            <li className="flex justify-between px-4">
-                <h3>Nonce</h3>
-                <p className="">{tx.nonce}</p>
-            </li>
-            <li className="flex justify-between px-4">
-                <h3>Amount</h3>
-                <p className="font-bold">{formatEther(tx.value.toString())}</p>
-            </li>
-            <li className="flex justify-between px-4">
-                <h3>Gas Limit</h3>
-                <p>{tx.gasLimit.toString()}</p>
-            </li>
-            <li className="flex justify-between px-4">
-                <h3>Gas Used</h3>
-                <p>{receipt.gasUsed.toString()}</p>
-            </li>                                            
+      <div>        
+        <ul className="py-6">
+          <li className="flex justify-between px-4">
+            <h3>Nonce</h3>
+            <p className="">{tx.nonce}</p>
+          </li>
+          <li className="flex justify-between px-4">
+            <h3>Amount</h3>
+            <p className="font-bold">{formatEther(tx.value.toString())}</p>
+          </li>
+          <li className="flex justify-between px-4">
+            <h3>Gas Units</h3>
+            <p>{receipt.gasUsed.toString()}</p>
+          </li>
+          <li className="flex justify-between px-4">
+            <h3>Gas Used</h3>
+            <p>{formatEther(receipt.fee)}</p>
+          </li>
         </ul>
       </div>
     </div>
   );
 };
 
-export default TransactionReceipt;
+export default TransactionReceiptCard;

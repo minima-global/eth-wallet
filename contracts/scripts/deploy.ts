@@ -7,7 +7,7 @@ async function main() {
 
   const token = await ethers.deployContract("wMinima");
 
-  console.log("Token address:", await token.getAddress());
+  console.log("Contract address:", await token.getAddress());
 }
 
 main()

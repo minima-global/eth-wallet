@@ -14,6 +14,7 @@ import Send from "../Send";
 import UserAccount from "../UserAccount";
 import TokenList from "../TokenList";
 import Activity from "../Activities";
+import GiveAddress from "../GiveAddress";
 
 const Dashboard = () => {
   const {
@@ -235,17 +236,18 @@ const Dashboard = () => {
             <div className="flex md:hidden">
               <UserAccount />
             </div>
-            <button
+            {/* <button
               onClick={promptLogoutDialog}
               className="bg-orange-300 text-white py-2 text-sm hover:bg-red-500"
             >
               Logout
-            </button>
+            </button> */}
           </div>
         </header>
         <main>
           <section>
             <section />
+            <GiveAddress />
             <SelectNetwork />
             <WalletAddress />
             <Balance />

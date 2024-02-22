@@ -13,10 +13,11 @@ import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
 import {
+  TransactionReceipt,
   getAddress,
-  TransactionResponse,
-  ContractTransactionResponse,
 } from "ethers";
+
+import TransactionReceiptCard from "../TransactionReceipt";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
@@ -24,13 +25,13 @@ import Decimal from "decimal.js";
 import { useGasContext } from "../../providers/GasProvider";
 
 const Send = () => {
-  const { transactionTotal, gas} = useGasContext();
+  const {  gas} = useGasContext();
   const { _currentNavigation, handleNavigation, updateActivities } =
     useContext(appContext);
   const { _balance, _wrappedMinimaBalance } = useWalletContext();
   const { _wallet, transfer, transferToken } = useWalletContext();
   const [transactionReceipt, setTransactionReceipt] = useState<
-    TransactionResponse | ContractTransactionResponse | null
+    TransactionReceipt | null
   >(null);
   const [step, setStep] = useState(1);
 
@@ -123,14 +124,14 @@ const Send = () => {
                 onSubmit={async ({ amount, address, asset }) => {
                   try {
                     if (asset === "ether") {
-                      const resp = await transfer(address, amount, gas);
+                      const resp = await transfer(address, amount, gas!);
                       setStep(4);
-                      // setTransactionReceipt(resp!);
+                      setTransactionReceipt(resp);
                       updateActivities(resp!);
                     }
 
                     if (asset === "minima") {
-                      const resp = await transferToken(address, amount);
+                      const resp = await transferToken(address, amount, gas!);
                       setStep(4);
                       // setTransactionReceipt(resp);
                       updateActivities(resp!);
@@ -177,7 +178,6 @@ const Send = () => {
                                 handleChange(e);
                                 try {
                                   getAddress(e.target.value);
-                                  console.log("address OK");
                                   setStep(2);
                                 } catch (error) {
                                   // BAD
@@ -346,7 +346,7 @@ const Send = () => {
                     )}
                     {step === 4 && (
                       <div className="pb-4 mt-4">
-                        {/* <TransactionReceipt receipt={transactionReceipt} /> */}
+                        <TransactionReceiptCard receipt={transactionReceipt!} />
                       </div>
                     )}
                     <div

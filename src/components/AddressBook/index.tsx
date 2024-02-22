@@ -17,7 +17,7 @@ const AddressBook = ({ setStep }: IProps) => {
   const filterCondition = ([key]) => key !== _wallet!.address;
 
   // Filter out entries based on the condition
-  const filteredEntries = Object.entries(_addressBook).filter(filterCondition);
+  const filteredEntries = Object.entries(_addressBook).filter(filterCondition as any);
   
   return (
     <div className="">
