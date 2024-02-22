@@ -16,6 +16,7 @@ import { appContext } from "../../AppContext";
 import { Contract } from "ethers";
 import { TransactionReceipt } from "ethers";
 import { GasFeeCalculated } from "../GasProvider/GasFeeInterface";
+import { TransactionResponse } from "ethers";
 
 const WRAPPEDMINIMANETWORK = {
   mainnet: {
@@ -39,12 +40,12 @@ type Context = {
   _minimaContract: Contract | null;
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
-  transfer: (address: string, amount: string, gas: GasFeeCalculated) => Promise<TransactionReceipt>;
+  transfer: (address: string, amount: string, gas: GasFeeCalculated) => Promise<TransactionResponse>;
   transferToken: (
     address: string,
     amount: string,
     gas: GasFeeCalculated
-  ) => Promise<TransactionReceipt>;
+  ) => Promise<TransactionResponse>;
 };
 
 const WalletContext = createContext<Context | null>(null);
@@ -60,7 +61,6 @@ export const WalletContextProvider = ({ children }: Props) => {
 
 
   useMemo(async () => {
-    console.log('calling again');
     const calculateUSDNetWorth = async (address: string) => {
       try {
         const etherPriceUSD = await utils.getEthereumPrice();
@@ -126,18 +126,24 @@ export const WalletContextProvider = ({ children }: Props) => {
       maxFeePerGas: parseUnits(gas.baseFee, "gwei"),
       maxPriorityFeePerGas: parseUnits(gas.priorityFee, "gwei"),
     });
-    console.log(tx);
-    const txResponse = await tx.wait();
-    console.log(txResponse);
-    // return the receipt
-    return txResponse;
+    
+    // return the response
+    return tx;
   };
 
+  /**
+   * 
+   * @param address receiver address
+   * @param amount amount (ether)
+   * @param gas suggested gas fee
+   * @returns the immediate response of this transaction
+   */
   const transfer = async (
     address: string,
     amount: string,
     gas: GasFeeCalculated
-  ): Promise<TransactionReceipt> => {
+  ): Promise<TransactionResponse> => {
+    
     const tx = await _wallet!
       .sendTransaction({
         to: address,
@@ -148,10 +154,8 @@ export const WalletContextProvider = ({ children }: Props) => {
       .catch((err) => {
         throw err;
       });
-    console.log(tx);
-    const txResponse = await tx.wait();
-    console.log(txResponse);
-    return txResponse as TransactionReceipt;
+    console.log('txResponse' , tx);
+    return tx;
   };
 
 

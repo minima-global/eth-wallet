@@ -13,26 +13,22 @@ import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
 import {
-  TransactionReceipt,
   getAddress,
 } from "ethers";
-
-import TransactionReceiptCard from "../TransactionReceipt";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
 import Decimal from "decimal.js";
 import { useGasContext } from "../../providers/GasProvider";
+import { useActivityHandlerContext } from "../../providers/ActivityHandlerProvider";
 
 const Send = () => {
   const {  gas} = useGasContext();
-  const { _currentNavigation, handleNavigation, updateActivities } =
+  const {transactionStatusHandler} = useActivityHandlerContext();
+  const { _currentNavigation, handleNavigation, updateActivities, _provider } =
     useContext(appContext);
   const { _balance, _wrappedMinimaBalance } = useWalletContext();
   const { _wallet, transfer, transferToken } = useWalletContext();
-  const [transactionReceipt, setTransactionReceipt] = useState<
-    TransactionReceipt | null
-  >(null);
   const [step, setStep] = useState(1);
 
   const springProps = useSpring({
@@ -50,7 +46,7 @@ const Send = () => {
   };
 
   if (_currentNavigation !== "send") {
-    return null;
+    return null; 
   }
 
   return (
@@ -64,7 +60,6 @@ const Send = () => {
                 {step === 1 && "Send to"}
                 {step === 2 && "Enter amount"}
                 {step === 3 && "Transaction details"}
-                {step === 4 && "Transaction receipt"}
               </h3>
               <Formik
                 validationSchema={yup.object().shape({
@@ -121,24 +116,30 @@ const Send = () => {
                   asset: "ether",
                   address: "",
                 }}
-                onSubmit={async ({ amount, address, asset }) => {
+                onSubmit={async ({ amount, address, asset}, {resetForm}) => {
                   try {
                     if (asset === "ether") {
                       const resp = await transfer(address, amount, gas!);
-                      setStep(4);
-                      setTransactionReceipt(resp);
+                      // Update activities
                       updateActivities(resp!);
+                      
+                      // activityHandler will take care of this now..
+                      resetForm();
+                      handleNavigation("activity");
                     }
 
                     if (asset === "minima") {
                       const resp = await transferToken(address, amount, gas!);
-                      setStep(4);
-                      // setTransactionReceipt(resp);
+                      
                       updateActivities(resp!);
-                      console.log(JSON.stringify(resp));
+
+                      // activityHandler will take care of this now..
+                      resetForm();
+                      handleNavigation("activity");
                     }
                   } catch (error) {
                     console.error(error);
+                    // display error message
                   }
                 }}
               >
@@ -154,7 +155,6 @@ const Send = () => {
                   values,
                   isValid,
                   dirty,
-                  resetForm,
                 }) => (
                   <form onSubmit={handleSubmit}>
                     {step === 1 && (
@@ -343,12 +343,7 @@ const Send = () => {
                           <GasEstimation />
                         </div>
                       </div>
-                    )}
-                    {step === 4 && (
-                      <div className="pb-4 mt-4">
-                        <TransactionReceiptCard receipt={transactionReceipt!} />
-                      </div>
-                    )}
+                    )}                    
                     <div
                       className={`${styles["button__navigation"]} ${
                         step === 1 || step === 4
@@ -403,22 +398,7 @@ const Send = () => {
                               Send
                             </button>
                           </>
-                        )}
-                        {step === 4 && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleNavigation("balance");
-                                setStep(1);
-                                resetForm();
-                              }}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
-                            >
-                              Dismiss
-                            </button>
-                          </>
-                        )}
+                        )}                        
                       </nav>
                     </div>
                   </form>

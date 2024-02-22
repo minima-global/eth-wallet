@@ -3,6 +3,7 @@ import { createContext, useRef, useEffect, useState } from "react";
 import { sql } from "./utils/SQL";
 import { TransactionResponse } from "ethers";
 import { ContractTransactionResponse } from "ethers";
+import { TransactionReceipt } from "ethers";
 
 export const appContext = createContext({} as any);
 
@@ -22,9 +23,6 @@ export const networks = {
 // http://127.0.0.1:8545
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
-  
-
-
   const [_addressBook, setAddressBook] = useState([]);
   const [_activities, setActivities] = useState<
     (TransactionResponse | ContractTransactionResponse)[]
@@ -49,16 +47,15 @@ const AppProvider = ({ children }: IProps) => {
   });
 
   useEffect(() => {
-
     if (!loaded.current) {
       loaded.current = true;
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           // do something Minim-y
-          (window as any).MDS.keypair.get("_k", function(val) {
+          (window as any).MDS.keypair.get("_k", function (val) {
             console.log(val);
             if (val.status) {
-              createKey(val.value)            
+              createKey(val.value);
             }
           });
 
@@ -173,10 +170,9 @@ const AppProvider = ({ children }: IProps) => {
     setPromptAddressBookAdd(false);
   };
 
-
   const createKey = (key: string) => {
     setGeneratedKey(key);
-  }
+  };
 
   return (
     <appContext.Provider

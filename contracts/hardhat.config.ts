@@ -8,8 +8,8 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
-      }
-      // initialBaseFeePerGas: 0,
+      },
+      initialBaseFeePerGas: 0,
     }
   }
 };

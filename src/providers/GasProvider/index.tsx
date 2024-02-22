@@ -5,7 +5,7 @@ import { appContext } from "../../AppContext";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
 import { GasFeeCalculated, GasFeesApiResponse } from "./GasFeeInterface";
 import Decimal from "decimal.js";
-import {  formatUnits, parseEther } from "ethers";
+import { formatUnits, parseEther } from "ethers";
 /**
  * @EIP1559
  * Calculating gas fee as with EIP1559,
@@ -63,20 +63,36 @@ export const GasContextProvider = ({ children }: Props) => {
 
     if (currentNetwork.name === "unknown") {
       const gasFee = await _provider.getFeeData();
-      const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei 
+      const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei
 
       if (asset === "ether") {
-        console.log("gas", gasFee);
         const tx = {
           to: address,
           value: parseEther(amount),
         };
         // Estimate gas required for the transaction
-        const gasUnits = await _wallet!.estimateGas(tx); // gas units        
-        const maxBase = formatUnits(maxFeePerGas.toString(), "gwei"); // gwei        
-        const maxPriority = formatUnits(maxPriorityFeePerGas.toString(), "gwei"); // gwei
-        
-        const _gas = await utils.calculateGasFee(gasUnits, maxBase.toString(), maxPriority.toString());        
+        const gasUnits = await _wallet!.estimateGas(tx); // gas units
+        // handler if base fee switched off
+        if (maxFeePerGas === null) {
+          return setGas({
+            gasUnits: gasUnits.toString(),
+            baseFee: "0",
+            priorityFee: "0",
+            finalGasFee: "0",
+          });
+        }
+
+        const maxBase = formatUnits(maxFeePerGas.toString(), "gwei"); // gwei
+        const maxPriority = formatUnits(
+          maxPriorityFeePerGas.toString(),
+          "gwei"
+        ); // gwei
+
+        const _gas = await utils.calculateGasFee(
+          gasUnits,
+          maxBase.toString(),
+          maxPriority.toString()
+        );
         setGas({
           gasUnits: gasUnits.toString(),
           baseFee: _gas.baseFee.toString(),
@@ -87,15 +103,32 @@ export const GasContextProvider = ({ children }: Props) => {
       }
 
       if (asset === "minima") {
-        console.log("gas", gasFee);
         const gasUnits = await _minimaContract!.transfer.estimateGas(
           address,
           amount
         );
-        const maxBase = formatUnits(maxFeePerGas.toString(), "gwei"); // gwei        
-        const maxPriority = formatUnits(maxPriorityFeePerGas.toString(), "gwei"); // gwei
-        
-        const _gas = await utils.calculateGasFee(gasUnits, maxBase.toString(), maxPriority.toString());        
+
+        // handler if base fee switched off
+        if (maxFeePerGas === null) {
+          return setGas({
+            gasUnits: gasUnits.toString(),
+            baseFee: "0",
+            priorityFee: "0",
+            finalGasFee: "0",
+          });
+        }
+
+        const maxBase = formatUnits(maxFeePerGas.toString(), "gwei"); // gwei
+        const maxPriority = formatUnits(
+          maxPriorityFeePerGas.toString(),
+          "gwei"
+        ); // gwei
+
+        const _gas = await utils.calculateGasFee(
+          gasUnits,
+          maxBase.toString(),
+          maxPriority.toString()
+        );
         setGas({
           gasUnits: gasUnits.toString(),
           baseFee: _gas.baseFee.toString(),
@@ -107,6 +140,7 @@ export const GasContextProvider = ({ children }: Props) => {
     }
 
     if (currentNetwork.name !== "unknown") {
+      console.log(currentNetwork.chainId);
       try {
         const { data } = await axios.get(
           `https://gas.api.infura.io/networks/${currentNetwork.chainId}/suggestedGasFees/`,
