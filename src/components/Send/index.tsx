@@ -20,15 +20,16 @@ import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
 import Decimal from "decimal.js";
 import { useGasContext } from "../../providers/GasProvider";
-import { useActivityHandlerContext } from "../../providers/ActivityHandlerProvider";
+import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
+import defaultAssets from "../../defaultAssets";
 
 const Send = () => {
   const {  gas} = useGasContext();
-  const {transactionStatusHandler} = useActivityHandlerContext();
-  const { _currentNavigation, handleNavigation, updateActivities, _provider } =
+  const { _currentNavigation, handleNavigation, updateActivities } =
     useContext(appContext);
-  const { _balance, _wrappedMinimaBalance } = useWalletContext();
-  const { _wallet, transfer, transferToken } = useWalletContext();
+  const { transferToken } = useTokenStoreContext();
+  const { _balance } = useWalletContext();
+  const { _wallet, transfer } = useWalletContext();
   const [step, setStep] = useState(1);
 
   const springProps = useSpring({
@@ -87,20 +88,20 @@ const Send = () => {
 
                       try {
                         if (
-                          parent.asset === "ether" &&
+                          parent.asset.type === "ether" &&
                           new Decimal(val).gt(_balance)
                           // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
                         ) {
                           throw new Error();
                         }
-
-                        if (
-                          parent.asset === "minima" &&
-                          new Decimal(val).gt(_wrappedMinimaBalance)
-                          // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
-                        ) {
-                          throw new Error();
-                        }
+                        // TODO
+                        // if (
+                        //   parent.asset === "minima" &&
+                        //   new Decimal(val).gt()
+                        //   // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
+                        // ) {
+                        //   throw new Error();
+                        // }
 
                         return true;
                       } catch (error) {
@@ -113,30 +114,33 @@ const Send = () => {
                 })}
                 initialValues={{
                   amount: "",
-                  asset: "ether",
+                  asset: {
+                    name: "Ethereum",
+                    symbol: "ETH",
+                    balance: _balance,
+                    address: "",
+                    type: "ether",
+                    icon: defaultAssets[0].icon,
+                  },
                   address: "",
                 }}
                 onSubmit={async ({ amount, address, asset}, {resetForm}) => {
                   try {
-                    if (asset === "ether") {
+                    
+                    if (asset.type === "ether") {
                       const resp = await transfer(address, amount, gas!);
-                      // Update activities
-                      updateActivities(resp!);
-                      
-                      // activityHandler will take care of this now..
+                      // Add to activities
+                      updateActivities(resp!);                      
+                      resetForm();
+                      handleNavigation("activity");                      
+                    } else {                      
+                      // handle ERC 20 transfers
+                      const resp = await transferToken(asset.address, address, amount, gas!);
+                      // Add to activities                      
+                      updateActivities(resp!);                      
                       resetForm();
                       handleNavigation("activity");
-                    }
-
-                    if (asset === "minima") {
-                      const resp = await transferToken(address, amount, gas!);
-                      
-                      updateActivities(resp!);
-
-                      // activityHandler will take care of this now..
-                      resetForm();
-                      handleNavigation("activity");
-                    }
+                    }                    
                   } catch (error) {
                     console.error(error);
                     // display error message
@@ -233,11 +237,11 @@ const Send = () => {
                         <div className="mt-2 mx-4">
                           <SelectAsset />
 
-                          {touched.asset && errors.asset && (
+                          {/* {touched.asset && errors.asset && (
                             <div className="mx-4 my-2 bg-red-500 text-white rounded px-4 py-1">
                               {errors.asset}
                             </div>
-                          )}
+                          )} */}
                         </div>
                         <div className="mt-2 mx-4">
                           <div className="flex justify-end gap-1">
@@ -263,8 +267,7 @@ const Send = () => {
                               }`}
                             />
                             <span className="absolute right-4 top-0 font-bold">
-                              {values.asset === "ether" && "ETH"}
-                              {values.asset === "minima" && "WMINIMA"}
+                            {values.asset.symbol}
                             </span>
                           </label>
                           <div className="mx-4 text-purple-500 flex items-center justify-end">
@@ -323,8 +326,7 @@ const Send = () => {
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Asset</h3>
                             <p className="font-mono">
-                              {values.asset === "ether" && "Ethereum"}
-                              {values.asset === "minima" && "wMinima"}
+                              {values.asset.symbol}
                             </p>
                           </div>
                           <div className="flex justify-between items-center mx-4">

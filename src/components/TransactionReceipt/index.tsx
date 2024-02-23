@@ -32,8 +32,6 @@ const TransactionReceiptCard = ({ receipt }: IProps) => {
       }
 
       const _tx = await receipt?.getTransaction();
-      console.log("transaction", _tx);
-      console.log("receipt..", receipt);
       setTx(_tx!);
     })();
   }, []);

@@ -26,9 +26,7 @@ import { TransactionReceipt } from "ethers";
       
       try {
         await transactionResponse.wait();
-        console.log('Transaction finished');
         const txReceipt = _provider.getTransactionReceipt(transactionResponse.hash);
-        console.log(txReceipt);
         updateActivities(txReceipt);  
         
       } catch (error) {
@@ -46,9 +44,7 @@ import { TransactionReceipt } from "ethers";
         return null;
       }
     }
-  
-  
-  
+
   
     return (
       <ActivityHandlerContext.Provider

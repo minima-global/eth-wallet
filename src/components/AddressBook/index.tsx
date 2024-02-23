@@ -11,7 +11,7 @@ const AddressBook = ({ setStep }: IProps) => {
   const { _addressBook } = useContext(appContext);
   const formik = useFormikContext();
 
-  console.log(_addressBook);
+
 
   // Define the filter condition
   const filterCondition = ([key]) => key !== _wallet!.address;

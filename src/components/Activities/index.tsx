@@ -11,7 +11,7 @@ const Activity = () => {
   if (_currentNavigation !== "activity") {
     return null;
   }
-  console.log(_activities);
+
   return (
     <div className="px-4 md:px-0">
       <h3 className="font-bold">Activities</h3>
@@ -38,7 +38,7 @@ const ActivityListItem = ({ transactionResponse }) => {
   useEffect(() => {
     (async () => {
       const txReceipt = await getTransactionReceipt(transactionResponse.hash);
-      console.log(txReceipt);
+
       setTransaction(txReceipt);
     })();
   }, []);
@@ -57,11 +57,11 @@ const ActivityListItem = ({ transactionResponse }) => {
               width="32"
               height="32"
               viewBox="0 0 24 24"
-              stroke-width="1.5"
+              strokeWidth="1.5"
               stroke="#000000"
               fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <path d="M4 19v2h16v-14l-8 -4l-8 4v2" />
@@ -74,11 +74,11 @@ const ActivityListItem = ({ transactionResponse }) => {
               width="32"
               height="32"
               viewBox="0 0 24 24"
-              stroke-width="1.5"
+              strokeWidth="1.5"
               stroke="#000000"
               fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <path d="M4 18v3h16v-14l-8 -4l-8 4v3" />

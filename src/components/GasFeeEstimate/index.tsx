@@ -45,7 +45,7 @@ function GasEstimation() {
     );
 
     const intervalled = setInterval(
-      () =>
+      async () =>
         estimateGas(
           formik.values.amount,
           formik.values.address,

@@ -3,9 +3,14 @@ import axios from "axios";
 import * as utils from "../../utils";
 import { appContext } from "../../AppContext";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
-import { GasFeeCalculated, GasFeesApiResponse } from "./GasFeeInterface";
+import {
+  GasFeeCalculated,
+  GasFeesApiResponse,
+} from "../../types/GasFeeInterface";
 import Decimal from "decimal.js";
 import { formatUnits, parseEther } from "ethers";
+import { useTokenStoreContext } from "../TokenStoreProvider";
+import { Asset } from "../../types/Asset";
 /**
  * @EIP1559
  * Calculating gas fee as with EIP1559,
@@ -34,18 +39,18 @@ type Context = {
   gasCard: GasFeesApiResponse | null;
   defaultGas: string;
   selectGasCard: (level: string) => void;
-  estimateGas: (amount: string, address: string, asset: string) => void;
+  estimateGas: (amount: string, address: string, asset: Asset) => Promise<void>;
   clearGas: () => void;
   showGasCards: boolean;
   promptGasCards: () => void;
-  asset: string;
+  asset: Asset | null;
 };
 
 const GasContext = createContext<Context | null>(null);
 
 export const GasContextProvider = ({ children }: Props) => {
   // this will help us retriee the context of what the user inputs are..
-  const [asset, setAsset] = useState("ether");
+  const [asset, setAsset] = useState<Asset | null>(null);
   const [loading, setLoading] = useState(false);
   const [gasCard, setGasCard] = useState<GasFeesApiResponse | null>(null);
   const [defaultGas, setGasDefault] = useState("medium");
@@ -54,9 +59,11 @@ export const GasContextProvider = ({ children }: Props) => {
   const [showGasCards, setShowGasCards] = useState(false);
 
   const { _provider } = useContext(appContext);
-  const { _wallet, _minimaContract } = useWalletContext();
+  const { estimateGas: estimateGasForTransfer, getTokenByName } =
+    useTokenStoreContext();
+  const { _wallet } = useWalletContext();
 
-  async function estimateGas(amount: string, address: string, asset: string) {
+  async function estimateGas(amount: string, address: string, asset: Asset) {
     setLoading(true);
     setAsset(asset);
     const currentNetwork = await _provider.getNetwork();
@@ -65,7 +72,7 @@ export const GasContextProvider = ({ children }: Props) => {
       const gasFee = await _provider.getFeeData();
       const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei
 
-      if (asset === "ether") {
+      if (asset.type === "ether") {
         const tx = {
           to: address,
           value: parseEther(amount),
@@ -89,7 +96,7 @@ export const GasContextProvider = ({ children }: Props) => {
         ); // gwei
 
         const _gas = await utils.calculateGasFee(
-          gasUnits,
+          gasUnits.toString(),
           maxBase.toString(),
           maxPriority.toString()
         );
@@ -102,8 +109,11 @@ export const GasContextProvider = ({ children }: Props) => {
         setTransactionTotal(_gas.finalGasFee.toString());
       }
 
-      if (asset === "minima") {
-        const gasUnits = await _minimaContract!.transfer.estimateGas(
+      if (asset.type === "erc20") {
+        const tokenAddress = getTokenByName(asset.name)!.address;
+
+        const gasUnits = await estimateGasForTransfer(
+          tokenAddress,
           address,
           amount
         );
@@ -140,7 +150,7 @@ export const GasContextProvider = ({ children }: Props) => {
     }
 
     if (currentNetwork.name !== "unknown") {
-      console.log(currentNetwork.chainId);
+
       try {
         const { data } = await axios.get(
           `https://gas.api.infura.io/networks/${currentNetwork.chainId}/suggestedGasFees/`,
@@ -150,21 +160,26 @@ export const GasContextProvider = ({ children }: Props) => {
             },
           }
         );
-        console.log(data);
+
+        console.log(data)
+
         // Set Gas Card data
         setGasCard(data);
 
         const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } =
           data[defaultGas];
 
-        if (asset === "minima") {
-          const gasUnits = await _minimaContract!.transfer.estimateGas(
+        if (asset.type === "erc20") {
+          const tokenAddress = getTokenByName(asset.name)!.address;
+
+          const gasUnits = await estimateGasForTransfer(
+            tokenAddress,
             address,
             amount
           );
 
           const gas = await utils.calculateGasFee(
-            gasUnits,
+            gasUnits.toString(),
             suggestedMaxFeePerGas,
             suggestedMaxPriorityFeePerGas
           );
@@ -174,7 +189,7 @@ export const GasContextProvider = ({ children }: Props) => {
           );
         }
 
-        if (asset === "ether") {
+        if (asset.type === "ether") {          
           const tx = {
             to: address,
             value: parseEther(amount),
@@ -182,7 +197,7 @@ export const GasContextProvider = ({ children }: Props) => {
           // Estimate gas required for the transaction
           const gasUnits = await _wallet!.estimateGas(tx); // gas units
           const gas = await utils.calculateGasFee(
-            gasUnits,
+            gasUnits.toString(),
             suggestedMaxFeePerGas,
             suggestedMaxPriorityFeePerGas
           );
@@ -192,7 +207,7 @@ export const GasContextProvider = ({ children }: Props) => {
           );
         }
       } catch (error) {
-        console.log("Server responded with:", error);
+        // console.log("Server responded with:", error);
       } finally {
         setTimeout(() => setLoading(false), 3000);
       }

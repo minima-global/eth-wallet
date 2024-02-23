@@ -4,7 +4,7 @@ import useFormatMinimaNumber from "../../utils/useMakeNumber";
 
 interface IProps {
   amount: string;
-  asset: string;
+  asset: any;
 }
 const ConversionRateUSD = ({ amount, asset }: IProps) => {
   const [conversionRate, setConversionRate] = useState<string | null>(null);
@@ -12,18 +12,21 @@ const ConversionRateUSD = ({ amount, asset }: IProps) => {
 
   useEffect(() => {
     (async () => {
-      if (asset === "ether") {
+      console.log(asset);
+      if (asset && asset.type === "ether") {
         const etherPriceUSD = await utils.getEthereumPrice();
         const conversion = Number(amount) * etherPriceUSD;
   
         setConversionRate(conversion.toString());
       }
       
-      if (asset === "minima") {
-        const etherPriceUSD = await utils.getMinimaPrice();
-        const conversion = Number(amount) * etherPriceUSD;
-  
-        setConversionRate(conversion.toString());
+      if (asset && asset.type === "erc20") {
+        if (asset.name === 'wMinima') {
+          const etherPriceUSD = await utils.getMinimaPrice();
+          const conversion = Number(amount) * etherPriceUSD;
+    
+          setConversionRate(conversion.toString());
+        }
       }
     })();
   }, [amount, asset]);

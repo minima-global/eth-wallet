@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GasFeeEstimate } from "../../../providers/GasProvider/GasFeeInterface";
+import { GasFeeEstimate } from "../../../types/GasFeeInterface";
 import * as utils from "../../../utils";
 import { useGasContext } from "../../../providers/GasProvider";
 
@@ -16,7 +16,7 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
   useEffect(() => {
     (async () => {
       const gasFee = await utils.calculateGasFee(
-        gasUnit,
+        gasUnit.toString(),
         card.suggestedMaxFeePerGas,
         card.suggestedMaxPriorityFeePerGas
       );
@@ -43,7 +43,7 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            stroke-width={`${type === defaultGas ? "2.5" : "1.5"}`}
+            strokeWidth={`${type === defaultGas ? "2.5" : "1.5"}`}
             stroke={`${type === defaultGas ? "#000000" : "currentColor"}`}
             fill="none"
             strokeLinecap="round"
@@ -62,7 +62,7 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            stroke-width={`${type === defaultGas ? "2.5" : "1.5"}`}
+            strokeWidth={`${type === defaultGas ? "2.5" : "1.5"}`}
             stroke={`${type === defaultGas ? "#000000" : "currentColor"}`}
             fill="none"
             strokeLinecap="round"
@@ -79,7 +79,7 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            stroke-width={`${type === defaultGas ? "2.5" : "1.5"}`}
+            strokeWidth={`${type === defaultGas ? "2.5" : "1.5"}`}
             stroke={`${type === defaultGas ? "#000000" : "currentColor"}`}
             fill="none"
             strokeLinecap="round"

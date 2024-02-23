@@ -1,11 +1,14 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { appContext } from "../../AppContext";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import ConversionRateUSD from "../ConversionRateUSD";
+import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
+import { formatEther } from "ethers";
 
 const TokenList = () => {
   const { _currentNavigation } = useContext(appContext);
-  const { _balance, _wrappedMinimaBalance } = useWalletContext();
+  const { _balance } = useWalletContext();
+  const { tokens } = useTokenStoreContext();
 
   if (_currentNavigation !== "balance") {
     return null;
@@ -16,6 +19,32 @@ const TokenList = () => {
       <h3 className="font-bold mb-2">Tokens</h3>
 
       <ul>
+        {tokens.map((token) => (
+          <li key={token.address} className="grid grid-cols-[auto_1fr] bg-white items-center rounded-md dark:bg-opacity-10 bg-opacity-30 p-2 hover:bg-opacity-80 dark:hover:bg-opacity-30 mb-2">
+            <img
+              alt="token-icon"
+              src="./assets/token.svg"
+              className="w-[36px] h-[36px] rounded-full"
+            />
+
+            <div className="flex justify-between ml-2">
+              <div>
+                <h3 className="font-bold">{token.name}</h3>
+                <p className="font-mono text-sm">
+                  {formatEther(token.balance ? token.balance :0)}
+                </p>
+              </div>
+              <div>
+                <h3 className="font-mono">
+                  <ConversionRateUSD
+                    asset={token}
+                    amount={token.balance}
+                  />
+                </h3>
+              </div>
+            </div>
+          </li>
+        ))}
         <li className="grid grid-cols-[auto_1fr] bg-white items-center rounded-md bg-opacity-30 dark:bg-opacity-10 p-2 hover:bg-opacity-80 dark:hover:bg-opacity-30 mb-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
             <g fill="none" fillRule="evenodd">
@@ -40,28 +69,7 @@ const TokenList = () => {
               <p className="font-mono text-sm">{_balance}</p>
             </div>
             <div>
-              <ConversionRateUSD asset="ether" amount={_balance} />
-            </div>
-          </div>
-        </li>
-        <li className="grid grid-cols-[auto_1fr] bg-white items-center rounded-md dark:bg-opacity-10 bg-opacity-30 p-2 hover:bg-opacity-80 dark:hover:bg-opacity-30">
-          <img
-            alt="token-icon"
-            src="./assets/token.svg"
-            className="w-[36px] h-[36px] rounded-full"
-          />
-
-          <div className="flex justify-between ml-2">
-            <div>
-              <h3 className="font-bold">wMinima</h3>
-              <p className="font-mono text-sm">
-                {_wrappedMinimaBalance} 
-              </p>
-            </div>
-            <div>
-              <h3 className="font-mono">
-                <ConversionRateUSD asset="minima" amount={_wrappedMinimaBalance} />
-              </h3>
+              <ConversionRateUSD asset={{type: 'ether'}} amount={_balance} />
             </div>
           </div>
         </li>

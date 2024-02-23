@@ -5,9 +5,11 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  const token = await ethers.deployContract("wMinima");
+  const wMinima = await ethers.deployContract("wMinima");
+  const tether = await ethers.deployContract("Tether");
 
-  console.log("Contract address:", await token.getAddress());
+  console.log("wMinima Contract address:", await wMinima.getAddress());
+  console.log("Tether Contract address:", await tether.getAddress());
 }
 
 main()
