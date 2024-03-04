@@ -19,7 +19,7 @@ import { TransactionReceipt } from "ethers";
   const ActivityHandlerContext = createContext<Context | null>(null);
   
   export const ActivityHandlerContextProvider = ({ children }: Props) => {
-    const { _provider, _activities, updateActivities } = useContext(appContext);
+    const { _provider,  updateActivities } = useContext(appContext);
     
 
     const transactionStatusHandler = async (transactionResponse) => {

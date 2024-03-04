@@ -9,6 +9,10 @@ const {INFURA_API_KEY, SEPOLIA_PRIVATE_KEY} = process.env;
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
   networks: {
+    goerli: {
+      url: `https://goerli.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [SEPOLIA_PRIVATE_KEY!]
+    },
     sepolia: {
       url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [SEPOLIA_PRIVATE_KEY!]

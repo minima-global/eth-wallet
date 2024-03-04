@@ -1,9 +1,8 @@
-import { TransactionReceipt as TxReceipt, formatEther, formatUnits } from "ethers";
+import { TransactionReceipt as TxReceipt, formatEther } from "ethers";
 import AddressBookContact from "../AddressBookContact";
 import { useEffect, useState } from "react";
 import { TransactionResponse } from "ethers";
 import * as utils from "../../utils";
-import Decimal from "decimal.js";
 
 interface IProps {
   receipt: TxReceipt;

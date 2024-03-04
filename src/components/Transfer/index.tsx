@@ -23,8 +23,8 @@ const Transfer = () => {
       onSubmit={async ({ address, amount }, { setSubmitting }) => {
         try {
           const etherScanLink = await transfer(address, amount, gas!);
-
-          setEtherScanLink(etherScanLink!);
+          // TODO
+          setEtherScanLink(etherScanLink!.hash);
         } catch (error) {
           utils.log("Transfer Error Logs" + error);
           setSubmitting(false);

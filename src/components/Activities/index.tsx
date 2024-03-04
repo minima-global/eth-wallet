@@ -38,7 +38,6 @@ const ActivityListItem = ({ transactionResponse }) => {
   useEffect(() => {
     (async () => {
       const txReceipt = await getTransactionReceipt(transactionResponse.hash);
-
       setTransaction(txReceipt);
     })();
   }, []);

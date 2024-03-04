@@ -16,8 +16,6 @@ const SelectAsset = () => {
   const { _defaultAssets } = useContext(appContext);
   const { _balance } = useWalletContext();
 
-  console.log("tokens", tokens);
-  console.log("defualtASsets", _defaultAssets);
 
   const springProps = useSpring({
     opacity: active ? 1 : 0,

@@ -42,7 +42,9 @@ const _defaults = {
 };
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
-  const [_defaultAssets, setDefaultAssets] = useState<any>();
+  const [_defaultAssets, setDefaultAssets] = useState<{ assets: Asset[] }>({
+    assets: [],
+  });
   const [_addressBook, setAddressBook] = useState([]);
   const [_activities, setActivities] = useState<
     (TransactionResponse | ContractTransactionResponse)[]
@@ -55,6 +57,7 @@ const AppProvider = ({ children }: IProps) => {
 
   const [_promptSettings, setPromptSettings] = useState(false);
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
+  const [_promptTokenImport, setImportTokenImport] = useState(false);
   const [_promptAccountNameUpdate, setPromptAccountNameUpdate] =
     useState(false);
   const [_promptAddressBookAdd, setPromptAddressBookAdd] = useState(false);
@@ -74,7 +77,6 @@ const AppProvider = ({ children }: IProps) => {
           loaded.current = true;
           // do something Minim-y
           (window as any).MDS.keypair.get("_k", function (val) {
-
             if (val.status) {
               createKey(val.value);
             }
@@ -109,7 +111,6 @@ const AppProvider = ({ children }: IProps) => {
             }
 
             if (defaultAssets) {
-
               setDefaultAssets(JSON.parse(defaultAssets.DATA));
             } else {
               // let's initialize the default assets
@@ -119,17 +120,13 @@ const AppProvider = ({ children }: IProps) => {
                   ? _defaults[asset.name][currentNetwork.name]
                   : "",
               }));
-          
 
-              const resp = await sql(
+              await sql(
                 `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
                   currentNetwork.chainId
-                }', '${JSON.stringify(_d)}')`
+                }', '${JSON.stringify({assets: _d})}')`
               );
-              setDefaultAssets(_d);
-
-
-              
+              setDefaultAssets({assets: _d});
             }
           })();
         }
@@ -155,6 +152,10 @@ const AppProvider = ({ children }: IProps) => {
 
   const promptSettings = () => {
     setPromptSettings((prevState) => !prevState);
+  };
+
+  const promptTokenImport = () => {
+    setImportTokenImport((prevState) => !prevState);
   };
 
   const setRPCNetwork = (network: string) => {
@@ -203,10 +204,9 @@ const AppProvider = ({ children }: IProps) => {
   };
 
   const updateDefaultAssets = async (asset: Asset) => {
-  
-    const updatedData = { ..._defaultAssets, [asset.name]: asset };
-    
-    setDefaultAssets(updatedData);
+    const updatedData = [ ..._defaultAssets.assets,  asset ];
+    const nested = { assets: updatedData };
+    setDefaultAssets(nested);
 
     const currentNetwork = await _provider.getNetwork();
 
@@ -214,16 +214,17 @@ const AppProvider = ({ children }: IProps) => {
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
     );
 
+
     if (!rows) {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
           currentNetwork.chainId
-        }', '${JSON.stringify(updatedData)}')`
+        }', '${JSON.stringify(nested)}')`
       );
     } else {
       await sql(
         `UPDATE cache SET data = '${JSON.stringify(
-          updatedData
+          nested
         )}' WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
       );
     }
@@ -265,6 +266,9 @@ const AppProvider = ({ children }: IProps) => {
     <appContext.Provider
       value={{
         loaded,
+
+        _promptTokenImport,
+        promptTokenImport,
 
         _promptSettings,
         promptSettings,

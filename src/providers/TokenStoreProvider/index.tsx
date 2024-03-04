@@ -65,7 +65,8 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
         // Call balanceOf function
         const contract = new Contract(tokenAddress, ABI_ERC20, _provider);
         const balance = await contract.balanceOf(signer!.address);
-        return balance;
+        
+        return balance.toString();
       } catch (error) {
         console.error("Error fetching token balance:", error);
         return 0; // Default to 0 balance
@@ -78,7 +79,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
     if (_defaultAssets) {
       (async () => {
         const calcBalance = await Promise.all(
-          _defaultAssets
+          _defaultAssets.assets
             .filter((_a) => _a.type !== "ether")
             .map(async (asset) => {
               asset.balance = await fetchTokenBalance(asset.address);
@@ -117,7 +118,6 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
       
       const contract = new Contract(tokenAddress, ABI_ERC20, signer);      
       const gasUnits = await contract.transfer.estimateGas(recipientAddress, parseUnits(amount, 18));
-      console.log('gas units', gasUnits);
       
       return gasUnits.toString();
     } catch (error) {
@@ -148,7 +148,6 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
         maxPriorityFeePerGas: parseUnits(gas.priorityFee, "gwei"),
       }
     );
-    console.log('txResponse', tx);
 
     return tx;
   };

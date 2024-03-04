@@ -88,7 +88,7 @@ const WalletAddress = ({ fullAddress = false }) => {
         strokeWidth="3.5"
         stroke="#2c3e50"
         fill="none"
-        strokeLinecap="round"
+        strokeLinecap="round" 
         strokeLinejoin="round"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />

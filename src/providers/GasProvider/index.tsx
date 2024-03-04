@@ -161,7 +161,6 @@ export const GasContextProvider = ({ children }: Props) => {
           }
         );
 
-        console.log(data)
 
         // Set Gas Card data
         setGasCard(data);

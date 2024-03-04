@@ -34,9 +34,7 @@ const GiveAddress = () => {
             <input placeholder="Enter a valid private key" value={_generatedKey} onChange={(evt) => {
                 const _k = evt.target.value;
                 createKey(_k);
-                (window as any).MDS.keypair.set("_k", _k, function(val) {
-
-                });
+                (window as any).MDS.keypair.set("_k", _k);
             }} />
 
             </div>

@@ -1,9 +1,10 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { appContext } from "../../AppContext";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import ConversionRateUSD from "../ConversionRateUSD";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { formatEther } from "ethers";
+import ImportToken from "../ImportToken";
 
 const TokenList = () => {
   const { _currentNavigation } = useContext(appContext);
@@ -74,6 +75,10 @@ const TokenList = () => {
           </div>
         </li>
       </ul>
+
+      <div>
+        <ImportToken />
+      </div>
     </div>
   );
 };
