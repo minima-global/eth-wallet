@@ -22,7 +22,7 @@ import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { _defaults } from "../../constants";
 
 const Send = () => {
-  const { gas } = useGasContext();
+  const { gas, clearGas } = useGasContext();
   const { _currentNavigation, handleNavigation, updateActivities } =
     useContext(appContext);
   const { transferToken, tokens } = useTokenStoreContext();
@@ -120,13 +120,9 @@ const Send = () => {
                       const { path, createError } = this;
 
                       try {
-                        if (!gas) {
-                          return false;
-                        }
-
                         if (
-                          new Decimal(_balance).isZero() ||
-                          new Decimal(gas.finalGasFee).greaterThan(_balance)
+                          new Decimal(_balance).isZero() || (gas &&
+                          new Decimal(gas.finalGasFee).greaterThan(_balance))
                         ) {
                           throw new Error();
                         }
@@ -160,6 +156,7 @@ const Send = () => {
                       const resp = await transfer(address, amount, gas!);
                       // Add to activities
                       updateActivities(resp!);
+                      clearGas();
                       resetForm();
                       handleNavigation("activity");
                     } else {
@@ -173,6 +170,7 @@ const Send = () => {
                       // Add to activities
                       updateActivities(resp!);
                       resetForm();
+                      clearGas();
                       handleNavigation("activity");
                     }
                   } catch (error) {
