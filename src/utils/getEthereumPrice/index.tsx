@@ -10,11 +10,10 @@ export function getEthereumPrice(): Promise<number> {
             if (!resp.status) {
                 reject();
             }
-
                     
-            // const ethereumPriceUSD = jsonResponse.ethereum.usd;
-            const jsonResp = JSON.parse("{\"ethereum\":{\"usd\":2494.33}}");
-            const ethereumPriceUSD = jsonResp.ethereum.usd;
+            const ethereumPriceUSD = JSON.parse(resp.response).ethereum.usd;
+            // const jsonResp = JSON.parse("{\"ethereum\":{\"usd\":2494.33}}");
+            // const ethereumPriceUSD = jsonResp.ethereum.usd;
             
             resolve(ethereumPriceUSD);            
         });

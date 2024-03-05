@@ -16,6 +16,7 @@ type Props = {
   children: React.ReactNode;
 };
 type Context = {
+  _network: string;
   _wallet: Wallet | null;
   _balance: string;
   step: number;
@@ -27,6 +28,7 @@ const WalletContext = createContext<Context | null>(null);
 
 export const WalletContextProvider = ({ children }: Props) => {
   const { _provider, _generatedKey } = useContext(appContext);
+  const [_network, setNetwork] = useState("");
   const [_wallet, setWallet] = useState<Wallet | null>(null);
   const [_balance, setBalance] = useState(""); // ether balance
   const [step, setStep] = useState(1);
@@ -34,9 +36,11 @@ export const WalletContextProvider = ({ children }: Props) => {
   useMemo(async () => {
     if (!_generatedKey) return;
     const wallet = new Wallet(_generatedKey, _provider);
+    const network = await _provider.getNetwork();
     const balance = await _provider.getBalance(wallet.address);
     setBalance(formatEther(balance));
     setWallet(wallet);
+    setNetwork(network.name);
 
   }, [_provider, _generatedKey]);
 
@@ -72,6 +76,7 @@ export const WalletContextProvider = ({ children }: Props) => {
   return (
     <WalletContext.Provider
       value={{
+        _network,
         _wallet,
         _balance,
         transfer,

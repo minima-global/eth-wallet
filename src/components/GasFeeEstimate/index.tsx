@@ -24,7 +24,6 @@ function GasEstimation() {
     estimateGas,
     promptGasCards,
     showGasCards,
-    transactionTotal,
     clearGas,
     asset,
   } = useGasContext();
@@ -143,10 +142,12 @@ function GasEstimation() {
                     </div>
                   </div>
                   <div className="text-center">
-                    <a className="m-0 p-0 text-sm py-1" href="https://support.metamask.io/hc/en-us/articles/4404600179227-User-Guide-Gas">
+                    <a
+                      className="m-0 p-0 text-sm py-1"
+                      href="https://support.metamask.io/hc/en-us/articles/4404600179227-User-Guide-Gas"
+                    >
                       Learn more about gas
                     </a>
-
                   </div>
                 </div>
               </animated.div>
@@ -208,20 +209,41 @@ function GasEstimation() {
       >
         <h3 className="font-bold">Total</h3>
         <div>
-          {!transactionTotal && loading ? (
-            <Spinner />
-          ) : transactionTotal && transactionTotal.length ? (
-            <p className="font-bold text-right">{transactionTotal}</p>
-          ) : (
-            "N/A"
-          )}
+          {!gas && loading && <Spinner />}
+            
+          {gas && !loading && (
+            <div className="text-right font-mono">
+              {formik.values.asset.type === "ether" && (
+                <div className="flex">
+                  <h3 className="text-sm font-bold">
+                    {new Decimal(formik.values.amount)
+                      .plus(gas.finalGasFee)
+                      .toString()}{" "}
+                    ETH
+                  </h3>
+                  <ConversionRateUSD
+                    amount={formik.values.amount}
+                    asset={{ type: "ether" }}
+                  />
+                </div>
+              )}
 
-          <div className="text-right text-teal-500">
-            <ConversionRateUSD
-              amount={transactionTotal ? transactionTotal : "0"}
-              asset={asset}
-            />
-          </div>
+              {formik.values.asset.type === "erc20" && (
+                <div>
+                  <h3 className="font-mono text-sm font-bold">{formik.values.amount} {formik.values.asset.symbol}</h3>
+                  <p className="font-mono text-sm">{gas.finalGasFee} ETH</p>
+                  <ConversionRateUSD
+                    amount={gas.finalGasFee}
+                    asset={{ type: "ether" }}
+                  />
+                  <ConversionRateUSD
+                    amount={formik.values.amount}
+                    asset={asset}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {loading && (

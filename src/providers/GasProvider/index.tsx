@@ -7,7 +7,6 @@ import {
   GasFeeCalculated,
   GasFeesApiResponse,
 } from "../../types/GasFeeInterface";
-import Decimal from "decimal.js";
 import { formatUnits, parseEther } from "ethers";
 import { useTokenStoreContext } from "../TokenStoreProvider";
 import { Asset } from "../../types/Asset";
@@ -32,10 +31,8 @@ type Props = {
   children: React.ReactNode;
 };
 type Context = {
-  // unknown
   loading: boolean;
   gas: GasFeeCalculated | null;
-  transactionTotal: string | null;
   gasCard: GasFeesApiResponse | null;
   defaultGas: string;
   selectGasCard: (level: string) => void;
@@ -55,7 +52,6 @@ export const GasContextProvider = ({ children }: Props) => {
   const [gasCard, setGasCard] = useState<GasFeesApiResponse | null>(null);
   const [defaultGas, setGasDefault] = useState("medium");
   const [gas, setGas] = useState<GasFeeCalculated | null>(null);
-  const [transactionTotal, setTransactionTotal] = useState<string | null>(null);
   const [showGasCards, setShowGasCards] = useState(false);
 
   const { _provider } = useContext(appContext);
@@ -64,6 +60,7 @@ export const GasContextProvider = ({ children }: Props) => {
   const { _wallet } = useWalletContext();
 
   async function estimateGas(amount: string, address: string, asset: Asset) {
+    setGas(null);
     setLoading(true);
     setAsset(asset);
     const currentNetwork = await _provider.getNetwork();
@@ -106,7 +103,6 @@ export const GasContextProvider = ({ children }: Props) => {
           priorityFee: _gas.priorityFee.toString(),
           finalGasFee: _gas.finalGasFee.toString(),
         });
-        setTransactionTotal(_gas.finalGasFee.toString());
       }
 
       if (asset.type === "erc20") {
@@ -145,7 +141,6 @@ export const GasContextProvider = ({ children }: Props) => {
           priorityFee: _gas.priorityFee.toString(),
           finalGasFee: _gas.finalGasFee.toString(),
         });
-        setTransactionTotal(_gas.finalGasFee.toString());
       }
     }
 
@@ -180,12 +175,9 @@ export const GasContextProvider = ({ children }: Props) => {
           const gas = await utils.calculateGasFee(
             gasUnits.toString(),
             suggestedMaxFeePerGas,
-            suggestedMaxPriorityFeePerGas
+            suggestedMaxPriorityFeePerGas,
           );
           setGas(gas);
-          setTransactionTotal(
-            new Decimal(amount).plus(gas.finalGasFee).toString()
-          );
         }
 
         if (asset.type === "ether") {          
@@ -201,14 +193,11 @@ export const GasContextProvider = ({ children }: Props) => {
             suggestedMaxPriorityFeePerGas
           );
           setGas(gas);
-          setTransactionTotal(
-            new Decimal(amount).plus(gas.finalGasFee).toString()
-          );
         }
       } catch (error) {
         // console.log("Server responded with:", error);
       } finally {
-        setTimeout(() => setLoading(false), 3000);
+        setLoading(false)
       }
     }
   }
@@ -219,7 +208,6 @@ export const GasContextProvider = ({ children }: Props) => {
 
   const clearGas = () => {
     setGas(null);
-    setTransactionTotal(null);
   };
 
   // user ability to select which card they want to use
@@ -234,7 +222,6 @@ export const GasContextProvider = ({ children }: Props) => {
         gas,
         gasCard,
         defaultGas,
-        transactionTotal,
         showGasCards,
         promptGasCards,
         asset,

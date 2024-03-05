@@ -12,24 +12,21 @@ import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import {
-  getAddress,
-} from "ethers";
+import { getAddress } from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
 import Decimal from "decimal.js";
 import { useGasContext } from "../../providers/GasProvider";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
-import defaultAssets from "../../defaultAssets";
+import { _defaults } from "../../constants";
 
 const Send = () => {
-  const {  gas} = useGasContext();
+  const { gas } = useGasContext();
   const { _currentNavigation, handleNavigation, updateActivities } =
     useContext(appContext);
-  const { transferToken } = useTokenStoreContext();
-  const { _balance } = useWalletContext();
-  const { _wallet, transfer } = useWalletContext();
+  const { transferToken, tokens } = useTokenStoreContext();
+  const { _wallet, _balance, _network, transfer } = useWalletContext();
   const [step, setStep] = useState(1);
 
   const springProps = useSpring({
@@ -47,8 +44,12 @@ const Send = () => {
   };
 
   if (_currentNavigation !== "send") {
-    return null; 
+    return null;
   }
+
+  const initialTokenShouldBeMinimaIfExists = tokens.find(
+    (token) => token.address === _defaults["wMinima"][_network]
+  );
 
   return (
     _currentNavigation === "send" &&
@@ -89,19 +90,23 @@ const Send = () => {
                       try {
                         if (
                           parent.asset.type === "ether" &&
-                          new Decimal(val).gt(_balance)
+                          (new Decimal(val).gt(_balance) ||
+                            new Decimal(val).isZero())
                           // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
                         ) {
                           throw new Error();
                         }
+
+                        const assetBalance = parent.asset.balance;
                         // TODO
-                        // if (
-                        //   parent.asset === "minima" &&
-                        //   new Decimal(val).gt()
-                        //   // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
-                        // ) {
-                        //   throw new Error();
-                        // }
+                        if (
+                          parent.asset.type === "erc20" &&
+                          (new Decimal(val).gt(assetBalance) ||
+                            new Decimal(assetBalance).isZero())
+                          // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
+                        ) {
+                          throw new Error();
+                        }
 
                         return true;
                       } catch (error) {
@@ -110,37 +115,66 @@ const Send = () => {
                           message: "Insufficient funds",
                         });
                       }
+                    })
+                    .test("has no gas", function () {
+                      const { path, createError } = this;
+
+                      try {
+                        if (!gas) {
+                          return false;
+                        }
+
+                        if (
+                          new Decimal(_balance).isZero() ||
+                          new Decimal(gas.finalGasFee).greaterThan(_balance)
+                        ) {
+                          throw new Error();
+                        }
+
+                        return true;
+                      } catch (error) {
+                        return createError({
+                          path,
+                          message:
+                            "Not enough eth available to pay for gas fees!",
+                        });
+                      }
                     }),
                 })}
                 initialValues={{
                   amount: "",
-                  asset: {
-                    name: "Ethereum",
-                    symbol: "ETH",
-                    balance: _balance,
-                    address: "",
-                    type: "ether",
-                    icon: defaultAssets[0].icon,
-                  },
+                  asset: initialTokenShouldBeMinimaIfExists
+                    ? initialTokenShouldBeMinimaIfExists
+                    : {
+                        name: "Ethereum",
+                        symbol: "ETH",
+                        balance: _balance,
+                        address: "",
+                        type: "ether",
+                      },
                   address: "",
                 }}
-                onSubmit={async ({ amount, address, asset}, {resetForm}) => {
+                onSubmit={async ({ amount, address, asset }, { resetForm }) => {
                   try {
-                    
                     if (asset.type === "ether") {
                       const resp = await transfer(address, amount, gas!);
                       // Add to activities
-                      updateActivities(resp!);                      
-                      resetForm();
-                      handleNavigation("activity");                      
-                    } else {                      
-                      // handle ERC 20 transfers
-                      const resp = await transferToken(asset.address, address, amount, gas!);
-                      // Add to activities                      
-                      updateActivities(resp!);                      
+                      updateActivities(resp!);
                       resetForm();
                       handleNavigation("activity");
-                    }                    
+                    } else {
+                      // handle ERC 20 transfers
+                      const resp = await transferToken(
+                        asset.address,
+                        address,
+                        amount,
+                        gas!
+                      );
+                      // Add to activities
+                      updateActivities(resp!);
+                      resetForm();
+                      handleNavigation("activity");
+                    }
                   } catch (error) {
                     console.error(error);
                     // display error message
@@ -236,23 +270,9 @@ const Send = () => {
                         </div>
                         <div className="mt-2 mx-4">
                           <SelectAsset />
-
-                          {/* {touched.asset && errors.asset && (
-                            <div className="mx-4 my-2 bg-red-500 text-white rounded px-4 py-1">
-                              {errors.asset}
-                            </div>
-                          )} */}
                         </div>
                         <div className="mt-2 mx-4">
-                          <div className="flex justify-end gap-1">
-                            <button
-                              type="button"
-                              className="p-0 mr-4 text-teal-500 focus:border-none focus:outline-none text-sm font-bold"
-                            >
-                              Max
-                            </button>
-                          </div>
-                          <label className="relative">
+                          <div className="flex items-center space-x-2">
                             <input
                               disabled={isSubmitting}
                               required
@@ -260,16 +280,26 @@ const Send = () => {
                               type="text"
                               autoFocus
                               placeholder="Amount"
-                              className={`font-mono mb-2 !pr-16 ${
+                              className={`font-mono ${
                                 touched.amount && errors.amount
                                   ? "!border-4 !border-red-500"
                                   : ""
                               }`}
                             />
-                            <span className="absolute right-4 top-0 font-bold">
-                            {values.asset.symbol}
+                            <span className="border text-center border-slate-700 text-sm font-bold border-l-0 border-r-0 py-2 px-3">
+                              {values.asset.symbol}
+                              <button
+                                onClick={() =>
+                                  setFieldValue("amount", values.asset.balance)
+                                }
+                                type="button"
+                                className="p-0 text-black border-slate-600 dark:text-white w-full bg-transparent border text-sm dark:border-teal-300 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black"
+                              >
+                                Max
+                              </button>
                             </span>
-                          </label>
+                          </div>
+
                           <div className="mx-4 text-purple-500 flex items-center justify-end">
                             <ConversionRateUSD
                               amount={values.amount}
@@ -325,9 +355,7 @@ const Send = () => {
                         <div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Asset</h3>
-                            <p className="font-mono">
-                              {values.asset.symbol}
-                            </p>
+                            <p className="font-mono">{values.asset.name}</p>
                           </div>
                           <div className="flex justify-between items-center mx-4">
                             <h3 className="font-bold">Amount</h3>
@@ -343,9 +371,11 @@ const Send = () => {
                           </div>
 
                           <GasEstimation />
+
+                          {errors.amount && <p className="text-sm px-4 text-center text-red-500">{errors.amount}</p>}
                         </div>
                       </div>
-                    )}                    
+                    )}
                     <div
                       className={`${styles["button__navigation"]} ${
                         step === 1 || step === 4
@@ -400,7 +430,7 @@ const Send = () => {
                               Send
                             </button>
                           </>
-                        )}                        
+                        )}
                       </nav>
                     </div>
                   </form>

@@ -12,6 +12,7 @@ const ConversionRateUSD = ({ amount, asset }: IProps) => {
 
   useEffect(() => {
     (async () => {
+      setConversionRate(null);
       if (asset && asset.type === "ether") {
         const etherPriceUSD = await utils.getEthereumPrice();
         const conversion = Number(amount) * etherPriceUSD;
@@ -22,6 +23,7 @@ const ConversionRateUSD = ({ amount, asset }: IProps) => {
       if (asset && asset.type === "erc20") {
         if (asset.name === 'wMinima') {
           const etherPriceUSD = await utils.getMinimaPrice();
+          console.log('Minima Price', etherPriceUSD);
           const conversion = Number(amount) * etherPriceUSD;
     
           setConversionRate(conversion.toString());
@@ -32,7 +34,7 @@ const ConversionRateUSD = ({ amount, asset }: IProps) => {
 
   return (
     <div className="mb-2">
-      {amount && (
+      {amount && conversionRate !== null && (
         <p className="text-sm text-purple-500 font-bold font-mono">
           ${makeMinimaNumber("" + conversionRate, 2)} USD
         </p>

@@ -6,6 +6,7 @@ import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { Asset } from "../../types/Asset";
 import { appContext } from "../../AppContext";
 import { formatEther } from "ethers";
+import { _defaults } from "../../constants";
 
 const SelectAsset = () => {
   const formik: any = useFormikContext();
@@ -14,8 +15,11 @@ const SelectAsset = () => {
 
   const { tokens } = useTokenStoreContext();
   const { _defaultAssets } = useContext(appContext);
-  const { _balance } = useWalletContext();
+  const { _balance, _network } = useWalletContext();
 
+  const isMinima =
+    _defaults["wMinima"][_network] === formik.values.asset.address;
+  const Ethereum = _defaultAssets.assets[0];
 
   const springProps = useSpring({
     opacity: active ? 1 : 0,
@@ -75,8 +79,10 @@ const SelectAsset = () => {
           </svg>
         )}
         {formik.values.asset.type === "erc20" && (
-          <div className="rounded-full w-[32px] h-[32px]">
-            {formik.values.asset.name.substring(0, 1).toUpperCase()}
+          <div className="bg-white dark:bg-transparent my-auto w-[36px] h-[36px] rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+            {isMinima && <img alt="minima_icon" src="/assets/token.svg" />}
+            {!isMinima &&
+              formik.values.asset.name.substring(0, 1).toUpperCase()}
           </div>
         )}
         <div className="flex flex-col text-left">
@@ -113,82 +119,18 @@ const SelectAsset = () => {
           aria-labelledby="options-menu"
         >
           <ul>
-            <li
-              onClick={() =>
-                handleSelect({
-                  ..._defaultAssets[0],
-                  balance: _balance,
-                  icon: (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="32"
-                      height="32"
-                    >
-                      <g fill="none" fillRule="evenodd">
-                        <circle cx="16" cy="16" r="16" fill="#627EEA" />
-                        <g fill="#FFF" fillRule="nonzero">
-                          <path
-                            fillOpacity=".602"
-                            d="M16.498 4v8.87l7.497 3.35z"
-                          />
-                          <path d="M16.498 4L9 16.22l7.498-3.35z" />
-                          <path
-                            fillOpacity=".602"
-                            d="M16.498 21.968v6.027L24 17.616z"
-                          />
-                          <path d="M16.498 27.995v-6.028L9 17.616z" />
-                          <path
-                            fillOpacity=".2"
-                            d="M16.498 20.573l7.497-4.353-7.497-3.348z"
-                          />
-                          <path
-                            fillOpacity=".602"
-                            d="M9 16.22l7.498 4.353v-7.701z"
-                          />
-                        </g>
-                      </g>
-                    </svg>
-                  ),
-                })
-              }
-              className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white  hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-                <g fill="none" fillRule="evenodd">
-                  <circle cx="16" cy="16" r="16" fill="#627EEA" />
-                  <g fill="#FFF" fillRule="nonzero">
-                    <path fillOpacity=".602" d="M16.498 4v8.87l7.497 3.35z" />
-                    <path d="M16.498 4L9 16.22l7.498-3.35z" />
-                    <path
-                      fillOpacity=".602"
-                      d="M16.498 21.968v6.027L24 17.616z"
-                    />
-                    <path d="M16.498 27.995v-6.028L9 17.616z" />
-                    <path
-                      fillOpacity=".2"
-                      d="M16.498 20.573l7.497-4.353-7.497-3.348z"
-                    />
-                    <path fillOpacity=".602" d="M9 16.22l7.498 4.353v-7.701z" />
-                  </g>
-                </g>
-              </svg>
-              <div>
-                <h6 className="m-0 p-0 font-bold text-white dark:text-black">
-                  Ethereum
-                </h6>
-                <p className="m-0 p-0 text-sm opacity-80 font-mono text-white dark:text-black">
-                  {_balance}
-                </p>
-              </div>
-            </li>
             {tokens.map((token) => (
               <li
                 key={token.address}
                 onClick={() => handleSelect(token)}
                 className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
               >
-                <div className="rounded-full w-[32px] h-[32px]">
-                {formik.values.asset.name.substring(0, 1).toUpperCase()}
+                <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+                  {token.address === _defaults["wMinima"][_network] && (
+                    <img alt="minima_icon" src="/assets/token.svg" />
+                  )}
+                  {token.address !== _defaults["wMinima"][_network] &&
+                    token.name.substring(0, 1).toUpperCase()}
                 </div>
                 <div>
                   <h6 className="m-0 p-0 font-bold text-white dark:text-black">
@@ -200,6 +142,43 @@ const SelectAsset = () => {
                 </div>
               </li>
             ))}
+            <li
+              onClick={() => handleSelect({...Ethereum, balance: _balance})}
+              className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white  hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
+            >
+              <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+                  <g fill="none" fillRule="evenodd">
+                    <circle cx="16" cy="16" r="16" fill="#627EEA" />
+                    <g fill="#FFF" fillRule="nonzero">
+                      <path fillOpacity=".602" d="M16.498 4v8.87l7.497 3.35z" />
+                      <path d="M16.498 4L9 16.22l7.498-3.35z" />
+                      <path
+                        fillOpacity=".602"
+                        d="M16.498 21.968v6.027L24 17.616z"
+                      />
+                      <path d="M16.498 27.995v-6.028L9 17.616z" />
+                      <path
+                        fillOpacity=".2"
+                        d="M16.498 20.573l7.497-4.353-7.497-3.348z"
+                      />
+                      <path
+                        fillOpacity=".602"
+                        d="M9 16.22l7.498 4.353v-7.701z"
+                      />
+                    </g>
+                  </g>
+                </svg>
+              </div>
+              <div>
+                <h6 className="m-0 p-0 font-bold text-white dark:text-black">
+                  Ethereum
+                </h6>
+                <p className="m-0 p-0 text-sm opacity-80 font-mono text-white dark:text-black">
+                  {_balance}
+                </p>
+              </div>
+            </li>
           </ul>
         </animated.div>
       )}
