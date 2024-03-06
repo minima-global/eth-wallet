@@ -8,7 +8,6 @@ import React, {
 import ABI_ERC20 from "../../abis/ERC20.json";
 import { Contract,  parseUnits } from "ethers";
 import { appContext } from "../../AppContext";
-import * as utils from "../../utils";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
 import { TransactionResponse } from "ethers";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
@@ -61,6 +60,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
 
   const fetchTokenBalance = useCallback(
     async (tokenAddress: string) => {
+      if (!signer) return;
       try {
         // Call balanceOf function
         const contract = new Contract(tokenAddress, ABI_ERC20, _provider);
@@ -68,7 +68,6 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
         
         return balance.toString();
       } catch (error) {
-        console.error("Error fetching token balance:", error);
         return 0; // Default to 0 balance
       }
     },
@@ -76,7 +75,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
   );
 
   useEffect(() => {
-    if (_defaultAssets) {
+    if (_defaultAssets && _defaultAssets.assets.length > 0) {
       (async () => {
         const calcBalance = await Promise.all(
           _defaultAssets.assets
@@ -132,7 +131,6 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
     amount: string,
     gas: GasFeeCalculated
   ) => {
-    utils.log(`Preparing a transfer to: ${recipientAddress}`);
 
     const _contract = new Contract(
       tokenAddress,

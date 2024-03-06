@@ -443,7 +443,7 @@ const Send = () => {
                             </button>
                             <button
                               type="submit"
-                              disabled={!isValid || loading}
+                              disabled={!isValid || loading || !gas}
                               className="bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
                               Send

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { useSpring, animated, config } from "react-spring";
 import { createPortal } from "react-dom";
 import { appContext } from "../../AppContext";
@@ -11,17 +11,17 @@ import EthereumNetwork from "../UI/EthereumNetwork";
 import SepoliaNetwork from "../UI/SepoliaNetwork";
 import CustomNetwork from "../UI/CustomNetwork";
 import BackButton from "../UI/BackButton";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 
 const SelectNetwork = () => {
   const {
     _promptSelectNetwork,
     promptSelectNetwork,
-    _provider,
     setRPCNetwork,
     verifyRPCNetwork,
   } = useContext(appContext);
+  const { _network } = useWalletContext();
 
-  const [network, setNetwork] = useState("unknown");
   const [step, setStep] = useState(1);
 
   const springProps = useSpring({
@@ -42,23 +42,15 @@ const SelectNetwork = () => {
     promptSelectNetwork();
   };
 
-  useEffect(() => {
-    (async () => {
-      const p = await _provider.getNetwork();
-
-      setNetwork(p.name);
-    })();
-  }, [_provider]);
-
   return (
     <>
       <div
         className="mx-4 my-4 bg-gray-300 dark:bg-black text-black dark:text-white dark:text-opacity-90 p-2 px-3 rounded-full hover:bg-opacity-70 hover:cursor-pointer"
         onClick={promptSelectNetwork}
       >
-        {network === "mainnet" && <EthereumNetwork />}
-        {network === "unknown" && <CustomNetwork />}
-        {network === "sepolia" && <SepoliaNetwork />}
+        {_network === "mainnet" && <EthereumNetwork />}
+        {_network === "unknown" && <CustomNetwork />}
+        {_network === "sepolia" && <SepoliaNetwork />}
       </div>
 
       {_promptSelectNetwork &&
@@ -95,7 +87,7 @@ const SelectNetwork = () => {
                           <li
                             onClick={() => handleNetworkChange("mainnet")}
                             className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
-                              network === "mainnet"
+                              _network === "mainnet"
                                 ? "bg-slate-300 dark:bg-slate-600 "
                                 : ""
                             }`}
@@ -137,7 +129,7 @@ const SelectNetwork = () => {
                           <li
                             onClick={() => handleNetworkChange("sepolia")}
                             className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
-                              network === "sepolia"
+                              _network === "sepolia"
                                 ? "bg-slate-300 dark:bg-slate-600"
                                 : ""
                             }`}

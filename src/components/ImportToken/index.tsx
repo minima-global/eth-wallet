@@ -121,6 +121,8 @@ const ImportToken = () => {
                         .test("testing address checksum", function (val) {
                           const { path, createError } = this;
 
+                          if (!val || val.length === 0) return false;
+
                           try {
                             getAddress(val);
                             new Contract(val, ERC20ABI, _provider);
@@ -251,7 +253,7 @@ const ImportToken = () => {
                             )}
 
                             <button
-                              disabled={!isValid}
+                              disabled={!dirty || !isValid}
                               type="button"
                               onClick={() => setStep(1)}
                               className="mt-4 w-full hover:bg-teal-500 bg-teal-300 text-black font-bold disabled:bg-white disabled:bg-opacity-10"

@@ -1,4 +1,4 @@
-import {  JsonRpcProvider } from "ethers";
+import { JsonRpcProvider } from "ethers";
 import { createContext, useRef, useEffect, useState } from "react";
 import { sql } from "./utils/SQL";
 import { TransactionResponse } from "ethers";
@@ -40,6 +40,36 @@ const AppProvider = ({ children }: IProps) => {
     decimal: ".",
     thousands: ",",
   });
+
+  useEffect(() => {
+    (async () => {
+      const currentNetwork = await _provider.getNetwork();
+
+      // Fetch assets according to the network
+      const defaultAssets: any = await sql(
+        `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
+      );
+
+      if (defaultAssets) {
+        setDefaultAssets(JSON.parse(defaultAssets.DATA));
+      } else {
+        // let's initialize the default assets
+        const _d = defaultAssetsStored.map((asset) => ({
+          ...asset,
+          address: _defaults[asset.name]
+            ? _defaults[asset.name][currentNetwork.name]
+            : "",
+        }));
+
+        await sql(
+          `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
+            currentNetwork.chainId
+          }', '${JSON.stringify({ assets: _d })}')`
+        );
+        setDefaultAssets({ assets: _d });
+      }
+    })();
+  }, [_provider]);
 
   useEffect(() => {
     if (!loaded.current) {
@@ -95,9 +125,9 @@ const AppProvider = ({ children }: IProps) => {
               await sql(
                 `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
                   currentNetwork.chainId
-                }', '${JSON.stringify({assets: _d})}')`
+                }', '${JSON.stringify({ assets: _d })}')`
               );
-              setDefaultAssets({assets: _d});
+              setDefaultAssets({ assets: _d });
             }
           })();
         }
@@ -175,7 +205,7 @@ const AppProvider = ({ children }: IProps) => {
   };
 
   const updateDefaultAssets = async (asset: Asset) => {
-    const updatedData = [ ..._defaultAssets.assets,  asset ];
+    const updatedData = [..._defaultAssets.assets, asset];
     const nested = { assets: updatedData };
     setDefaultAssets(nested);
 
@@ -184,7 +214,6 @@ const AppProvider = ({ children }: IProps) => {
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
     );
-
 
     if (!rows) {
       await sql(
