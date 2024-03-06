@@ -256,7 +256,7 @@ const ImportToken = () => {
                               disabled={!dirty || !isValid}
                               type="button"
                               onClick={() => setStep(1)}
-                              className="mt-4 w-full hover:bg-teal-500 bg-teal-300 text-black font-bold disabled:bg-white disabled:bg-opacity-10"
+                              className="w-full mt-4 bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
                               Next
                             </button>

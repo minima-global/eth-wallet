@@ -69,7 +69,7 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid }: IProps)
       </div>
       <div className="flex justify-between px-4">
         <h3></h3>
-        <button className={`text-white p-0 focus:ring-transparent focus:outline-none focus:border-none ${copied ? 'animate-pulse text-teal-300' : ''}`} onClick={handleCopy}>
+        <button className={`text-black dark:text-white p-0 focus:ring-transparent focus:outline-none focus:border-none ${copied ? 'animate-pulse text-teal-300' : ''}`} onClick={handleCopy}>
           {copied? "Copied!" : "Copy transaction ID"}
         </button>
       </div>

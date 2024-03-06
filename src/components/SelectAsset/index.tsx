@@ -17,8 +17,7 @@ const SelectAsset = () => {
   const { _defaultAssets } = useContext(appContext);
   const { _balance, _network } = useWalletContext();
 
-  const isMinima =
-    _defaults["wMinima"][_network] === formik.values.asset.address;
+  
   const Ethereum = _defaultAssets.assets[0];
 
   const springProps = useSpring({
@@ -78,13 +77,24 @@ const SelectAsset = () => {
             </g>
           </svg>
         )}
-        {formik.values.asset.type === "erc20" && (
-          <div className="bg-white dark:text-white dark:bg-transparent my-auto w-[36px] h-[36px] rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
-            {isMinima && <img alt="minima_icon" src="./assets/token.svg" />}
-            {!isMinima &&
-              formik.values.asset.name.substring(0, 1).toUpperCase()}
-          </div>
-        )}
+        {formik.values.asset.type === "erc20" &&
+          (_defaults["wMinima"][_network] === formik.values.asset.address ? (
+            <img
+              alt="token-icon"
+              src="./assets/token.svg"
+              className="w-[36px] h-[36px] rounded-full"
+            />
+          ) : _defaults["Tether"][_network] === formik.values.asset.address ? (
+            <img
+              alt="token-icon"
+              src="./assets/tether.svg"
+              className="w-[36px] h-[36px] rounded-full"
+            />
+          ) : (
+            <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+              {formik.values.asset.name.substring(0, 1).toUpperCase()}
+            </div>
+          ))}
         <div className="flex flex-col text-left">
           <h6 className="m-0 p-0 font-bold text-black dark:text-white">
             {formik.values.asset.name}
@@ -95,18 +105,21 @@ const SelectAsset = () => {
         </div>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="fill-black dark:fill-white"
           width="24"
           height="24"
           viewBox="0 0 24 24"
-          strokeWidth="2"
+          strokeWidth="1.5"
           stroke="currentColor"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M6 10l6 6l6 -6h-12" />
+          <path
+            d="M18 9c.852 0 1.297 .986 .783 1.623l-.076 .084l-6 6a1 1 0 0 1 -1.32 .083l-.094 -.083l-6 -6l-.083 -.094l-.054 -.077l-.054 -.096l-.017 -.036l-.027 -.067l-.032 -.108l-.01 -.053l-.01 -.06l-.004 -.057v-.118l.005 -.058l.009 -.06l.01 -.052l.032 -.108l.027 -.067l.07 -.132l.065 -.09l.073 -.081l.094 -.083l.077 -.054l.096 -.054l.036 -.017l.067 -.027l.108 -.032l.053 -.01l.06 -.01l.057 -.004l12.059 -.002z"
+            strokeWidth="0"
+            fill="currentColor"
+          />
         </svg>
       </button>
 
@@ -125,13 +138,23 @@ const SelectAsset = () => {
                 onClick={() => handleSelect(token)}
                 className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
               >
-                <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
-                  {token.address === _defaults["wMinima"][_network] && (
-                    <img alt="minima_icon" src="./assets/token.svg" />
-                  )}
-                  {token.address !== _defaults["wMinima"][_network] &&
-                    token.name.substring(0, 1).toUpperCase()}
-                </div>
+                {_defaults["wMinima"][_network] === token.address ? (
+                  <img
+                    alt="token-icon"
+                    src="./assets/token.svg"
+                    className="w-[36px] h-[36px] rounded-full"
+                  />
+                ) : _defaults["Tether"][_network] === token.address ? (
+                  <img
+                    alt="token-icon"
+                    src="./assets/tether.svg"
+                    className="w-[36px] h-[36px] rounded-full"
+                  />
+                ) : (
+                  <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+                    {token.name.substring(0, 1).toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <h6 className="m-0 p-0 font-bold text-white dark:text-black">
                     {token.name}
@@ -143,7 +166,7 @@ const SelectAsset = () => {
               </li>
             ))}
             <li
-              onClick={() => handleSelect({...Ethereum, balance: _balance})}
+              onClick={() => handleSelect({ ...Ethereum, balance: _balance })}
               className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white  hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
             >
               <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">

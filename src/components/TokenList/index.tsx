@@ -5,10 +5,11 @@ import ConversionRateUSD from "../ConversionRateUSD";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { formatEther } from "ethers";
 import ImportToken from "../ImportToken";
+import { _defaults } from "../../constants";
 
 const TokenList = () => {
   const { _currentNavigation } = useContext(appContext);
-  const { _balance } = useWalletContext();
+  const { _balance, _network } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
   if (_currentNavigation !== "balance") {
@@ -21,26 +22,38 @@ const TokenList = () => {
 
       <ul>
         {tokens.map((token) => (
-          <li key={token.address} className="grid grid-cols-[auto_1fr] bg-white items-center rounded-md dark:bg-opacity-10 bg-opacity-30 p-2 hover:bg-opacity-80 dark:hover:bg-opacity-30 mb-2">
-            <img
-              alt="token-icon"
-              src="./assets/token.svg"
-              className="w-[36px] h-[36px] rounded-full"
-            />
+          <li
+            key={token.address}
+            className="grid grid-cols-[auto_1fr] bg-white items-center rounded-md dark:bg-opacity-10 bg-opacity-30 p-2 hover:bg-opacity-80 dark:hover:bg-opacity-30 mb-2"
+          >
+            {_defaults["wMinima"][_network] === token.address ? (
+              <img
+                alt="token-icon"
+                src="./assets/token.svg"
+                className="w-[36px] h-[36px] rounded-full"
+              />
+            ) : _defaults["Tether"][_network] === token.address ? (
+              <img
+                alt="token-icon"
+                src="./assets/tether.svg"
+                className="w-[36px] h-[36px] rounded-full"
+              />
+            ) : (
+              <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+                {token.name.substring(0, 1).toUpperCase()}
+              </div>
+            )}
 
             <div className="flex justify-between ml-2">
               <div>
                 <h3 className="font-bold">{token.name}</h3>
                 <p className="font-mono text-sm">
-                  {formatEther(token.balance ? token.balance :0)}
+                  {formatEther(token.balance ? token.balance : 0)}
                 </p>
               </div>
               <div>
                 <h3 className="font-mono">
-                  <ConversionRateUSD
-                    asset={token}
-                    amount={token.balance}
-                  />
+                  <ConversionRateUSD asset={token} amount={token.balance} />
                 </h3>
               </div>
             </div>
@@ -70,7 +83,7 @@ const TokenList = () => {
               <p className="font-mono text-sm">{_balance}</p>
             </div>
             <div>
-              <ConversionRateUSD asset={{type: 'ether'}} amount={_balance} />
+              <ConversionRateUSD asset={{ type: "ether" }} amount={_balance} />
             </div>
           </div>
         </li>
