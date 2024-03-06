@@ -156,19 +156,18 @@ const Send = () => {
                       },
                   address: "",
                   receipt: null,
+                  gasPaid: ""
                 }}
                 onSubmit={async (
                   { amount, address, asset },
-                  { resetForm, setFieldValue }
+                  { setFieldValue }
                 ) => {
                   setLoading(true);
                   try {
                     if (asset.type === "ether") {
                       const txResponse = await transfer(address, amount, gas!);
-
-                      clearGas();
-                      resetForm();
                       setStep(4);
+                      setFieldValue("gasPaid", gas?.finalGasFee);
                       setFieldValue("receipt", txResponse);
                     } else {
                       // handle ERC 20 transfers
@@ -178,10 +177,8 @@ const Send = () => {
                         amount,
                         gas!
                       );
-
-                      resetForm();
-                      clearGas();
                       setStep(4);
+                      setFieldValue("gasPaid", gas?.finalGasFee);
                       setFieldValue("receipt", txResponse);
                     }
                   } catch (error: any) {
@@ -207,6 +204,7 @@ const Send = () => {
                   values,
                   isValid,
                   dirty,
+                  resetForm
                 }) => (
                   <form onSubmit={handleSubmit}>
                     {step === 1 && (
@@ -395,7 +393,7 @@ const Send = () => {
                       </div>
                     )}
                     {step === 4 && values.receipt && (
-                      <TransactionReceiptCard asset={values.asset} receipt={values.receipt} />
+                      <TransactionReceiptCard asset={values.asset} receipt={values.receipt} gasPaid={values.gasPaid} amountSent={values.amount} />
                     )}
                     <div
                       className={`${styles["button__navigation"]} ${
@@ -472,6 +470,8 @@ const Send = () => {
                               type="button"
                               onClick={() => {
                                 setStep(1);
+                                clearGas();
+                                resetForm();
                                 handleNavigation("balance");
                               }}
                               className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"

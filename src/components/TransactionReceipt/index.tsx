@@ -8,8 +8,10 @@ import { Asset } from "../../types/Asset";
 interface IProps {
   receipt: TxReceipt;
   asset: Asset | { name: string; symbol: string; balance: string; address: string; type: string; };
+  amountSent: string;
+  gasPaid: string;
 }
-const TransactionReceiptCard = ({ receipt, asset }: IProps) => {
+const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid }: IProps) => {
   const [tx, setTx] = useState<TransactionResponse | null>(null);
   const [blockExplorer, setBlockExplorer] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -27,6 +29,8 @@ const TransactionReceiptCard = ({ receipt, asset }: IProps) => {
         setBlockExplorer("https://goerli.etherscan.io/tx/");
       } else if (network.name === "kovan") {
         setBlockExplorer("https://kovan.etherscan.io/tx/");
+      } else if (network.name === "sepolia") {
+        setBlockExplorer("https://sepolia.etherscan.io/tx/");
       } else {
         setBlockExplorer(null);
       }
@@ -57,7 +61,7 @@ const TransactionReceiptCard = ({ receipt, asset }: IProps) => {
       <div className="flex justify-between px-4">
         <h3>Status</h3>
         {blockExplorer && (
-          <a href={`${blockExplorer}${receipt.hash}`}>View on block explorer</a>
+          <a target="_blank" href={`${blockExplorer}${receipt.hash}`}>View on block explorer</a>
         )}
         {!blockExplorer && (
           <p className="dark:text-orange-500">N/A</p>
@@ -117,7 +121,11 @@ const TransactionReceiptCard = ({ receipt, asset }: IProps) => {
           </li>
           <li className="flex justify-between px-4">
             <h3>Amount</h3>
-            <p className="font-bold">{formatEther(tx.value)} <b>{asset.symbol}</b></p>
+            <p className="font-bold">{amountSent} <b>{asset.symbol}</b></p>
+          </li>
+          <li className="flex justify-between px-4">
+            <h3>Gas Paid</h3>
+            <p className="font-bold">{gasPaid} <b>ETH</b></p>
           </li>
           <li className="flex justify-between px-4">
             <h3>Gas Limit</h3>
