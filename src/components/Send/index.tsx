@@ -20,14 +20,16 @@ import Decimal from "decimal.js";
 import { useGasContext } from "../../providers/GasProvider";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { _defaults } from "../../constants";
+import TransactionReceiptCard from "../TransactionReceipt";
 
 const Send = () => {
   const { gas, clearGas } = useGasContext();
-  const { _currentNavigation, handleNavigation, updateActivities } =
-    useContext(appContext);
+  const { _currentNavigation, handleNavigation } = useContext(appContext);
   const { transferToken, tokens } = useTokenStoreContext();
   const { _wallet, _balance, _network, transfer } = useWalletContext();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | false>(false);
 
   const springProps = useSpring({
     opacity: _currentNavigation === "send" ? 1 : 0,
@@ -62,6 +64,8 @@ const Send = () => {
                 {step === 1 && "Send to"}
                 {step === 2 && "Enter amount"}
                 {step === 3 && "Transaction details"}
+                {step === 4 && !error && "Transaction Receipt"}
+                {step === 4 && error && "Transaction Response"}
               </h3>
               <Formik
                 validationSchema={yup.object().shape({
@@ -83,6 +87,7 @@ const Send = () => {
                     }),
                   amount: yup
                     .string()
+                    .matches(/^\d*\.?\d+$/, "Must be a number")
                     .required("Amount is required")
                     .test("has funds", function (val) {
                       const { path, createError, parent } = this;
@@ -121,8 +126,9 @@ const Send = () => {
 
                       try {
                         if (
-                          new Decimal(_balance).isZero() || (gas &&
-                          new Decimal(gas.finalGasFee).greaterThan(_balance))
+                          new Decimal(_balance).isZero() ||
+                          (gas &&
+                            new Decimal(gas.finalGasFee).greaterThan(_balance))
                         ) {
                           throw new Error();
                         }
@@ -149,33 +155,43 @@ const Send = () => {
                         type: "ether",
                       },
                   address: "",
+                  receipt: null,
                 }}
-                onSubmit={async ({ amount, address, asset }, { resetForm }) => {
+                onSubmit={async (
+                  { amount, address, asset },
+                  { resetForm, setFieldValue }
+                ) => {
+                  setLoading(true);
                   try {
                     if (asset.type === "ether") {
-                      const resp = await transfer(address, amount, gas!);
-                      // Add to activities
-                      updateActivities(resp!);
+                      const txResponse = await transfer(address, amount, gas!);
+
                       clearGas();
                       resetForm();
-                      handleNavigation("activity");
+                      setStep(4);
+                      setFieldValue("receipt", txResponse);
                     } else {
                       // handle ERC 20 transfers
-                      const resp = await transferToken(
+                      const txResponse = await transferToken(
                         asset.address,
                         address,
                         amount,
                         gas!
                       );
-                      // Add to activities
-                      updateActivities(resp!);
+
                       resetForm();
                       clearGas();
-                      handleNavigation("activity");
+                      setStep(4);
+                      setFieldValue("receipt", txResponse);
                     }
-                  } catch (error) {
+                  } catch (error: any) {
                     console.error(error);
                     // display error message
+                    setStep(4);
+                    setError(error && error.shortMessage ? error.shortMessage : "Transaction failed, please try again.");
+                    
+                  } finally {
+                    setLoading(false);
                   }
                 }}
               >
@@ -370,9 +386,16 @@ const Send = () => {
 
                           <GasEstimation />
 
-                          {errors.amount && <p className="text-sm px-4 text-center text-red-500">{errors.amount}</p>}
+                          {errors.amount && (
+                            <p className="text-sm px-4 text-center text-red-500">
+                              {errors.amount}
+                            </p>
+                          )}
                         </div>
                       </div>
+                    )}
+                    {step === 4 && values.receipt && (
+                      <TransactionReceiptCard asset={values.asset} receipt={values.receipt} />
                     )}
                     <div
                       className={`${styles["button__navigation"]} ${
@@ -422,10 +445,38 @@ const Send = () => {
                             </button>
                             <button
                               type="submit"
-                              disabled={!isValid}
+                              disabled={!isValid || loading}
                               className="bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
                               Send
+                            </button>
+                          </>
+                        )}
+                        {step === 4 && error && <p className="break-all text-center text-red-500">{error}</p>}
+                        {step === 4 && error && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setStep(3);                                
+                              }}
+                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Back
+                            </button>
+                          </>
+                        )}
+                        {step === 4 && !error && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setStep(1);
+                                handleNavigation("balance");
+                              }}
+                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                            >
+                              Dismiss
                             </button>
                           </>
                         )}

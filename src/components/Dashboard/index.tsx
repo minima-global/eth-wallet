@@ -13,8 +13,11 @@ import TokenList from "../TokenList";
 import Activity from "../Activities";
 import GiveAddress from "../GiveAddress";
 import Settings from "../Settings";
+import { etherscan } from "../../constants";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 
 const Dashboard = () => {
+  const { _network, _address } = useWalletContext();
   const {
     promptLogout,
     loginForm,
@@ -356,28 +359,28 @@ const Dashboard = () => {
                 _currentNavigation === "receive" ? "bg-opacity-50 " : ""
               }`}
               disabled={_currentNavigation === "receive"}
-              onClick={() => handleNavigation("receive")}
+              onClick={() =>
+                window.open(`${etherscan[_network].rpc}${_address}`)
+              }
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className={`${
-                  _currentNavigation === "receive"
+                  _currentNavigation === "activity"
                     ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
                     : ""
                 }`}
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
-                strokeWidth="2"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M4 18v3h16v-14l-8 -4l-8 4v3" />
-                <path d="M4 14h9" />
-                <path d="M10 11l3 3l-3 3" />
+                <path d="M3 12h4l3 8l4 -16l3 8h4" />
               </svg>
               <p
                 className={`${
@@ -386,7 +389,7 @@ const Dashboard = () => {
                     : ""
                 }`}
               >
-                Receive
+                History
               </p>
             </button>
           </nav>

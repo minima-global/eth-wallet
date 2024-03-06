@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from "ethers";
+import {  JsonRpcProvider } from "ethers";
 import { createContext, useRef, useEffect, useState } from "react";
 import { sql } from "./utils/SQL";
 import { TransactionResponse } from "ethers";
@@ -64,9 +64,9 @@ const AppProvider = ({ children }: IProps) => {
 
             const currentNetwork = await _provider.getNetwork();
 
-            const activities: any = await sql(
-              `SELECT * FROM cache WHERE name = 'ACTIVITIES_${currentNetwork.chainId}'`
-            );
+            // const activities: any = await sql(
+            //   `SELECT * FROM cache WHERE name = 'ACTIVITIES_${currentNetwork.chainId}'`
+            // );
 
             // Fetch assets according to the default network
             const defaultAssets: any = await sql(
@@ -77,9 +77,9 @@ const AppProvider = ({ children }: IProps) => {
               setAddressBook(JSON.parse(addressBook.DATA));
             }
 
-            if (activities) {
-              setActivities(JSON.parse(activities.DATA));
-            }
+            // if (activities) {
+            //   setActivities(JSON.parse(activities.DATA));
+            // }
 
             if (defaultAssets) {
               setDefaultAssets(JSON.parse(defaultAssets.DATA));

@@ -3,15 +3,16 @@ import AddressBookContact from "../AddressBookContact";
 import { useEffect, useState } from "react";
 import { TransactionResponse } from "ethers";
 import * as utils from "../../utils";
+import { Asset } from "../../types/Asset";
 
 interface IProps {
   receipt: TxReceipt;
+  asset: Asset | { name: string; symbol: string; balance: string; address: string; type: string; };
 }
-const TransactionReceiptCard = ({ receipt }: IProps) => {
+const TransactionReceiptCard = ({ receipt, asset }: IProps) => {
   const [tx, setTx] = useState<TransactionResponse | null>(null);
   const [blockExplorer, setBlockExplorer] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-
   useEffect(() => {
     (async () => {
       // set BlockExplorer link according to network.. keep null if not known
@@ -45,8 +46,8 @@ const TransactionReceiptCard = ({ receipt }: IProps) => {
 
   if (!tx) {
     return (
-      <div className="mx-4">
-        <p className="text-sm">Loading transaction...</p>
+      <div className="mx-4 my-4">
+        <Spinner />
       </div>
     );
   }
@@ -107,20 +108,32 @@ const TransactionReceiptCard = ({ receipt }: IProps) => {
       <div>        
         <ul className="py-6">
           <li className="flex justify-between px-4">
+            <h3>Asset</h3>
+            <p className="">{asset.name}</p>
+          </li>
+          <li className="flex justify-between px-4">
             <h3>Nonce</h3>
             <p className="">{tx.nonce}</p>
           </li>
           <li className="flex justify-between px-4">
             <h3>Amount</h3>
-            <p className="font-bold">{formatEther(tx.value.toString())}</p>
+            <p className="font-bold">{formatEther(tx.value)} <b>{asset.symbol}</b></p>
           </li>
           <li className="flex justify-between px-4">
-            <h3>Gas Units</h3>
-            <p>{receipt.gasUsed.toString()}</p>
+            <h3>Gas Limit</h3>
+            <p>{tx.gasLimit.toString()}</p>
           </li>
           <li className="flex justify-between px-4">
-            <h3>Gas Used</h3>
-            <p>{formatEther(receipt.fee)}</p>
+            <h3>Gas Price</h3>
+            <p>{formatEther(tx.gasPrice)}</p>
+          </li>
+          <li className="flex justify-between px-4">
+            <h3>Max Fee Per Gas</h3>
+            <p>{tx.maxFeePerGas?.toString()} <b>GWEI</b></p>
+          </li>
+          <li className="flex justify-between px-4">
+            <h3>Max Fee Per Gas</h3>
+            <p>{tx.maxPriorityFeePerGas?.toString()} <b>GWEI</b></p>
           </li>
         </ul>
       </div>
@@ -129,3 +142,29 @@ const TransactionReceiptCard = ({ receipt }: IProps) => {
 };
 
 export default TransactionReceiptCard;
+
+const Spinner = () => {
+  return (
+    <div className="flex">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="animate-spin "
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969" />
+        <path d="M14 3.223a9.003 9.003 0 0 1 0 17.554" />
+        <path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592" />
+        <path d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305" />
+        <path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356" />
+      </svg>
+    </div>
+  );
+};

@@ -14,49 +14,46 @@ import BackButton from "../UI/BackButton";
 
 const SelectNetwork = () => {
   const {
-
     _promptSelectNetwork,
     promptSelectNetwork,
     _provider,
     setRPCNetwork,
-    verifyRPCNetwork
+    verifyRPCNetwork,
   } = useContext(appContext);
 
   const [network, setNetwork] = useState("unknown");
   const [step, setStep] = useState(1);
 
-  
   const springProps = useSpring({
     opacity: _promptSelectNetwork ? 1 : 0,
     transform: _promptSelectNetwork
-    ? "translateY(0%) scale(1)"
-    : "translateY(-50%) scale(0.8)",
+      ? "translateY(0%) scale(1)"
+      : "translateY(-50%) scale(0.8)",
     config: config.wobbly,
   });
-  
+
   const addCustomNetworkSpringProps = useSpring({
     opacity: step === 2 ? 1 : 0,
     config: config.gentle,
   });
-  
+
   const handleNetworkChange = (network: string) => {
     setRPCNetwork(network);
     promptSelectNetwork();
   };
-  
+
   useEffect(() => {
     (async () => {
       const p = await _provider.getNetwork();
-      
+
       setNetwork(p.name);
     })();
   }, [_provider]);
-  
-  
+
   return (
     <>
       <div
-        className="mx-auto bg-gray-300 dark:bg-black text-black dark:text-white dark:text-opacity-90 p-2 px-3 rounded-full hover:bg-opacity-70 hover:cursor-pointer"
+        className="mx-4 my-4 bg-gray-300 dark:bg-black text-black dark:text-white dark:text-opacity-90 p-2 px-3 rounded-full hover:bg-opacity-70 hover:cursor-pointer"
         onClick={promptSelectNetwork}
       >
         {network === "mainnet" && <EthereumNetwork />}
@@ -72,15 +69,36 @@ const SelectNetwork = () => {
                 <div className="bg-white shadow-lg  shadow-slate-300  dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
                   {step === 1 && (
                     <div>
-                      <h1 className="text-lg md:text-xl px-4 mb-4">
-                        Select a network
-                      </h1>
-
+                      <div className="flex justify-between pr-4">
+                        <h1 className="text-lg md:text-xl px-4 mb-4">
+                          Select a network
+                        </h1>
+                        <svg
+                          onClick={promptSelectNetwork}
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2.5"
+                          stroke="currentColor"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M18 6l-12 12" />
+                          <path d="M6 6l12 12" />
+                        </svg>
+                      </div>
                       <div className="grid grid-cols-1">
                         <ul>
                           <li
                             onClick={() => handleNetworkChange("mainnet")}
-                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${network === 'mainnet' ? "bg-slate-300 dark:bg-slate-600 ":""}`}
+                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
+                              network === "mainnet"
+                                ? "bg-slate-300 dark:bg-slate-600 "
+                                : ""
+                            }`}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +136,11 @@ const SelectNetwork = () => {
                         <ul className="mb-4">
                           <li
                             onClick={() => handleNetworkChange("sepolia")}
-                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${network === 'sepolia' ? "bg-slate-300 dark:bg-slate-600":""}`}
+                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
+                              network === "sepolia"
+                                ? "bg-slate-300 dark:bg-slate-600"
+                                : ""
+                            }`}
                           >
                             <svg
                               className="dark:fill-white dark:bg-opacity-80"
@@ -163,21 +185,23 @@ const SelectNetwork = () => {
                       </div>
 
                       <div className="grid grid-cols-1">
-                        <Formik                          
+                        <Formik
                           initialValues={{ network: "" }}
-                          onSubmit={async ({network}, {setErrors}) => {
-                            try {                              
+                          onSubmit={async ({ network }, { setErrors }) => {
+                            try {
                               await verifyRPCNetwork(network);
-                              
+
                               // is valid/can connect, add
                               setRPCNetwork(network);
                               setStep(1);
                               promptSelectNetwork();
                             } catch (error) {
-                              setErrors({network: "Invalid JSON-RPC URL.  Could not establish connection."});
+                              setErrors({
+                                network:
+                                  "Invalid JSON-RPC URL.  Could not establish connection.",
+                              });
                               console.error(error);
                             }
-
                           }}
                         >
                           {({
@@ -209,17 +233,16 @@ const SelectNetwork = () => {
                                   {errors.network}
                                 </span>
                               )}
-                            <button
-                              type="submit"
-                              disabled={!isValid}                              
-                              className="bg-black text-white dark:bg-white dark:text-black p-4 font-bold disabled:bg-slate-300"
-                            >
-                              Add
-                            </button>
+                              <button
+                                type="submit"
+                                disabled={!isValid}
+                                className="bg-black text-white dark:bg-white dark:text-black p-4 font-bold disabled:bg-slate-300"
+                              >
+                                Add
+                              </button>
                             </form>
                           )}
-                        </Formik>                        
-
+                        </Formik>
                       </div>
                     </animated.div>
                   )}

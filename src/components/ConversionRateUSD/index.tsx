@@ -12,6 +12,7 @@ const ConversionRateUSD = ({ amount, asset }: IProps) => {
 
   useEffect(() => {
     (async () => {
+      return;
       setConversionRate(null);
       if (asset && asset.type === "ether") {
         const etherPriceUSD = await utils.getEthereumPrice();

@@ -7,6 +7,7 @@ import Dialog from "../UI/Dialog";
 import { createPortal } from "react-dom";
 import GasCard from "./GasCard";
 import Decimal from "decimal.js";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 
 /**
  * @EIP1559
@@ -16,6 +17,7 @@ import Decimal from "decimal.js";
 
 function GasEstimation() {
   const formik: any = useFormikContext();
+  const { _network } = useWalletContext();
   const {
     defaultGas,
     loading,
@@ -157,7 +159,7 @@ function GasEstimation() {
         )}
       <div className="flex justify-between items-center mx-4">
         <div />
-        <div>
+        {_network === 'mainnet' || _network === 'sepolia' || _network === 'goerli' ? <div>
           <svg
             onClick={promptGasCards}
             className="cursor-pointer"
@@ -178,7 +180,8 @@ function GasEstimation() {
             <path d="M18 7v1a1 1 0 0 0 1 1h1" />
             <path d="M4 11l10 0" />
           </svg>
-        </div>
+        </div> : <div/>}
+        
       </div>
 
       <div

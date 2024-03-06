@@ -27,6 +27,17 @@ const defaultAssetsStored: Asset[] = [
   },
 ];
 
+export const etherscan = {
+  mainnet: {
+    rpc: "https://etherscan.io/address/"
+  },
+  sepolia: {
+    rpc: "https://sepolia.etherscan.io/address/"
+  },
+  goerli: {
+    rpc: "https://goerli.etherscan.io/address/"
+  }
+}
 export const networks = {
   mainnet: {
     rpc: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
@@ -35,6 +46,10 @@ export const networks = {
   sepolia: {
     rpc: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
     chainId: "11155111",
+  },
+  goerli: {
+    rpc: "https://goerli.infura.io/v3/05c98544804b478994665892aeff361c",
+    chainId: 5,
   },
   unknown: {
     rpc: "http://127.0.0.1:8545",

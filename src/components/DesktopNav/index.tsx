@@ -1,9 +1,13 @@
 import { useContext } from "react";
 import styles from "./DesktopNav.module.css";
 import { appContext } from "../../AppContext";
+import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import { etherscan } from "../../constants";
 
 const DesktopNav = () => {
   const { _currentNavigation, handleNavigation } = useContext(appContext);
+  const { _address, _network } = useWalletContext();
+  
   return (
     <section className={styles["desktop__navigation"]}>
       <nav>
@@ -86,7 +90,7 @@ const DesktopNav = () => {
             _currentNavigation === "activity" ? " outline outline-teal-500" : ""
           }`}
           disabled={_currentNavigation === "activity"}
-          onClick={() => handleNavigation("activity")}
+          onClick={() => window.open(`${etherscan[_network].rpc}${_address}`)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +119,7 @@ const DesktopNav = () => {
                 : ""
             }`}
           >
-            Activity
+            History
           </p>
         </button>
       </nav>

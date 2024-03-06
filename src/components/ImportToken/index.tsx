@@ -37,7 +37,7 @@ const ImportToken = () => {
     <>
       <div className="flex justify-center my-4">
         <button
-          className="bg-black bg-opacity-10 rounded flex items-center gap-2 font-bold text-lighter hover:bg-opacity-20"
+          className="bg-black text-black dark:text-white bg-opacity-10 rounded flex items-center gap-2 font-bold text-lighter hover:bg-opacity-20"
           onClick={promptTokenImport}
         >
           <svg
@@ -46,7 +46,7 @@ const ImportToken = () => {
             height="24"
             viewBox="0 0 24 24"
             strokeWidth="1.5"
-            stroke="#FFFFFF"
+            stroke="currentColor"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -66,7 +66,9 @@ const ImportToken = () => {
               <animated.div className={styles["tokens"]} style={springProps}>
                 <div className=" bg-white shadow-lg shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
                   <div className="px-4 flex justify-between gap-2 items-center">
-                    <h3 className="font-bold">Import tokens</h3>
+                    <div>
+                    <h3 className="font-bold">Import tokens</h3>                    
+                    </div>
                     <svg
                       onClick={promptTokenImport}
                       xmlns="http://www.w3.org/2000/svg"
@@ -74,8 +76,8 @@ const ImportToken = () => {
                       width="24"
                       height="24"
                       viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="#FFFFFF"
+                      strokeWidth="2.5"
+                      stroke="currentColor"
                       fill="none"
                       strokeLinecap="round"
                       strokeLinejoin="round"

@@ -10,7 +10,6 @@ export function getMinimaPrice(): Promise<number> {
             if (!resp.status) {
                 reject();
             }
-            console.log(resp);
                      
             const minimaPriceUSD = JSON.parse(resp.response).wrapped_minima.usd;
             // const jsonResp = JSON.parse("{\"minima\":{\"usd\":0.44}}");

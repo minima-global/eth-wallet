@@ -79,8 +79,8 @@ const SelectAsset = () => {
           </svg>
         )}
         {formik.values.asset.type === "erc20" && (
-          <div className="bg-white dark:bg-transparent my-auto w-[36px] h-[36px] rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
-            {isMinima && <img alt="minima_icon" src="/assets/token.svg" />}
+          <div className="bg-white dark:text-white dark:bg-transparent my-auto w-[36px] h-[36px] rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+            {isMinima && <img alt="minima_icon" src="./assets/token.svg" />}
             {!isMinima &&
               formik.values.asset.name.substring(0, 1).toUpperCase()}
           </div>
@@ -127,7 +127,7 @@ const SelectAsset = () => {
               >
                 <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
                   {token.address === _defaults["wMinima"][_network] && (
-                    <img alt="minima_icon" src="/assets/token.svg" />
+                    <img alt="minima_icon" src="./assets/token.svg" />
                   )}
                   {token.address !== _defaults["wMinima"][_network] &&
                     token.name.substring(0, 1).toUpperCase()}

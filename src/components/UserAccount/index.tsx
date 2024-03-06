@@ -153,7 +153,7 @@ const UserAccount = () => {
                   </div>
                   <div className="flex flex-col items-center mt-4">
                     <WalletAddress fullAddress />
-                    <button className="font-bold text-white bg-purple-500">Show private key</button>
+                    {/* <button className="font-bold text-white bg-purple-500">Show private key</button> */}
                   </div>
                 
                 </div>
