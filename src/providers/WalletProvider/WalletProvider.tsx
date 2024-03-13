@@ -66,7 +66,7 @@ export const WalletContextProvider = ({ children }: Props) => {
         to: address,
         value: parseUnits(amount, "ether"),
         maxPriorityFeePerGas: parseUnits(gas.priorityFee, "gwei"), // wei
-        maxFeePerGas: parseUnits(gas.baseFee, "gwei"), // wei
+        maxFeePerGas: parseUnits(gas.baseFee, "gwei"), // wei      
       })
       .catch((err) => {
         throw err;

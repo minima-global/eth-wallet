@@ -10,8 +10,10 @@ interface IProps {
   asset: Asset | { name: string; symbol: string; balance: string; address: string; type: string; };
   amountSent: string;
   gasPaid: string;
+  recipient: string;
 }
-const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid }: IProps) => {
+const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid, recipient }: IProps) => {
+
   const [tx, setTx] = useState<TransactionResponse | null>(null);
   const [blockExplorer, setBlockExplorer] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -50,7 +52,7 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid }: IProps)
 
   if (!tx) {
     return (
-      <div className="mx-4 my-4">
+      <div className="mx-4 my-4 flex justify-center items-center">
         <Spinner />
       </div>
     );
@@ -107,7 +109,7 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid }: IProps)
             fill="currentColor"
           />
         </svg>
-        <AddressBookContact contact address={receipt.to!} />
+        <AddressBookContact contact address={recipient} />
       </div>
       <div>        
         <ul className="py-6">

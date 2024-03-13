@@ -1,7 +1,13 @@
 import Decimal from "decimal.js";
 import { formatEther, parseUnits } from "ethers";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
-
+/**
+ * 
+ * @param _gasUnits gas units required for transaction
+ * @param _baseFee suggested base fee from Infura Gas API
+ * @param _priorityFee suggested priority fee from Infura Gas API
+ * @returns finalGasFee (total for display reasons), baseFee (base fee from Infura as is), priorityFee (from infura as is), gasUnits
+ */
 export const calculateGasFee = async (
   _gasUnits: string,
   _baseFee: string,

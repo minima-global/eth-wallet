@@ -147,6 +147,7 @@ export const GasContextProvider = ({ children }: Props) => {
     if (currentNetwork.name !== "unknown") {
 
       try {
+        // MDS.net.GETAUTH
         const { data } = await axios.get(
           `https://gas.api.infura.io/networks/${currentNetwork.chainId}/suggestedGasFees/`,
           {

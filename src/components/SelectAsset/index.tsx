@@ -100,7 +100,8 @@ const SelectAsset = () => {
             {formik.values.asset.name}
           </h6>
           <p className="m-0 p-0 text-sm font-mono text-black dark:text-white">
-            {formik.values.asset.balance}
+          {formik.values.asset.type === 'erc20' && formatEther(formik.values.asset.balance)}
+          {formik.values.asset.type !== 'erc20' && formik.values.asset.balance}
           </p>
         </div>
         <svg

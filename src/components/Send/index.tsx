@@ -12,7 +12,7 @@ import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import { getAddress } from "ethers";
+import { formatEther, getAddress } from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
@@ -302,7 +302,7 @@ const Send = () => {
                               {values.asset.symbol}
                               <button
                                 onClick={() =>
-                                  setFieldValue("amount", values.asset.balance)
+                                  setFieldValue("amount", values.asset.type !== 'erc20' ? values.asset.balance : formatEther(values.asset.balance))
                                 }
                                 type="button"
                                 className="p-0 text-black border-slate-600 dark:text-white w-full bg-transparent border text-sm dark:border-teal-300 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black"
@@ -393,7 +393,7 @@ const Send = () => {
                       </div>
                     )}
                     {step === 4 && values.receipt && (
-                      <TransactionReceiptCard asset={values.asset} receipt={values.receipt} gasPaid={values.gasPaid} amountSent={values.amount} />
+                      <TransactionReceiptCard recipient={values.address} asset={values.asset} receipt={values.receipt} gasPaid={values.gasPaid} amountSent={values.amount} />
                     )}
                     <div
                       className={`${styles["button__navigation"]} ${

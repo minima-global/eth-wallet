@@ -11,10 +11,10 @@ import Send from "../Send";
 import UserAccount from "../UserAccount";
 import TokenList from "../TokenList";
 import Activity from "../Activities";
-import GiveAddress from "../GiveAddress";
 import Settings from "../Settings";
 import { etherscan } from "../../constants";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import ReadMode from "../ReadMode";
 
 const Dashboard = () => {
   const { _network, _address } = useWalletContext();
@@ -266,11 +266,8 @@ const Dashboard = () => {
         <main>
           <section>
             <section />
-            <GiveAddress />
-            <Settings />
-            {/* <SelectNetwork />
-            <WalletAddress />
-            <Balance /> */}
+            <Settings />            
+            <ReadMode />
             <Send />
             <DesktopNav />
             <TokenList />

@@ -26,6 +26,7 @@ const AppProvider = ({ children }: IProps) => {
     new JsonRpcProvider(networks["sepolia"].rpc)
   );
 
+  const [_promptReadMode, setReadMode] = useState<null | boolean>(null);
   const [_promptSettings, setPromptSettings] = useState(false);
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
   const [_promptTokenImport, setImportTokenImport] = useState(false);
@@ -77,10 +78,20 @@ const AppProvider = ({ children }: IProps) => {
         if (msg.event === "inited") {
           loaded.current = true;
           // do something Minim-y
-          (window as any).MDS.keypair.get("_k", function (val) {
-            if (val.status) {
-              createKey(val.value);
-            }
+
+          // Check if read or write mode
+          (window as any).MDS.cmd(`checkmode`, function (response: any) {
+            if (response.status) {
+              return setReadMode(response.response.mode === "READ")
+            }   
+            
+            return setReadMode(false);
+          });
+
+          // Generate key for Eth Wallet
+          (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
+            console.log(resp);
+            setGeneratedKey(resp.response.seedrandom);
           });
 
           (async () => {
@@ -266,6 +277,8 @@ const AppProvider = ({ children }: IProps) => {
     <appContext.Provider
       value={{
         loaded,
+
+        _promptReadMode,
 
         _promptTokenImport,
         promptTokenImport,
