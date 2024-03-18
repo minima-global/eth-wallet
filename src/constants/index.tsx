@@ -1,4 +1,5 @@
 import { Asset } from "../types/Asset";
+import { Network, Networks } from "../types/Network";
 
 const defaultAssetsStored: Asset[] = [
   {
@@ -38,23 +39,19 @@ export const etherscan = {
     rpc: "https://goerli.etherscan.io/address/"
   }
 }
-export const networks = {
+export const networks: Networks = {
   mainnet: {
+    name: "Ethereum",
     rpc: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
-    chainId: 1,
+    chainId: "1",
+    symbol: "ETH"
   },
   sepolia: {
+    name: "Sepolia",
     rpc: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
     chainId: "11155111",
-  },
-  goerli: {
-    rpc: "https://goerli.infura.io/v3/05c98544804b478994665892aeff361c",
-    chainId: 5,
-  },
-  unknown: {
-    rpc: "http://127.0.0.1:8545",
-    chainId: "31337",
-  },
+    symbol: "Sepolia ETH"
+  }
 };
 // default assets..
 export const _defaults = {
@@ -65,11 +62,7 @@ export const _defaults = {
   Tether: {
     mainnet: "0xdac17f958d2ee523a2206206994597c13d831ec7",
     sepolia: "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C",
-  },
-  unknown: {
-    mainnet: "",
-    sepolia: "",
-  },
+  }
 };
 
 export default defaultAssetsStored;

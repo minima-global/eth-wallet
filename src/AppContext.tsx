@@ -4,9 +4,19 @@ import { sql } from "./utils/SQL";
 import { TransactionResponse } from "ethers";
 import { ContractTransactionResponse } from "ethers";
 import { Asset } from "./types/Asset";
+import { Network, Networks } from "./types/Network";
 import defaultAssetsStored, { _defaults, networks } from "./constants";
 
 export const appContext = createContext({} as any);
+
+/**
+ * Network
+ * -------
+ * ChainID
+ * Name
+ * Asset Symbol
+ * JSON RPC URL
+ */
 
 interface IProps {
   children: any;
@@ -16,16 +26,17 @@ const AppProvider = ({ children }: IProps) => {
   const [_defaultAssets, setDefaultAssets] = useState<{ assets: Asset[] }>({
     assets: [],
   });
+  const [_currentNetwork, setCurrentNetwork] = useState("");
+  const [_defaultNetworks, setDefaultNetworks] = useState<Networks | null>(
+    null
+  );
   const [_addressBook, setAddressBook] = useState([]);
   const [_activities, setActivities] = useState<
     (TransactionResponse | ContractTransactionResponse)[]
   >([]);
   const [_generatedKey, setGeneratedKey] = useState("");
   // mainnet, sepolia, hardhat, etc...
-  const [_provider, setProvider] = useState<JsonRpcProvider>(
-    new JsonRpcProvider(networks["sepolia"].rpc)
-  );
-
+  const [_provider, setProvider] = useState<JsonRpcProvider | null>(null); //  new JsonRpcProvider(networks["sepolia"].rpc)
   const [_promptReadMode, setReadMode] = useState<null | boolean>(null);
   const [_promptSettings, setPromptSettings] = useState(false);
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
@@ -44,33 +55,52 @@ const AppProvider = ({ children }: IProps) => {
 
   useEffect(() => {
     (async () => {
-      const currentNetwork = await _provider.getNetwork();
 
-      // Fetch assets according to the network
-      const defaultAssets: any = await sql(
-        `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
-      );
+      // if MDS inited then we can run our init SQL/re-sql on network change
+      if (loaded && loaded.current && _provider) {
 
-      if (defaultAssets) {
-        setDefaultAssets(JSON.parse(defaultAssets.DATA));
-      } else {
-        // let's initialize the default assets
-        const _d = defaultAssetsStored.map((asset) => ({
-          ...asset,
-          address: _defaults[asset.name]
-            ? _defaults[asset.name][currentNetwork.name]
-            : "",
-        }));
+        setDefaultAssets({assets: []});
 
-        await sql(
-          `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
-            currentNetwork.chainId
-          }', '${JSON.stringify({ assets: _d })}')`
+        // We get the current provider
+        const currentNetwork = await _provider.getNetwork();
+        // Fetch assets according to the default network (different network, different assets)
+        const defaultAssets: any = await sql(
+          `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
         );
-        setDefaultAssets({ assets: _d });
+
+
+        // if exists, set them in memory
+        if (defaultAssets) {
+          setDefaultAssets(JSON.parse(defaultAssets.DATA));
+        } else {
+          // let's initialize the default assets
+          const _d = defaultAssetsStored
+            .filter((asset) => {
+              // Check if _defaults has the network for the current asset
+              const networkExists =
+                _defaults[asset.name] &&
+                _defaults[asset.name][currentNetwork.name];
+
+              // Return true if the network exists, false otherwise
+              return networkExists;
+            })
+            .map((asset) => ({
+              ...asset,
+              address: _defaults[asset.name]
+                ? _defaults[asset.name][currentNetwork.name]
+                : "",
+            }));
+
+          await sql(
+            `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
+              currentNetwork.chainId
+            }', '${JSON.stringify({ assets: _d })}')`
+          );
+          setDefaultAssets({ assets: _d });
+        }
       }
     })();
-  }, [_provider]);
+  }, [_provider, loaded]);
 
   useEffect(() => {
     if (!loaded.current) {
@@ -82,63 +112,67 @@ const AppProvider = ({ children }: IProps) => {
           // Check if read or write mode
           (window as any).MDS.cmd(`checkmode`, function (response: any) {
             if (response.status) {
-              return setReadMode(response.response.mode === "READ")
-            }   
-            
+              return setReadMode(response.response.mode === "READ");
+            }
+
             return setReadMode(false);
           });
 
           // Generate key for Eth Wallet
           (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
-            console.log(resp);
             setGeneratedKey(resp.response.seedrandom);
           });
 
           (async () => {
+            // Initialize cache-ing table
             await sql(
               `CREATE TABLE IF NOT EXISTS cache (name varchar(255), data longtext);`
             );
+            
 
+            // Now we check if user has previously chosen a network, if not connect Sepolia
+            const cachedNetwork: any = await sql(
+              `SELECT * FROM cache WHERE name = 'CURRENT_NETWORK'`
+            );
+            // Fetch all saved networks
+            const defaultNetworks: any = await sql(
+              `SELECT * FROM cache WHERE name = 'DEFAULTNETWORKS'`
+            );
+            // Get all user's saved addresses
             const addressBook: any = await sql(
               `SELECT * FROM cache WHERE name = 'ADDRESSBOOK'`
-            );
-
-            const currentNetwork = await _provider.getNetwork();
-
-            // const activities: any = await sql(
-            //   `SELECT * FROM cache WHERE name = 'ACTIVITIES_${currentNetwork.chainId}'`
-            // );
-
-            // Fetch assets according to the default network
-            const defaultAssets: any = await sql(
-              `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
             );
 
             if (addressBook) {
               setAddressBook(JSON.parse(addressBook.DATA));
             }
 
-            // if (activities) {
-            //   setActivities(JSON.parse(activities.DATA));
-            // }
-
-            if (defaultAssets) {
-              setDefaultAssets(JSON.parse(defaultAssets.DATA));
+            if (defaultNetworks) {
+              // set all networks saved
+              setDefaultNetworks(JSON.parse(defaultNetworks.DATA));
             } else {
-              // let's initialize the default assets
-              const _d = defaultAssetsStored.map((asset) => ({
-                ...asset,
-                address: _defaults[asset.name]
-                  ? _defaults[asset.name][currentNetwork.name]
-                  : "",
-              }));
-
+              // Initialize networks
               await sql(
-                `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
-                  currentNetwork.chainId
-                }', '${JSON.stringify({ assets: _d })}')`
+                `INSERT INTO cache (name, data) VALUES ('DEFAULTNETWORKS', '${JSON.stringify(
+                  networks
+                )}')`
               );
-              setDefaultAssets({ assets: _d });
+              setDefaultNetworks(networks);
+            }
+
+            // User preference
+            if (cachedNetwork) {
+              const previouslySetNetwork = JSON.parse(cachedNetwork.DATA);
+              setRPCNetwork(previouslySetNetwork.default, JSON.parse(defaultNetworks.DATA));
+            } else {
+              // initialize
+              await sql(
+                `INSERT INTO cache (name, data) VALUES ('CURRENT_NETWORK', '${JSON.stringify(
+                  { default: "sepolia" }
+                )}')`
+              );
+
+              setRPCNetwork("sepolia", networks);
             }
           })();
         }
@@ -170,12 +204,15 @@ const AppProvider = ({ children }: IProps) => {
     setImportTokenImport((prevState) => !prevState);
   };
 
-  const setRPCNetwork = (network: string) => {
-    setProvider(
-      networks[network]
-        ? new JsonRpcProvider(networks[network].rpc)
-        : new JsonRpcProvider(network)
-    );
+  const setRPCNetwork = (network: string, networks: Networks) => {
+    const networkToConnect =
+    networks && networks[network]
+    ? new JsonRpcProvider(networks[network].rpc)
+    : null;
+
+    
+    setProvider(networkToConnect);
+    setCurrentNetwork(network);
   };
 
   const verifyRPCNetwork = async (network: string) => {
@@ -189,54 +226,50 @@ const AppProvider = ({ children }: IProps) => {
     }
   };
 
-  const updateActivities = async (activity: TransactionResponse) => {
-    const updatedData = [..._activities, activity];
-
-    setActivities(updatedData);
-
-    const currentNetwork = await _provider.getNetwork();
-
-    const rows = await sql(
-      `SELECT * FROM cache WHERE name = 'ACTIVITIES_${currentNetwork.chainId}'`
-    );
-
-    if (!rows) {
-      await sql(
-        `INSERT INTO cache (name, data) VALUES ('ACTIVITIES_${
-          currentNetwork.chainId
-        }', '${JSON.stringify(updatedData)}')`
-      );
-    } else {
-      await sql(
-        `UPDATE cache SET data = '${JSON.stringify(
-          updatedData
-        )}' WHERE name = 'ACTIVITIES_${currentNetwork.chainId}'`
-      );
-    }
-  };
-
-  const updateDefaultAssets = async (asset: Asset) => {
+  const updateDefaultAssets = async (asset: Asset, chainId: string) => {
     const updatedData = [..._defaultAssets.assets, asset];
     const nested = { assets: updatedData };
     setDefaultAssets(nested);
 
-    const currentNetwork = await _provider.getNetwork();
-
     const rows = await sql(
-      `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
+      `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
     );
 
     if (!rows) {
       await sql(
-        `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${
-          currentNetwork.chainId
-        }', '${JSON.stringify(nested)}')`
+        `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${chainId}', '${JSON.stringify(
+          nested
+        )}')`
       );
     } else {
       await sql(
         `UPDATE cache SET data = '${JSON.stringify(
           nested
-        )}' WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
+        )}' WHERE name = 'DEFAULTASSETS_${chainId}'`
+      );
+    }
+  };
+
+  const addCustomNetwork = async (network: Network) => {
+    const updatedData = { ..._defaultNetworks, [network.name]: network };
+
+    setDefaultNetworks(updatedData);
+
+    const rows = await sql(
+      `SELECT * FROM cache WHERE name = 'DEFAULTNETWORKS'`
+    );
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('DEFAULTNETWORKS', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'DEFAULTNETWORKS'`
       );
     }
   };
@@ -269,6 +302,40 @@ const AppProvider = ({ children }: IProps) => {
     setPromptAddressBookAdd(false);
   };
 
+  const updatePreferredNetwork = async (name: string) => {
+    const updatedData = {
+      default: name,
+    };
+
+    // Fetch all saved networks
+    const defaultNetworks: any = await sql(
+      `SELECT * FROM cache WHERE name = 'DEFAULTNETWORKS'`
+    );
+
+
+    setRPCNetwork(name, JSON.parse(defaultNetworks.DATA));
+
+    const rows = await sql(
+      `SELECT * FROM cache WHERE name = 'CURRENT_NETWORK'`
+    );
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('CURRENT_NETWORK', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'CURRENT_NETWORK'`
+      );
+    }
+
+    promptSelectNetwork();
+  };
+
   const createKey = (key: string) => {
     setGeneratedKey(key);
   };
@@ -279,6 +346,8 @@ const AppProvider = ({ children }: IProps) => {
         loaded,
 
         _promptReadMode,
+
+        updatePreferredNetwork,
 
         _promptTokenImport,
         promptTokenImport,
@@ -299,12 +368,16 @@ const AppProvider = ({ children }: IProps) => {
         setDefaultAssets,
         updateDefaultAssets,
 
+        _currentNetwork,
+        _defaultNetworks,
+        addCustomNetwork,
+
         _addressBook,
         updateAddressBook,
 
         _activities,
         setActivities,
-        updateActivities,
+        // updateActivities,
 
         _promptAddressBookAdd,
         promptAddressBookAdd,

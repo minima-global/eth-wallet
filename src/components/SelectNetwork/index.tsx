@@ -15,12 +15,17 @@ import { useWalletContext } from "../../providers/WalletProvider/WalletProvider"
 
 const SelectNetwork = () => {
   const {
+    addCustomNetwork,
+    _currentNetwork,
+    _defaultNetworks,
     _promptSelectNetwork,
     promptSelectNetwork,
-    setRPCNetwork,
     verifyRPCNetwork,
+    updatePreferredNetwork,
   } = useContext(appContext);
   const { _network } = useWalletContext();
+
+  console.log("default", _defaultNetworks);
 
   const [step, setStep] = useState(1);
 
@@ -37,9 +42,8 @@ const SelectNetwork = () => {
     config: config.gentle,
   });
 
-  const handleNetworkChange = (network: string) => {
-    setRPCNetwork(network);
-    promptSelectNetwork();
+  const handleNetworkChange = (networkName: string) => {
+    updatePreferredNetwork(networkName);
   };
 
   return (
@@ -85,10 +89,11 @@ const SelectNetwork = () => {
                       <div className="grid grid-cols-1">
                         <ul>
                           <li
+                            key="1"
                             onClick={() => handleNetworkChange("mainnet")}
                             className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
                               _network === "mainnet"
-                                ? "bg-slate-300 dark:bg-slate-600 "
+                                ? " bg-indigo-400 text-white font-bold dark:bg-indigo-600 "
                                 : ""
                             }`}
                           >
@@ -127,43 +132,75 @@ const SelectNetwork = () => {
                         <h6 className="px-4 text-sm py-2">Test networks</h6>
                         <ul className="mb-4">
                           <li
+                            key="11155111"
                             onClick={() => handleNetworkChange("sepolia")}
                             className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
                               _network === "sepolia"
-                                ? "bg-slate-300 dark:bg-slate-600"
+                                ? "bg-indigo-400 text-white font-bold dark:bg-indigo-600"
                                 : ""
                             }`}
                           >
-                            <svg
-                              className="dark:fill-white dark:bg-opacity-80"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="32"
-                              height="32"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="#2c3e50"
-                              fill="none"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path
-                                stroke="none"
-                                d="M0 0h24v24H0z"
-                                fill="none"
-                              />
-                              <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-                              <path d="M10 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1" />
-                            </svg>
+                            <div className="rounded-full w-8 h-8 bg-gray-300 flex justify-center items-center">
+                              <span className="text-gray-600 font-bold text-xl">
+                                S
+                              </span>
+                            </div>
                             Sepolia
                           </li>
                         </ul>
 
-                        <button
-                          onClick={() => setStep(2)}
-                          className="bg-black mx-4 text-white p-4 font-bold dark:bg-white dark:text-black"
-                        >
-                          Add Custom
-                        </button>
+                        {_defaultNetworks && (
+                          <>
+                            <div className="grid grid-cols-[1fr_auto] items-center">
+                              <h6 className="px-4 text-sm py-2">
+                                Custom networks
+                              </h6>
+                              <a
+                                className="mx-4 px-2 hover:bg-indigo-500 hover:text-indigo-200 cursor-pointer text-sm rounded bg-none text-indigo-500 border border-indigo-500"
+                                onClick={() => setStep(2)}
+                              >
+                                Add Network
+                              </a>
+                            </div>
+                            {Object.keys(_defaultNetworks).filter(
+                              (k) => k !== "mainnet" && k !== "sepolia"
+                            ).length === 0 && (
+                              <p className="text-sm px-4 text-gray-400">
+                                No custom networks added yet
+                              </p>
+                            )}
+                            <ul className="mb-4">
+                              {Object.keys(_defaultNetworks)
+                                .filter(
+                                  (k) => k !== "mainnet" && k !== "sepolia"
+                                )
+                                .map((k) => (
+                                  <li
+                                   key={_defaultNetworks[k].chainId}
+                                    onClick={() =>
+                                      handleNetworkChange(
+                                        _defaultNetworks[k].name
+                                      )
+                                    }
+                                    className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
+                                      ((_network === "unknown" )&& _currentNetwork === _defaultNetworks[k].name)
+                                        ? "bg-indigo-400 text-white font-bold dark:bg-indigo-600"
+                                        : ""
+                                    }`}
+                                  >
+                                    <div className="rounded-full w-8 h-8 bg-gray-300 flex justify-center items-center">
+                                      <span className="text-gray-600 font-bold text-xl">
+                                        {_defaultNetworks[k].name
+                                          .charAt(0)
+                                          .toUpperCase()}
+                                      </span>
+                                    </div>
+                                    {_defaultNetworks[k].name}
+                                  </li>
+                                ))}
+                            </ul>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
@@ -178,19 +215,32 @@ const SelectNetwork = () => {
 
                       <div className="grid grid-cols-1">
                         <Formik
-                          initialValues={{ network: "" }}
-                          onSubmit={async ({ network }, { setErrors }) => {
+                          initialValues={{
+                            rpc: "",
+                            name: "",
+                            chainId: "",
+                            symbol: "",
+                          }}
+                          onSubmit={async (
+                            { rpc, name, chainId, symbol },
+                            { setErrors }
+                          ) => {
                             try {
-                              await verifyRPCNetwork(network);
+                              // First we verify if node is online...
+                              await verifyRPCNetwork(rpc);
 
-                              // is valid/can connect, add
-                              setRPCNetwork(network);
+                              // add new
+                              await addCustomNetwork({
+                                rpc,
+                                name,
+                                chainId,
+                                symbol,
+                              });
+                              // Toast message that we added a new network would be nice...
                               setStep(1);
-                              promptSelectNetwork();
                             } catch (error) {
                               setErrors({
-                                network:
-                                  "Invalid JSON-RPC URL.  Could not establish connection.",
+                                rpc: "Invalid JSON-RPC URL.  Could not establish connection.",
                               });
                               console.error(error);
                             }
@@ -211,18 +261,69 @@ const SelectNetwork = () => {
                               <input
                                 disabled={isSubmitting}
                                 required
-                                {...getFieldProps("network")}
+                                {...getFieldProps("rpc")}
                                 type="text"
                                 placeholder="Custom JSON-RPC"
                                 className={`mb-2 ${
-                                  touched.network && errors.network
+                                  touched.rpc && errors.rpc
                                     ? "outline !outline-red-500"
                                     : ""
                                 }`}
                               />
-                              {touched.network && errors.network && (
+                              {touched.rpc && errors.rpc && (
                                 <span className="my-2 bg-red-500 rounded px-4 py-1">
-                                  {errors.network}
+                                  {errors.rpc}
+                                </span>
+                              )}
+                              <input
+                                disabled={isSubmitting}
+                                required
+                                {...getFieldProps("name")}
+                                type="text"
+                                placeholder="Network name"
+                                className={`mb-2 ${
+                                  touched.name && errors.name
+                                    ? "outline !outline-red-500"
+                                    : ""
+                                }`}
+                              />
+                              {touched.name && errors.name && (
+                                <span className="my-2 bg-red-500 rounded px-4 py-1">
+                                  {errors.name}
+                                </span>
+                              )}
+                              <input
+                                disabled={isSubmitting}
+                                required
+                                {...getFieldProps("chainId")}
+                                type="text"
+                                placeholder="Chain Id"
+                                className={`mb-2 ${
+                                  touched.chainId && errors.chainId
+                                    ? "outline !outline-red-500"
+                                    : ""
+                                }`}
+                              />
+                              {touched.chainId && errors.chainId && (
+                                <span className="my-2 bg-red-500 rounded px-4 py-1">
+                                  {errors.chainId}
+                                </span>
+                              )}
+                              <input
+                                disabled={isSubmitting}
+                                required
+                                {...getFieldProps("symbol")}
+                                type="text"
+                                placeholder="Asset Symbol"
+                                className={`mb-2 ${
+                                  touched.symbol && errors.symbol
+                                    ? "outline !outline-red-500"
+                                    : ""
+                                }`}
+                              />
+                              {touched.symbol && errors.symbol && (
+                                <span className="my-2 bg-red-500 rounded px-4 py-1">
+                                  {errors.symbol}
                                 </span>
                               )}
                               <button

@@ -12,6 +12,7 @@ import { useWalletContext } from "../../providers/WalletProvider/WalletProvider"
 
 const ImportToken = () => {
   const [step, setStep] = useState(0);
+  const { _chainId } = useWalletContext();
   const { _promptTokenImport, promptTokenImport, _provider, updateDefaultAssets, _defaultAssets } =
     useContext(appContext);
 
@@ -105,7 +106,7 @@ const ImportToken = () => {
                           type: "erc20",
                         };
 
-                        await updateDefaultAssets(newToken);
+                        await updateDefaultAssets(newToken, _chainId!);
                         setStep(0);
                         resetForm();
                         promptTokenImport();

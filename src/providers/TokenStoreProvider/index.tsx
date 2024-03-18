@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import ABI_ERC20 from "../../abis/ERC20.json";
-import { Contract,  parseUnits } from "ethers";
+import { Contract, parseUnits } from "ethers";
 import { appContext } from "../../AppContext";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
 import { TransactionResponse } from "ethers";
@@ -60,35 +60,51 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
 
   const fetchTokenBalance = useCallback(
     async (tokenAddress: string) => {
-      if (!signer) return;
+      if (!signer) {
+        throw new Error("Signer not available");
+      }
       try {
         // Call balanceOf function
         const contract = new Contract(tokenAddress, ABI_ERC20, _provider);
         const balance = await contract.balanceOf(signer!.address);
-        
         return balance.toString();
       } catch (error) {
-        return 0; // Default to 0 balance
+        // throw new Error(
+        //   `Failed to fetch balance for token ${tokenAddress}: ${error.message}`
+        // );
       }
     },
     [_provider, signer]
   );
 
   useEffect(() => {
+    setTokens([]);
+    console.log("_defaultAssets", _defaultAssets);
     if (_defaultAssets && _defaultAssets.assets.length > 0) {
+      console.log("2. _defaultAssets", _defaultAssets);
+
       (async () => {
-        const calcBalance = await Promise.all(
-          _defaultAssets.assets
-            .filter((_a) => _a.type !== "ether")
-            .map(async (asset) => {
-              asset.balance = await fetchTokenBalance(asset.address);
-              return asset;
-            })
-        );
-        setTokens(calcBalance);
+        try {
+          const calcBalance = await Promise.all(
+            _defaultAssets.assets
+              .filter((_a) => _a.type !== "ether")
+              .map(async (asset) => {
+                // Fetch the updated balance
+                const updatedBalance = await fetchTokenBalance(asset.address);
+                // Create a new object with the updated balance
+                const updatedAsset = { ...asset, balance: updatedBalance };
+                return updatedAsset;
+              })
+          );
+          // Set the state with the new array of assets
+          setTokens(calcBalance);
+        } catch (error) {
+          console.error("Error fetching token balances:", error);
+          // Handle error, e.g., show error message to user or retry
+        }
       })();
     }
-  }, [_defaultAssets, fetchTokenBalance]);
+  }, [_provider, _defaultAssets, fetchTokenBalance]);
 
   const addToken = (token: Asset) => {
     setTokens((prevTokens) => [...prevTokens, token]);
@@ -114,10 +130,12 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
     amount: string
   ) => {
     try {
-      
-      const contract = new Contract(tokenAddress, ABI_ERC20, signer);      
-      const gasUnits = await contract.transfer.estimateGas(recipientAddress, parseUnits(amount, 18));
-      
+      const contract = new Contract(tokenAddress, ABI_ERC20, signer);
+      const gasUnits = await contract.transfer.estimateGas(
+        recipientAddress,
+        parseUnits(amount, 18)
+      );
+
       return gasUnits.toString();
     } catch (error) {
       console.error("Error estimating gas:", error);
@@ -131,12 +149,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
     amount: string,
     gas: GasFeeCalculated
   ) => {
-
-    const _contract = new Contract(
-      tokenAddress,
-      ABI_ERC20,
-      signer
-    );
+    const _contract = new Contract(tokenAddress, ABI_ERC20, signer);
 
     const tx = await _contract.transfer(
       recipientAddress,

@@ -18,6 +18,7 @@ type Props = {
 type Context = {
   _address: string | null;
   _network: string;
+  _chainId: string | null;
   _wallet: Wallet | null;
   _balance: string;
   step: number;
@@ -30,21 +31,26 @@ const WalletContext = createContext<Context | null>(null);
 export const WalletContextProvider = ({ children }: Props) => {
   const { _provider, _generatedKey } = useContext(appContext);
   const [_network, setNetwork] = useState("");
+  const [_chainId, setChainId] = useState<string | null>(null);
   const [_wallet, setWallet] = useState<Wallet | null>(null);
   const [_address, setAddress] = useState<string | null>(null);
   const [_balance, setBalance] = useState(""); // ether balance
   const [step, setStep] = useState(1);
 
   useMemo(async () => {
-    if (!_generatedKey) return;
+    if (!_generatedKey || _provider === null) return;
+    console.log("Update wallet...");
     const wallet = new Wallet(_generatedKey, _provider);
     const address = await wallet.getAddress();
     const network = await _provider.getNetwork();
+    console.log("Network selected..."+ network.name);
+
     const balance = await _provider.getBalance(wallet.address);
     setBalance(formatEther(balance));
     setWallet(wallet);
     setNetwork(network.name);
     setAddress(address);
+    setChainId(network.chainId);
 
   }, [_provider, _generatedKey]);
 
@@ -82,6 +88,7 @@ export const WalletContextProvider = ({ children }: Props) => {
       value={{
         _address,
         _network,
+        _chainId,
         _wallet,
         _balance,
         transfer,

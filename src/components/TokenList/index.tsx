@@ -11,11 +11,11 @@ const TokenList = () => {
   const { _currentNavigation } = useContext(appContext);
   const { _balance, _network } = useWalletContext();
   const { tokens } = useTokenStoreContext();
-
+  console.log('3. TOKENLIST', tokens);
   if (_currentNavigation !== "balance") {
     return null;
   }
-
+  
   return (
     <div className="mx-4 md:mx-0">
       <h3 className="font-bold mb-2">Tokens</h3>

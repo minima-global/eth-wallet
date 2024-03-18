@@ -32,7 +32,7 @@ const Settings = () => {
                     <h3 className="font-bold ml-4">Settings</h3>
                     <svg
                       onClick={promptSettings}
-                      xmlns="http://www.w3.org/2000/svg"                      
+                      xmlns="http://www.w3.org/2000/svg"
                       width="24"
                       height="24"
                       viewBox="0 0 24 24"
