@@ -3,7 +3,7 @@ import { useSpring, animated, config } from "react-spring";
 import Dialog from "../UI/Dialog";
 import { useContext } from "react";
 import { appContext } from "../../AppContext";
-import Cross from "../UI/Cross";
+
 const ReadMode = () => {
   const { _promptReadMode } = useContext(appContext);
 

@@ -5,6 +5,7 @@ import { appContext } from "../../AppContext";
 
 import styles from "./Styles.module.css";
 import { Formik } from "formik";
+import * as yup from "yup";
 
 import Dialog from "../UI/Dialog";
 import EthereumNetwork from "../UI/EthereumNetwork";
@@ -24,8 +25,6 @@ const SelectNetwork = () => {
     updatePreferredNetwork,
   } = useContext(appContext);
   const { _network } = useWalletContext();
-
-  console.log("default", _defaultNetworks);
 
   const [step, setStep] = useState(1);
 
@@ -49,7 +48,7 @@ const SelectNetwork = () => {
   return (
     <>
       <div
-        className="mx-4 my-4 bg-gray-300 dark:bg-black text-black dark:text-white dark:text-opacity-90 p-2 px-3 rounded-full hover:bg-opacity-70 hover:cursor-pointer"
+        className="mx-4 my-4 bg-violet-100 text-black p-2 px-3 rounded-full hover:bg-violet-200 hover:cursor-pointer grid grid-cols-[1fr_auto]"
         onClick={promptSelectNetwork}
       >
         {_network === "mainnet" && <EthereumNetwork />}
@@ -59,7 +58,7 @@ const SelectNetwork = () => {
 
       {_promptSelectNetwork &&
         createPortal(
-          <Dialog dismiss={promptSelectNetwork}>
+          <Dialog extraClass="z-[22]" dismiss={promptSelectNetwork}>
             <div className="h-full grid items-center">
               <animated.div style={springProps}>
                 <div className="bg-white shadow-lg  shadow-slate-300  dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
@@ -91,16 +90,16 @@ const SelectNetwork = () => {
                           <li
                             key="1"
                             onClick={() => handleNetworkChange("mainnet")}
-                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
+                            className={`flex items-center gap-2 p-4 ${
                               _network === "mainnet"
                                 ? " bg-indigo-400 text-white font-bold dark:bg-indigo-600 "
-                                : ""
+                                : " hover:bg-violet-100 hover:text-black"
                             }`}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="32"
-                              height="32"
+                              height="33"
                             >
                               <g fill="none" fillRule="evenodd">
                                 <circle cx="16" cy="16" r="16" fill="#627EEA" />
@@ -134,13 +133,13 @@ const SelectNetwork = () => {
                           <li
                             key="11155111"
                             onClick={() => handleNetworkChange("sepolia")}
-                            className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
+                            className={`flex items-center gap-2  p-4 ${
                               _network === "sepolia"
                                 ? "bg-indigo-400 text-white font-bold dark:bg-indigo-600"
-                                : ""
+                                : " hover:bg-violet-100 hover:text-black"
                             }`}
                           >
-                            <div className="rounded-full w-8 h-8 bg-gray-300 flex justify-center items-center">
+                            <div className="rounded-full w-8 h-8 bg-violet-300 flex justify-center items-center">
                               <span className="text-gray-600 font-bold text-xl">
                                 S
                               </span>
@@ -156,7 +155,7 @@ const SelectNetwork = () => {
                                 Custom networks
                               </h6>
                               <a
-                                className="mx-4 px-2 hover:bg-indigo-500 hover:text-indigo-200 cursor-pointer text-sm rounded bg-none text-indigo-500 border border-indigo-500"
+                                className="mx-4 px-2 hover:bg-indigo-500 hover:text-indigo-200 hover:font-bold cursor-pointer text-sm rounded bg-none text-indigo-500 border border-indigo-500"
                                 onClick={() => setStep(2)}
                               >
                                 Add Network
@@ -169,26 +168,28 @@ const SelectNetwork = () => {
                                 No custom networks added yet
                               </p>
                             )}
-                            <ul className="mb-4">
+                            <ul className="mb-4 max-h-32 overflow-y-auto">
                               {Object.keys(_defaultNetworks)
                                 .filter(
                                   (k) => k !== "mainnet" && k !== "sepolia"
                                 )
                                 .map((k) => (
                                   <li
-                                   key={_defaultNetworks[k].chainId}
+                                    key={_defaultNetworks[k].chainId}
                                     onClick={() =>
                                       handleNetworkChange(
                                         _defaultNetworks[k].name
                                       )
                                     }
-                                    className={`flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white dark:hover:text-black p-4 ${
-                                      ((_network === "unknown" )&& _currentNetwork === _defaultNetworks[k].name)
+                                    className={`flex items-center gap-2 p-4 ${
+                                      _network === "unknown" &&
+                                      _currentNetwork ===
+                                        _defaultNetworks[k].name
                                         ? "bg-indigo-400 text-white font-bold dark:bg-indigo-600"
-                                        : ""
+                                        : " hover:bg-violet-100 hover:text-black"
                                     }`}
                                   >
-                                    <div className="rounded-full w-8 h-8 bg-gray-300 flex justify-center items-center">
+                                    <div className="rounded-full w-8 h-8 bg-violet-300 flex justify-center items-center">
                                       <span className="text-gray-600 font-bold text-xl">
                                         {_defaultNetworks[k].name
                                           .charAt(0)
@@ -215,6 +216,30 @@ const SelectNetwork = () => {
 
                       <div className="grid grid-cols-1">
                         <Formik
+                          validationSchema={yup.object().shape({
+                            rpc: yup
+                              .string()
+                              .test(
+                                "unique-rpc",
+                                "This RPC already exists on the network",
+                                function (value) {
+                                  const { path, createError } = this;
+                                  const networkWithRPC: any = Object.values(
+                                    _defaultNetworks
+                                  ).find((network: any) => network.rpc === value);
+
+                                  if (networkWithRPC) {
+                                    const networkName = networkWithRPC.name;
+                                    return createError({
+                                      path,
+                                      message: `This RPC already exists on the network ${networkName}`,
+                                    });
+                                  }
+
+                                  return true;
+                                }
+                              ),
+                          })}
                           initialValues={{
                             rpc: "",
                             name: "",
@@ -270,8 +295,8 @@ const SelectNetwork = () => {
                                     : ""
                                 }`}
                               />
-                              {touched.rpc && errors.rpc && (
-                                <span className="my-2 bg-red-500 rounded px-4 py-1">
+                              {errors.rpc && (
+                                <span className="text-white bg-red-500 rounded px-4 py-1">
                                   {errors.rpc}
                                 </span>
                               )}
@@ -329,7 +354,7 @@ const SelectNetwork = () => {
                               <button
                                 type="submit"
                                 disabled={!isValid}
-                                className="bg-black text-white dark:bg-white dark:text-black p-4 font-bold disabled:bg-slate-300"
+                                className="bg-black text-white dark:bg-white dark:text-black p-4 font-bold disabled:bg-slate-300 dark:disabled:bg-opacity-10 dark:disabled:text-gray-600"
                               >
                                 Add
                               </button>

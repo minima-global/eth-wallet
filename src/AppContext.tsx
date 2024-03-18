@@ -23,6 +23,7 @@ interface IProps {
 }
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
+  const [isWorking, setWorking] = useState(false);
   const [_defaultAssets, setDefaultAssets] = useState<{ assets: Asset[] }>({
     assets: [],
   });
@@ -55,11 +56,10 @@ const AppProvider = ({ children }: IProps) => {
 
   useEffect(() => {
     (async () => {
-
       // if MDS inited then we can run our init SQL/re-sql on network change
       if (loaded && loaded.current && _provider) {
-
-        setDefaultAssets({assets: []});
+        setWorking(true);
+        setDefaultAssets({ assets: [] });
 
         // We get the current provider
         const currentNetwork = await _provider.getNetwork();
@@ -67,7 +67,6 @@ const AppProvider = ({ children }: IProps) => {
         const defaultAssets: any = await sql(
           `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${currentNetwork.chainId}'`
         );
-
 
         // if exists, set them in memory
         if (defaultAssets) {
@@ -98,6 +97,7 @@ const AppProvider = ({ children }: IProps) => {
           );
           setDefaultAssets({ assets: _d });
         }
+        setWorking(false);
       }
     })();
   }, [_provider, loaded]);
@@ -124,11 +124,11 @@ const AppProvider = ({ children }: IProps) => {
           });
 
           (async () => {
+            setWorking(true);
             // Initialize cache-ing table
             await sql(
               `CREATE TABLE IF NOT EXISTS cache (name varchar(255), data longtext);`
             );
-            
 
             // Now we check if user has previously chosen a network, if not connect Sepolia
             const cachedNetwork: any = await sql(
@@ -163,7 +163,10 @@ const AppProvider = ({ children }: IProps) => {
             // User preference
             if (cachedNetwork) {
               const previouslySetNetwork = JSON.parse(cachedNetwork.DATA);
-              setRPCNetwork(previouslySetNetwork.default, JSON.parse(defaultNetworks.DATA));
+              setRPCNetwork(
+                previouslySetNetwork.default,
+                JSON.parse(defaultNetworks.DATA)
+              );
             } else {
               // initialize
               await sql(
@@ -174,6 +177,8 @@ const AppProvider = ({ children }: IProps) => {
 
               setRPCNetwork("sepolia", networks);
             }
+
+            setWorking(false);
           })();
         }
       });
@@ -206,11 +211,10 @@ const AppProvider = ({ children }: IProps) => {
 
   const setRPCNetwork = (network: string, networks: Networks) => {
     const networkToConnect =
-    networks && networks[network]
-    ? new JsonRpcProvider(networks[network].rpc)
-    : null;
+      networks && networks[network]
+        ? new JsonRpcProvider(networks[network].rpc)
+        : null;
 
-    
     setProvider(networkToConnect);
     setCurrentNetwork(network);
   };
@@ -312,7 +316,6 @@ const AppProvider = ({ children }: IProps) => {
       `SELECT * FROM cache WHERE name = 'DEFAULTNETWORKS'`
     );
 
-
     setRPCNetwork(name, JSON.parse(defaultNetworks.DATA));
 
     const rows = await sql(
@@ -334,6 +337,7 @@ const AppProvider = ({ children }: IProps) => {
     }
 
     promptSelectNetwork();
+    promptSettings();
   };
 
   const createKey = (key: string) => {
@@ -344,6 +348,7 @@ const AppProvider = ({ children }: IProps) => {
     <appContext.Provider
       value={{
         loaded,
+        isWorking,
 
         _promptReadMode,
 
