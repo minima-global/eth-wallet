@@ -247,13 +247,24 @@ const UserAccount = () => {
                         className="mt-2 font-bold w-full rounded-lg text-white bg-purple-500"
                       >
                         {held
-                          ? `Revealing... (${Math.ceil(remainingTime / 1000)}s)`
+                          ? `Hold to reveal... (${Math.ceil(remainingTime / 1000)}s)`
                           : `View private key`}
                       </button>
                     )}
                     {viewKey && (
                       <div className="my-2">
                         <PrivateKey fullAddress />
+                        <div
+                          className="max-w-xs my-2 mx-auto bg-red-700 border border-red-800 text-red-100 px-4 py-3 rounded relative"
+                          role="alert"
+                        >
+                          <strong className="font-bold">Warning</strong>
+                          <span className="block sm:inline">
+                            Never share your private key with anyone! Doing so
+                            could result in the loss of your funds.
+                          </span>
+                         
+                        </div>
                         <button
                           onClick={() => handleEnd()}
                           className="w-full bg-violet-500 text-white font-bold"

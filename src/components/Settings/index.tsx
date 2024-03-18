@@ -36,7 +36,7 @@ const Settings = () => {
                       width="24"
                       height="24"
                       viewBox="0 0 24 24"
-                      strokeWidth="2.5"
+                      strokeWidth="4.5"
                       stroke="currentColor"
                       fill="none"
                       strokeLinecap="round"

@@ -41,12 +41,12 @@ const PrivateKey = ({ fullAddress = false }) => {
     >
       {fullAddress && (
         <textarea
-          rows={4}
+          rows={3}
           readOnly
           onClick={handleCopy}
           onKeyDown={handleKeyDown}
           onDoubleClick={handleDoubleClick}
-          className="p-2 text-left font-bold rounded-lg focus:bg-teal-200 pr-10 break-all focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max max-h-min bg-violet-300"
+          className="p-2 text-left font-bold rounded-lg focus:bg-teal-200 pr-10 break-all focus:outline-teal-600 dark:focus:text-black px-3 text-sm w-full bg-violet-300"
           value={_generatedKey ? _generatedKey : "N/A"}
         />
       )}
@@ -56,7 +56,7 @@ const PrivateKey = ({ fullAddress = false }) => {
         style={{
           color: "#0809ab",
           position: "absolute",
-          top: 35,
+          top: 25,
           right: 10,
           strokeDasharray: 50,
           strokeDashoffset: copied ? -50 : 0,
@@ -83,7 +83,7 @@ const PrivateKey = ({ fullAddress = false }) => {
         style={{
           color: "black",
           position: "absolute",
-          top: 33,
+          top: 25,
           right: 8,
           strokeDasharray: 50,
           strokeDashoffset: copied ? 0 : -50,
