@@ -84,7 +84,7 @@ const UserAccount = () => {
         className="bg-white hover:cursor-pointer hover:bg-opacity-80 flex items-center w-max gap-2 justify-between bg-opacity-90 px-4 py-2 pr-2 rounded-lg text-center"
       >
         {_wallet && _wallet!.address && (
-          <Bear extraClass="w-[32px]" input={_wallet!.address} />
+          <Bear extraClass="!w-[24px]" input={_wallet!.address} />
         )}
         <h3 className="truncate font-bold max-w-[128px] dark:text-black">
           {_wallet &&
