@@ -1,13 +1,14 @@
 import ConversionRateUSD from "../ConversionRateUSD";
 import { useGasContext } from "../../providers/GasProvider";
 import { useFormikContext } from "formik";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useSpring, animated, config } from "react-spring";
 import Dialog from "../UI/Dialog";
 import { createPortal } from "react-dom";
 import GasCard from "./GasCard";
 import Decimal from "decimal.js";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import { appContext } from "../../AppContext";
 
 /**
  * @EIP1559
@@ -29,6 +30,7 @@ function GasEstimation() {
     clearGas,
     asset,
   } = useGasContext();
+  const {_defaultNetworks, _currentNetwork } = useContext(appContext);
 
   const springProps = useSpring({
     opacity: showGasCards ? 1 : 0,
@@ -222,7 +224,7 @@ function GasEstimation() {
                     {new Decimal(formik.values.amount)
                       .plus(gas.finalGasFee)
                       .toString()}{" "}
-                    ETH
+                    {_defaultNetworks[_currentNetwork].symbol}
                   </h3>
                   <ConversionRateUSD
                     amount={formik.values.amount}

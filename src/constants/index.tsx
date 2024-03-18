@@ -1,5 +1,5 @@
 import { Asset } from "../types/Asset";
-import { Network, Networks } from "../types/Network";
+import { Networks } from "../types/Network";
 
 const defaultAssetsStored: Asset[] = [
   {
@@ -47,10 +47,10 @@ export const networks: Networks = {
     symbol: "ETH"
   },
   sepolia: {
-    name: "Sepolia",
+    name: "SepoliaETH",
     rpc: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
     chainId: "11155111",
-    symbol: "Sepolia ETH"
+    symbol: "SepoliaETH"
   }
 };
 // default assets..

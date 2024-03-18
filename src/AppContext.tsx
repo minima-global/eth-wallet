@@ -54,6 +54,7 @@ const AppProvider = ({ children }: IProps) => {
     thousands: ",",
   });
 
+
   useEffect(() => {
     (async () => {
       // if MDS inited then we can run our init SQL/re-sql on network change
@@ -141,7 +142,7 @@ const AppProvider = ({ children }: IProps) => {
             // Get all user's saved addresses
             const addressBook: any = await sql(
               `SELECT * FROM cache WHERE name = 'ADDRESSBOOK'`
-            );
+            );           
 
             if (addressBook) {
               setAddressBook(JSON.parse(addressBook.DATA));

@@ -4,9 +4,9 @@ import { useSpring, animated, config } from "react-spring";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { Asset } from "../../types/Asset";
-import { appContext } from "../../AppContext";
 import { formatEther } from "ethers";
-import { _defaults } from "../../constants";
+import defaultAssetsStored, { _defaults } from "../../constants";
+import { appContext } from "../../AppContext";
 
 const SelectAsset = () => {
   const formik: any = useFormikContext();
@@ -14,11 +14,11 @@ const SelectAsset = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { tokens } = useTokenStoreContext();
-  const { _defaultAssets } = useContext(appContext);
   const { _balance, _network } = useWalletContext();
 
-  
-  const Ethereum = _defaultAssets.assets[0];
+  const { _currentNetwork, _defaultNetworks } = useContext(appContext);
+
+  const Ethereum = defaultAssetsStored[0];
 
   const springProps = useSpring({
     opacity: active ? 1 : 0,
@@ -167,7 +167,7 @@ const SelectAsset = () => {
               </li>
             ))}
             <li
-              onClick={() => handleSelect({ ...Ethereum, balance: _balance })}
+              onClick={() => handleSelect({ ...Ethereum, balance: _balance, name: _defaultNetworks[_currentNetwork].name, symbol: _defaultNetworks[_currentNetwork].symbol })}
               className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white  hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
             >
               <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
@@ -196,7 +196,7 @@ const SelectAsset = () => {
               </div>
               <div>
                 <h6 className="m-0 p-0 font-bold text-white dark:text-black">
-                  Ethereum
+                  {_defaultNetworks[_currentNetwork].name}
                 </h6>
                 <p className="m-0 p-0 text-sm opacity-80 font-mono text-white dark:text-black">
                   {_balance}

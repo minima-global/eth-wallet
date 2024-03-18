@@ -24,7 +24,7 @@ import TransactionReceiptCard from "../TransactionReceipt";
 
 const Send = () => {
   const { gas, clearGas } = useGasContext();
-  const { _currentNavigation, handleNavigation } = useContext(appContext);
+  const { _currentNavigation, handleNavigation, _defaultNetworks, _currentNetwork } = useContext(appContext);
   const { transferToken, tokens } = useTokenStoreContext();
   const { _wallet, _balance, _network, transfer } = useWalletContext();
   const [step, setStep] = useState(1);
@@ -52,7 +52,6 @@ const Send = () => {
   const initialTokenShouldBeMinimaIfExists = tokens.find(
     (token) => token.address === _defaults["wMinima"][_network]
   );
-
   return (
     _currentNavigation === "send" &&
     createPortal(
@@ -148,8 +147,8 @@ const Send = () => {
                   asset: initialTokenShouldBeMinimaIfExists
                     ? initialTokenShouldBeMinimaIfExists
                     : {
-                        name: "Ethereum",
-                        symbol: "ETH",
+                        name: _defaultNetworks[_currentNetwork].name,
+                        symbol: _defaultNetworks[_currentNetwork].symbol,
                         balance: _balance,
                         address: "",
                         type: "ether",
