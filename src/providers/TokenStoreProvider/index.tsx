@@ -97,7 +97,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
           // Set the state with the new array of assets
           setTokens(calcBalance);
         } catch (error) {
-          console.error("Error fetching token balances:", error);
+          // console.error("Error fetching token balances:", error);
           // Handle error, e.g., show error message to user or retry
         }
       })();

@@ -39,7 +39,7 @@ const AddressBookAdd = ({ address }) => {
   }
 
   return createPortal(
-    <Dialog dismiss={promptAddressBookAdd}>
+    <Dialog extraClass="z-[26]" dismiss={promptAddressBookAdd}>
       <div className="h-full grid items-start">
         <animated.div style={springProps}>
           <div className="bg-white shadow-lg mt-[80px] shadow-slate-300  dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">

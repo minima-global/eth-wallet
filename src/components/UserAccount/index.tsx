@@ -81,10 +81,12 @@ const UserAccount = () => {
     <>
       <div
         onClick={() => setPromptUserAccountDetails(true)}
-        className="bg-white hover:cursor-pointer hover:bg-opacity-80 flex items-center w-max gap-2 justify-between bg-opacity-90 px-4 py-2 pr-2 rounded-lg text-center"
+        className="bg-black hover:bg-teal-300 bg-opacity-10 hover:cursor-pointer flex items-center w-max gap-2 justify-between px-1 rounded-lg text-center"
       >
         {_wallet && _wallet!.address && (
-          <Bear extraClass="!w-[24px]" input={_wallet!.address} />
+          <div className="h-full flex items-center justify-center">
+            <Bear extraClass=" !h-full w-[34px]" input={_wallet!.address} />
+          </div>
         )}
         <h3 className="truncate font-bold max-w-[128px] dark:text-black">
           {_wallet &&
@@ -120,28 +122,65 @@ const UserAccount = () => {
             <div className="h-full grid items-start">
               <animated.div style={springProps}>
                 <div className="bg-white shadow-lg shadow-violet-300 mt-[80px] dark:bg-black w-[calc(100%_-_16px)] md:w-full py-8 px-4 rounded-lg mx-auto">
-                  <div className="grid grid-cols-[1fr_auto]">
-                    <div className="mx-auto">
-                      <Bear input={_wallet!.address} />
-                    </div>
+                  <div className="flex justify-between items-center">
                     <Cross dismiss={() => setPromptUserAccountDetails(false)} />
+                    {window.navigator.userAgent.includes("Minima Browser") && (
+                      <div
+                        onClick={() => {
+                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                          // @ts-ignore
+                          Android.shareFile(_wallet!.address, "*/*");
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="icon icon-tabler icon-tabler-user-share"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                          <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                          <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                          <path d="M8.7 10.7l6.6 -3.4" />
+                          <path d="M8.7 13.3l6.6 3.4" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    onClick={promptAccountNameUpdate}
+                    className="flex items-center justify-center"
+                  >
+                    <Bear
+                      extraClass=" w-[160px] md:w-[220px]"
+                      input={_wallet!.address}
+                    />
                   </div>
                   <div className="mx-auto">
                     {!_promptAccountNameUpdate && (
-                      <div className="flex gap-1 items-center justify-center">
-                        <h3 className="font-bold max-w-[128px] truncate">
+                      <div className="flex gap-1 mt-3 items-center justify-center">
+                        <h3 className="font-bold max-w-[128px] dark:text-teal-300 md:text-xl truncate">
                           {_addressBook[_wallet!.address] &&
                           _addressBook[_wallet!.address].length
                             ? _addressBook[_wallet!.address]
-                            : "Account"}
+                            : "MiniGhost"}
                         </h3>
+
                         <svg
                           onClick={promptAccountNameUpdate}
                           xmlns="http://www.w3.org/2000/svg"
                           width="18"
                           height="18"
                           viewBox="0 0 24 24"
-                          strokeWidth="2.5"
+                          strokeWidth="3.5"
                           stroke="currentColor"
                           fill="none"
                           strokeLinecap="round"
@@ -189,11 +228,15 @@ const UserAccount = () => {
                       </div>
                     )}
                   </div>
-                  <div className="mt-4 flex justify-center items-center">
-                    {_wallet && <QRCode size={200} value={_wallet!.address} />}
-                  </div>
+                  {!viewKey && (
+                    <div className="mt-4 flex justify-center items-center">
+                      {_wallet && (
+                        <QRCode size={165} value={_wallet!.address} />
+                      )}
+                    </div>
+                  )}
                   <div className="w-max mx-auto my-4">
-                    <WalletAddress fullAddress />
+                    {!viewKey && <WalletAddress fullAddress />}
                     {!viewKey && (
                       <button
                         onMouseDown={handleStart}
@@ -246,8 +289,8 @@ const Bear = ({ input, extraClass }: BearProps) => {
   const svg = avatar.toDataUriSync();
 
   return (
-    <div className="mb-1 rounded-full bg-teal-300">
-      <img className={`w-[56px] ${extraClass && extraClass}`} src={svg} />
+    <div className="rounded-full bg-teal-300">
+      <img className={`${extraClass && extraClass}`} src={svg} />
     </div>
   );
 };

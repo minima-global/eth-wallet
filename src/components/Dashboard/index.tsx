@@ -16,6 +16,7 @@ import { etherscan } from "../../constants";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import ReadMode from "../ReadMode";
 import AppLoading from "../AppLoading";
+import TokenDetails from "../TokenList/TokenDetails";
 
 const Dashboard = () => {
   const { _network, _address } = useWalletContext();
@@ -267,6 +268,7 @@ const Dashboard = () => {
         <main>
           <section>
             <section />
+            <TokenDetails />
             <AppLoading />
             <Settings />            
             <ReadMode />

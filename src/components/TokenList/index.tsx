@@ -8,7 +8,7 @@ import ImportToken from "../ImportToken";
 import { _defaults } from "../../constants";
 
 const TokenList = () => {
-  const { _currentNavigation } = useContext(appContext);
+  const { _currentNavigation, promptTokenDetails } = useContext(appContext);
   const { _balance, _network } = useWalletContext();
   const { tokens } = useTokenStoreContext();
   if (_currentNavigation !== "balance") {
@@ -22,6 +22,7 @@ const TokenList = () => {
       <ul>
         {tokens.map((token) => (
           <li
+            onClick={() => promptTokenDetails(token)}
             key={token.address}
             className="grid grid-cols-[auto_1fr] bg-white items-center rounded-md dark:bg-opacity-10 bg-opacity-30 p-2 hover:bg-opacity-80 dark:hover:bg-opacity-30 mb-2"
           >

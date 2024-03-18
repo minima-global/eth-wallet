@@ -27,6 +27,7 @@ const AppProvider = ({ children }: IProps) => {
   const [_defaultAssets, setDefaultAssets] = useState<{ assets: Asset[] }>({
     assets: [],
   });
+  const [_tokenDetails, setTokenDetails] = useState<any>(null);
   const [_currentNetwork, setCurrentNetwork] = useState("");
   const [_defaultNetworks, setDefaultNetworks] = useState<Networks | null>(
     null
@@ -40,6 +41,7 @@ const AppProvider = ({ children }: IProps) => {
   const [_provider, setProvider] = useState<JsonRpcProvider | null>(null); //  new JsonRpcProvider(networks["sepolia"].rpc)
   const [_promptReadMode, setReadMode] = useState<null | boolean>(null);
   const [_promptSettings, setPromptSettings] = useState(false);
+  const [_promptTokenDetails, setPromptTokenDetails] = useState<false | any>(false);
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
   const [_promptTokenImport, setImportTokenImport] = useState(false);
   const [_promptAccountNameUpdate, setPromptAccountNameUpdate] =
@@ -209,6 +211,11 @@ const AppProvider = ({ children }: IProps) => {
   const promptTokenImport = () => {
     setImportTokenImport((prevState) => !prevState);
   };
+  
+  const promptTokenDetails = (token: any) => {
+    setTokenDetails(prevState => prevState === token ? false : token);
+    setPromptTokenDetails((prevState) => !prevState);
+  };
 
   const setRPCNetwork = (network: string, networks: Networks) => {
     const networkToConnect =
@@ -363,6 +370,10 @@ const AppProvider = ({ children }: IProps) => {
 
         _generatedKey,
         createKey,
+
+        _tokenDetails,
+        _promptTokenDetails,
+        promptTokenDetails,
 
         _promptSelectNetwork,
         promptSelectNetwork,

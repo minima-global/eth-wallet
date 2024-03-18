@@ -38,7 +38,7 @@ const ImportToken = () => {
     <>
       <div className="flex justify-center my-4">
         <button
-          className="bg-black text-black dark:text-white bg-opacity-10 rounded flex items-center gap-2 font-bold text-lighter hover:bg-opacity-20"
+          className="bg-violet-300 text-black dark:text-white bg-opacity-10 rounded flex items-center gap-2 font-bold text-lighter hover:bg-opacity-30"
           onClick={promptTokenImport}
         >
           <svg
@@ -77,7 +77,7 @@ const ImportToken = () => {
                       width="24"
                       height="24"
                       viewBox="0 0 24 24"
-                      strokeWidth="2.5"
+                      strokeWidth="4.5"
                       stroke="currentColor"
                       fill="none"
                       strokeLinecap="round"

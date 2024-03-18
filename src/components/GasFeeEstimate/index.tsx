@@ -30,7 +30,7 @@ function GasEstimation() {
     clearGas,
     asset,
   } = useGasContext();
-  const {_defaultNetworks, _currentNetwork } = useContext(appContext);
+  const { _defaultNetworks, _currentNetwork } = useContext(appContext);
 
   const springProps = useSpring({
     opacity: showGasCards ? 1 : 0,
@@ -91,29 +91,58 @@ function GasEstimation() {
                       <path d="M6 6l12 12" />
                     </svg>
                   </div>
-                  <div className="grid grid-cols-3 mx-4 text-sm">
-                    <h3>Gas option</h3>
-                    <h3>Time</h3>
-                    <h3>Max fee (ETH)</h3>
-                  </div>
-                  {gas && gas.gasUnits && (
-                    <div className="flex flex-col gap-2 mt-4 px-4">
-                      <GasCard
-                        gasUnit={BigInt(gas!.gasUnits)}
-                        type="low"
-                        card={gasCard!.low}
-                      />
-                      <GasCard
-                        gasUnit={BigInt(gas!.gasUnits)}
-                        type="medium"
-                        card={gasCard!.medium}
-                      />
-                      <GasCard
-                        gasUnit={BigInt(gas!.gasUnits)}
-                        type="high"
-                        card={gasCard!.high}
-                      />
+                  {loading && (
+                    <div className="my-4 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="animate-spin mr-2"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969" />
+                        <path d="M14 3.223a9.003 9.003 0 0 1 0 17.554" />
+                        <path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592" />
+                        <path d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305" />
+                        <path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356" />
+                        <path d="M12 9l-2 3h4l-2 3" />
+                      </svg>
+                      <p className="animate-pulse">Calculating...</p>
                     </div>
+                  )}
+                  {!loading && (
+                    <>
+                      <div className="grid grid-cols-3 mx-4 text-sm">
+                        <h3>Gas option</h3>
+                        <h3>Time</h3>
+                        <h3>Max fee (ETH)</h3>
+                      </div>
+                      {gas && gas.gasUnits && (
+                        <div className="flex flex-col gap-2 mt-4 px-4">
+                          <GasCard
+                            gasUnit={BigInt(gas!.gasUnits)}
+                            type="low"
+                            card={gasCard!.low}
+                          />
+                          <GasCard
+                            gasUnit={BigInt(gas!.gasUnits)}
+                            type="medium"
+                            card={gasCard!.medium}
+                          />
+                          <GasCard
+                            gasUnit={BigInt(gas!.gasUnits)}
+                            type="high"
+                            card={gasCard!.high}
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
                   <div className="px-4">
                     <hr className="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700" />
@@ -161,29 +190,34 @@ function GasEstimation() {
         )}
       <div className="flex justify-between items-center mx-4">
         <div />
-        {_network === 'mainnet' || _network === 'sepolia' || _network === 'goerli' ? <div>
-          <svg
-            onClick={promptGasCards}
-            className="cursor-pointer"
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            strokeWidth="2.0"
-            stroke="currentColor"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M14 11h1a2 2 0 0 1 2 2v3a1.5 1.5 0 0 0 3 0v-7l-3 -3" />
-            <path d="M4 20v-14a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v14" />
-            <path d="M3 20l12 0" />
-            <path d="M18 7v1a1 1 0 0 0 1 1h1" />
-            <path d="M4 11l10 0" />
-          </svg>
-        </div> : <div/>}
-        
+        {_network === "mainnet" ||
+        _network === "sepolia" ||
+        _network === "goerli" ? (
+          <div>
+            <svg
+              onClick={promptGasCards}
+              className="cursor-pointer"
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              strokeWidth="2.0"
+              stroke="currentColor"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M14 11h1a2 2 0 0 1 2 2v3a1.5 1.5 0 0 0 3 0v-7l-3 -3" />
+              <path d="M4 20v-14a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v14" />
+              <path d="M3 20l12 0" />
+              <path d="M18 7v1a1 1 0 0 0 1 1h1" />
+              <path d="M4 11l10 0" />
+            </svg>
+          </div>
+        ) : (
+          <div />
+        )}
       </div>
 
       <div
@@ -215,7 +249,7 @@ function GasEstimation() {
         <h3 className="font-bold">Total</h3>
         <div>
           {!gas && loading && <Spinner />}
-            
+
           {gas && !loading && (
             <div className="text-right font-mono">
               {formik.values.asset.type === "ether" && (
@@ -235,7 +269,9 @@ function GasEstimation() {
 
               {formik.values.asset.type === "erc20" && (
                 <div>
-                  <h3 className="font-mono text-sm font-bold">{formik.values.amount} {formik.values.asset.symbol}</h3>
+                  <h3 className="font-mono text-sm font-bold">
+                    {formik.values.amount} {formik.values.asset.symbol}
+                  </h3>
                   <p className="font-mono text-sm">{gas.finalGasFee} ETH</p>
                   <ConversionRateUSD
                     amount={gas.finalGasFee}

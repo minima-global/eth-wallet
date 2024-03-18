@@ -7,13 +7,17 @@ import { etherscan } from "../../constants";
 const DesktopNav = () => {
   const { _currentNavigation, handleNavigation } = useContext(appContext);
   const { _address, _network } = useWalletContext();
-  
+
   return (
     <section className={styles["desktop__navigation"]}>
       <nav>
         <button
           className={`bg-black flex items-center justify-center gap-3 transition-all delay-100 duration-100 font-bold ${
             _currentNavigation === "balance" ? " outline outline-teal-500" : ""
+          } ${
+            _currentNavigation !== "balance"
+              ? "hover:bg-teal-500 hover:text-white"
+              : ""
           }`}
           disabled={_currentNavigation === "balance"}
           onClick={() => handleNavigation("balance")}
@@ -51,6 +55,10 @@ const DesktopNav = () => {
         <button
           className={`bg-black flex items-center justify-center gap-3 transition-all delay-100 duration-100 font-bold ${
             _currentNavigation === "send" ? " outline outline-teal-500" : ""
+          } ${
+            _currentNavigation !== "send"
+              ? "hover:bg-teal-500 hover:text-white"
+              : ""
           }`}
           disabled={_currentNavigation === "send"}
           onClick={() => handleNavigation("send")}
@@ -88,6 +96,10 @@ const DesktopNav = () => {
         <button
           className={`bg-black flex items-center justify-center gap-3 transition-all delay-100 duration-100 font-bold ${
             _currentNavigation === "activity" ? " outline outline-teal-500" : ""
+          } ${
+            _currentNavigation !== "activity"
+              ? "hover:bg-teal-500 hover:text-white"
+              : ""
           }`}
           disabled={_currentNavigation === "activity"}
           onClick={() => window.open(`${etherscan[_network].rpc}${_address}`)}

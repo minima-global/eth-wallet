@@ -395,7 +395,7 @@ const Send = () => {
                       <TransactionReceiptCard recipient={values.address} asset={values.asset} receipt={values.receipt} gasPaid={values.gasPaid} amountSent={values.amount} />
                     )}
                     <div
-                      className={`${styles["button__navigation"]} ${
+                      className={` mt-8 ${styles["button__navigation"]} ${
                         step === 1 || step === 4
                           ? styles.button__navigation_one
                           : ""
@@ -443,7 +443,7 @@ const Send = () => {
                             <button
                               type="submit"
                               disabled={!isValid || loading || !gas}
-                              className="bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="bg-teal-300 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
                             >
                               Send
                             </button>
