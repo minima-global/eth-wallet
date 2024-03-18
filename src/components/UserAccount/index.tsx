@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSpring, animated, config } from "react-spring";
 
@@ -9,6 +9,11 @@ import { useWalletContext } from "../../providers/WalletProvider/WalletProvider"
 import { appContext } from "../../AppContext";
 import QRCode from "react-qr-code";
 import WalletAddress from "../WalletAddress";
+import PrivateKey from "../PrivateKey";
+
+import { createAvatar } from "@dicebear/core";
+import { notionists } from "@dicebear/collection";
+import Cross from "../UI/Cross";
 
 const UserAccount = () => {
   const [promptUserAccountDetails, setPromptUserAccountDetails] =
@@ -22,8 +27,35 @@ const UserAccount = () => {
     updateAddressBook,
   } = useContext(appContext);
 
+  const [viewKey, setViewKey] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(5000);
+  const [held, setHeld] = useState(false);
+  const timeoutRef: any = useRef(null);
+
   const handleChange = (e) => {
     setNickname(e.target.value);
+  };
+
+  const handleStart = () => {
+    timeoutRef.current = setInterval(() => {
+      setRemainingTime((prevTime) => {
+        if (prevTime <= 0) {
+          clearInterval(timeoutRef.current);
+          setHeld(true);
+          setViewKey(true);
+          return 0;
+        }
+        return prevTime - 1000;
+      });
+    }, 1000);
+    setHeld(true);
+  };
+
+  const handleEnd = () => {
+    setViewKey(false);
+    clearInterval(timeoutRef.current);
+    setRemainingTime(5000);
+    setHeld(false);
   };
 
   useEffect(() => {
@@ -51,7 +83,10 @@ const UserAccount = () => {
         onClick={() => setPromptUserAccountDetails(true)}
         className="bg-white hover:cursor-pointer hover:bg-opacity-80 flex items-center w-max gap-2 justify-between bg-opacity-90 px-4 py-2 pr-2 rounded-lg text-center"
       >
-        <h3 className="truncate font-bold dark:text-black">
+        {_wallet && _wallet!.address && (
+          <Bear extraClass="w-[32px]" input={_wallet!.address} />
+        )}
+        <h3 className="truncate font-bold max-w-[128px] dark:text-black">
           {_wallet &&
           _addressBook[_wallet!.address] &&
           _addressBook[_wallet!.address].length
@@ -84,11 +119,17 @@ const UserAccount = () => {
           <Dialog dismiss={() => setPromptUserAccountDetails(false)}>
             <div className="h-full grid items-start">
               <animated.div style={springProps}>
-                <div className="bg-white shadow-lg mt-[80px] shadow-slate-300  dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
+                <div className="bg-white shadow-lg shadow-violet-300 mt-[80px] dark:bg-black w-[calc(100%_-_16px)] md:w-full py-8 px-4 rounded-lg mx-auto">
+                  <div className="grid grid-cols-[1fr_auto]">
+                    <div className="mx-auto">
+                      <Bear input={_wallet!.address} />
+                    </div>
+                    <Cross dismiss={() => setPromptUserAccountDetails(false)} />
+                  </div>
                   <div className="mx-auto">
                     {!_promptAccountNameUpdate && (
                       <div className="flex gap-1 items-center justify-center">
-                        <h3 className="font-bold">
+                        <h3 className="font-bold max-w-[128px] truncate">
                           {_addressBook[_wallet!.address] &&
                           _addressBook[_wallet!.address].length
                             ? _addressBook[_wallet!.address]
@@ -151,11 +192,34 @@ const UserAccount = () => {
                   <div className="mt-4 flex justify-center items-center">
                     {_wallet && <QRCode size={200} value={_wallet!.address} />}
                   </div>
-                  <div className="flex flex-col items-center mt-4">
+                  <div className="w-max mx-auto my-4">
                     <WalletAddress fullAddress />
-                    {/* <button className="font-bold text-white bg-purple-500">Show private key</button> */}
+                    {!viewKey && (
+                      <button
+                        onMouseDown={handleStart}
+                        onMouseUp={handleEnd}
+                        onMouseLeave={handleEnd}
+                        onTouchStart={handleStart}
+                        onTouchEnd={handleEnd}
+                        className="mt-2 font-bold w-full rounded-lg text-white bg-purple-500"
+                      >
+                        {held
+                          ? `Revealing... (${Math.ceil(remainingTime / 1000)}s)`
+                          : `View private key`}
+                      </button>
+                    )}
+                    {viewKey && (
+                      <div className="my-2">
+                        <PrivateKey fullAddress />
+                        <button
+                          onClick={() => handleEnd()}
+                          className="w-full bg-violet-500 text-white font-bold"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    )}
                   </div>
-                
                 </div>
               </animated.div>
             </div>
@@ -167,3 +231,23 @@ const UserAccount = () => {
 };
 
 export default UserAccount;
+
+interface BearProps {
+  input: string;
+  extraClass?: string;
+}
+
+const Bear = ({ input, extraClass }: BearProps) => {
+  const avatar = createAvatar(notionists, {
+    seed: input,
+    // ... other options
+  });
+
+  const svg = avatar.toDataUriSync();
+
+  return (
+    <div className="mb-1 rounded-full bg-teal-300">
+      <img className={`w-[56px] ${extraClass && extraClass}`} src={svg} />
+    </div>
+  );
+};

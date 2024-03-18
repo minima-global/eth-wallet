@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import { useContext, useState } from "react";
 
 import * as utils from "../../utils";
+import { appContext } from "../../AppContext";
 
-const WalletAddress = ({ fullAddress = false }) => {
-  const { _wallet } = useWalletContext();
+const PrivateKey = ({ fullAddress = false }) => {
+  const { _generatedKey } = useContext(appContext);
 
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     setCopied(true);
-    utils.copyToClipboard(_wallet!.address);
+    utils.copyToClipboard(_generatedKey);
     setTimeout(() => {
       setCopied(false);
     }, 3000);
@@ -40,32 +40,14 @@ const WalletAddress = ({ fullAddress = false }) => {
       className="mx-auto text-center relative dark:text-black"
     >
       {fullAddress && (
-        <input
+        <textarea
+          rows={4}
           readOnly
           onClick={handleCopy}
           onKeyDown={handleKeyDown}
           onDoubleClick={handleDoubleClick}
-          className="p-2 text-left font-bold rounded-full focus:bg-teal-200 pr-10 truncate focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
-          value={_wallet && _wallet.address ? _wallet.address : "N/A"}
-        />
-      )}
-      {!fullAddress && (
-        <input
-          readOnly
-          onClick={handleCopy}
-          onKeyDown={handleKeyDown}
-          onDoubleClick={handleDoubleClick}
-          className="p-2 text-left font-bold rounded-full focus:bg-teal-200 focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
-          value={
-            _wallet && _wallet.address
-              ? _wallet.address.substring(0, 8) +
-                "..." +
-                _wallet.address.substring(
-                  _wallet.address.length - 8,
-                  _wallet.address.length
-                )
-              : "N/A"
-          }
+          className="p-2 text-left font-bold rounded-lg focus:bg-teal-200 pr-10 break-all focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max max-h-min bg-violet-300"
+          value={_generatedKey ? _generatedKey : "N/A"}
         />
       )}
       <svg
@@ -74,7 +56,7 @@ const WalletAddress = ({ fullAddress = false }) => {
         style={{
           color: "#0809ab",
           position: "absolute",
-          top: 9,
+          top: 35,
           right: 10,
           strokeDasharray: 50,
           strokeDashoffset: copied ? -50 : 0,
@@ -88,7 +70,7 @@ const WalletAddress = ({ fullAddress = false }) => {
         strokeWidth="3.5"
         stroke="#2c3e50"
         fill="none"
-        strokeLinecap="round" 
+        strokeLinecap="round"
         strokeLinejoin="round"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -101,7 +83,7 @@ const WalletAddress = ({ fullAddress = false }) => {
         style={{
           color: "black",
           position: "absolute",
-          top: 6,
+          top: 33,
           right: 8,
           strokeDasharray: 50,
           strokeDashoffset: copied ? 0 : -50,
@@ -118,9 +100,9 @@ const WalletAddress = ({ fullAddress = false }) => {
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M5 12l5 5l10 -10" />
-      </svg>      
+      </svg>
     </div>
   );
 };
 
-export default WalletAddress;
+export default PrivateKey;

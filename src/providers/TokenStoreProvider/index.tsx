@@ -79,9 +79,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
 
   useEffect(() => {
     setTokens([]);
-    console.log("_defaultAssets", _defaultAssets);
     if (_defaultAssets && _defaultAssets.assets.length > 0) {
-      console.log("2. _defaultAssets", _defaultAssets);
 
       (async () => {
         try {

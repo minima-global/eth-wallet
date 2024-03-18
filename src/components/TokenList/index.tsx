@@ -11,7 +11,6 @@ const TokenList = () => {
   const { _currentNavigation } = useContext(appContext);
   const { _balance, _network } = useWalletContext();
   const { tokens } = useTokenStoreContext();
-  console.log('3. TOKENLIST', tokens);
   if (_currentNavigation !== "balance") {
     return null;
   }

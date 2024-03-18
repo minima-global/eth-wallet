@@ -39,11 +39,9 @@ export const WalletContextProvider = ({ children }: Props) => {
 
   useMemo(async () => {
     if (!_generatedKey || _provider === null) return;
-    console.log("Update wallet...");
     const wallet = new Wallet(_generatedKey, _provider);
     const address = await wallet.getAddress();
     const network = await _provider.getNetwork();
-    console.log("Network selected..."+ network.name);
 
     const balance = await _provider.getBalance(wallet.address);
     setBalance(formatEther(balance));
