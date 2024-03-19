@@ -272,7 +272,7 @@ function GasEstimation() {
                   <h3 className="font-mono text-sm font-bold">
                     {formik.values.amount} {formik.values.asset.symbol}
                   </h3>
-                  <p className="font-mono text-sm">{gas.finalGasFee} ETH</p>
+                  <p className="font-mono text-sm">{gas.finalGasFee} <span className="font-bold">{_defaultNetworks[_currentNetwork].symbol}</span></p>
                   <ConversionRateUSD
                     amount={gas.finalGasFee}
                     asset={{ type: "ether" }}

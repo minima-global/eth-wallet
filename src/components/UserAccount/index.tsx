@@ -27,6 +27,7 @@ const UserAccount = () => {
     updateAddressBook,
   } = useContext(appContext);
 
+  const [_promptQrCode, setPromptQrCode] = useState(false);
   const [viewKey, setViewKey] = useState(false);
   const [remainingTime, setRemainingTime] = useState(5000);
   const [held, setHeld] = useState(false);
@@ -34,6 +35,10 @@ const UserAccount = () => {
 
   const handleChange = (e) => {
     setNickname(e.target.value);
+  };
+
+  const promptQrCode = () => {
+    setPromptQrCode((prevState) => !prevState);
   };
 
   const handleStart = () => {
@@ -116,53 +121,78 @@ const UserAccount = () => {
         </svg>
       </div>
 
+      {_wallet && _wallet.address && (
+        <BiggerQrCode
+          data={_wallet!.address}
+          dismiss={promptQrCode}
+          active={_promptQrCode}
+        />
+      )}
+
       {promptUserAccountDetails &&
         createPortal(
           <Dialog dismiss={() => setPromptUserAccountDetails(false)}>
             <div className="h-full grid items-start">
               <animated.div style={springProps}>
-                <div className="bg-white shadow-lg shadow-violet-300 mt-[80px] dark:bg-black w-[calc(100%_-_16px)] md:w-full py-8 px-4 rounded-lg mx-auto">
+                <div className="bg-white shadow-lg shadow-violet-300 mt-[80px] dark:bg-black w-[calc(100%_-_16px)] md:w-full pb-8 pt-4 px-4 rounded-lg mx-auto">
                   <div className="flex justify-between items-center">
                     <Cross dismiss={() => setPromptUserAccountDetails(false)} />
-                    {window.navigator.userAgent.includes("Minima Browser") && (
-                      <div
-                        onClick={() => {
-                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                          // @ts-ignore
-                          Android.shareFile(_wallet!.address, "*/*");
-                        }}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="icon icon-tabler icon-tabler-user-share"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                          <path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                          <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                          <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                          <path d="M8.7 10.7l6.6 -3.4" />
-                          <path d="M8.7 13.3l6.6 3.4" />
-                        </svg>
-                      </div>
-                    )}
+                    <div>
+                      {_wallet && _wallet.address && (
+                        <div className="flex gap-2 items-center">
+                          <div onClick={promptQrCode}>
+                            <QRCode size={34} value={_wallet!.address} />
+                          </div>
+                          {window.navigator.userAgent.includes(
+                            "Minima Browser"
+                          ) && (
+                            <div
+                              onClick={() => {
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                Android.shareFile(_wallet!.address, "*/*");
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="icon icon-tabler icon-tabler-user-share"
+                                width="34"
+                                height="34"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                fill="none"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path
+                                  stroke="none"
+                                  d="M0 0h24v24H0z"
+                                  fill="none"
+                                />
+                                <path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                                <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                                <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                                <path d="M8.7 10.7l6.6 -3.4" />
+                                <path d="M8.7 13.3l6.6 3.4" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div
                     onClick={promptAccountNameUpdate}
                     className="flex items-center justify-center"
                   >
-                    <Bear
-                      extraClass=" w-[160px] md:w-[220px]"
-                      input={_wallet!.address}
-                    />
+                    {_wallet && _wallet.address && (
+                      <Bear
+                        extraClass=" w-[160px] md:w-[220px]"
+                        input={_wallet!.address}
+                      />
+                    )}
                   </div>
                   <div className="mx-auto">
                     {!_promptAccountNameUpdate && (
@@ -228,13 +258,7 @@ const UserAccount = () => {
                       </div>
                     )}
                   </div>
-                  {!viewKey && (
-                    <div className="mt-4 flex justify-center items-center">
-                      {_wallet && (
-                        <QRCode size={165} value={_wallet!.address} />
-                      )}
-                    </div>
-                  )}
+
                   <div className="w-max mx-auto my-4">
                     {!viewKey && <WalletAddress fullAddress />}
                     {!viewKey && (
@@ -247,7 +271,9 @@ const UserAccount = () => {
                         className="mt-2 font-bold w-full rounded-lg text-white bg-purple-500"
                       >
                         {held
-                          ? `Hold to reveal... (${Math.ceil(remainingTime / 1000)}s)`
+                          ? `Hold to reveal... (${Math.ceil(
+                              remainingTime / 1000
+                            )}s)`
                           : `View private key`}
                       </button>
                     )}
@@ -258,12 +284,11 @@ const UserAccount = () => {
                           className="max-w-xs my-2 mx-auto bg-red-700 border border-red-800 text-red-100 px-4 py-3 rounded relative"
                           role="alert"
                         >
-                          <strong className="font-bold">Warning</strong>
+                          <strong className="font-bold mr-1">Warning</strong>
                           <span className="block sm:inline">
                             Never share your private key with anyone! Doing so
                             could result in the loss of your funds.
                           </span>
-                         
                         </div>
                         <button
                           onClick={() => handleEnd()}
@@ -303,5 +328,49 @@ const Bear = ({ input, extraClass }: BearProps) => {
     <div className="rounded-full bg-teal-300">
       <img className={`${extraClass && extraClass}`} src={svg} />
     </div>
+  );
+};
+
+interface QrProps {
+  active: boolean;
+  dismiss: () => void;
+  data: string;
+}
+const BiggerQrCode = ({ data, active, dismiss }: QrProps) => {
+  const springProps = useSpring({
+    opacity: active ? 1 : 0,
+    transform: active
+      ? "translateY(0%) scale(1)"
+      : "translateY(-50%) scale(0.8)",
+    config: config.wobbly,
+  });
+  if (!active) {
+    return null;
+  }
+
+  return (
+    <>
+      {active &&
+        createPortal(
+          <Dialog extraClass="z-[26]" dismiss={dismiss}>
+            <div className="h-full grid items-start">
+              <animated.div style={springProps}>
+                <div className=" shadow-violet-300 mt-[80px] w-[calc(100%_-_16px)] md:w-full pb-8 pt-4 px-4 rounded-lg mx-auto">
+                  <div className=" flex justify-center items-center mx-auto gap-4 flex-col max-w-xs">
+                    <QRCode size={300} value={data} />
+                    <button
+                      onClick={dismiss}
+                      className="w-full bg-black text-white dark:bg-white dark:text-black shadow-lg font-bold py-4"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </animated.div>
+            </div>
+          </Dialog>,
+          document.body
+        )}
+    </>
   );
 };
