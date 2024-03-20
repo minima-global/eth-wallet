@@ -41,7 +41,7 @@ const TokenDetails = () => {
                     <h6 className="font-bold">Token Details</h6>
                     <Cross dismiss={promptTokenDetails} />
                   </div>
-                  <div>
+                  <div className="break-all">
                     <div className="flex flex-col items-center justify-center">
                       {_defaults["wMinima"][_network] === address ? (
                         <img

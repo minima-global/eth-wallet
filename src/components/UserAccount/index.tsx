@@ -150,7 +150,7 @@ const UserAccount = () => {
                               onClick={() => {
                                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                 // @ts-ignore
-                                Android.shareFile(_wallet!.address, "*/*");
+                                Android.shareText(_wallet!.address);
                               }}
                             >
                               <svg

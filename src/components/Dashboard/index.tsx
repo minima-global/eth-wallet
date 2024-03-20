@@ -210,7 +210,15 @@ const Dashboard = () => {
         )}
 
       <div className={styles["grid"]}>
-        <header className="!grid grid-cols-[1fr_1fr] md:grid-cols-[1fr_minmax(0,_360px)_1fr]">
+        <header
+          onClick={() => {
+            if (window.navigator.userAgent.includes("Minima Browser")) {
+              // @ts-ignore
+              Android.showTitleBar();
+            }
+          }}
+          className="!grid grid-cols-[1fr_1fr] md:grid-cols-[1fr_minmax(0,_360px)_1fr]"
+        >
           <div>
             <svg
               className="animate-pulse temporary-animate"
@@ -233,14 +241,14 @@ const Dashboard = () => {
               />
             </svg>
           </div>
-          <div className="justify-center items-center hidden md:flex">
+          <div onClick={(e) => e.stopPropagation()} className="justify-center items-center hidden md:flex">
             <UserAccount />
           </div>
-          <div className="flex justify-end gap-2">
+          <div onClick={(e) => e.stopPropagation()} className="flex justify-end gap-2">
             <div className="flex md:hidden">
               <UserAccount />
             </div>
-            <div className="flex items-center">
+            <div onClick={(e) => e.stopPropagation()} className="flex items-center">
               <svg
                 onClick={promptSettings}
                 className="hover:cursor-pointer hover:animate-spin"
@@ -270,7 +278,7 @@ const Dashboard = () => {
             <section />
             <TokenDetails />
             <AppLoading />
-            <Settings />            
+            <Settings />
             <ReadMode />
             <Send />
             <DesktopNav />

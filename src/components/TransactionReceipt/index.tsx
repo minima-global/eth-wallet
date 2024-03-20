@@ -111,7 +111,7 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid, recipient
         </svg>
         <AddressBookContact contact address={recipient} />
       </div>
-      <div>        
+      <div className="break-all">        
         <ul className="py-6">
           <li className="flex justify-between px-4">
             <h3>Asset</h3>
@@ -138,11 +138,11 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid, recipient
             <p>{formatEther(tx.gasPrice)}</p>
           </li>
           <li className="flex justify-between px-4">
-            <h3>Max Fee Per Gas</h3>
+            <h3 className="truncate">Max Base Fee</h3>
             <p>{tx.maxFeePerGas?.toString()} <b>GWEI</b></p>
           </li>
           <li className="flex justify-between px-4">
-            <h3>Max Fee Per Gas</h3>
+            <h3 className="truncate">Max Priority fee</h3>
             <p>{tx.maxPriorityFeePerGas?.toString()} <b>GWEI</b></p>
           </li>
         </ul>
