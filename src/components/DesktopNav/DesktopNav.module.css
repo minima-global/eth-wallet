@@ -8,7 +8,7 @@
   }
   .desktop__navigation nav {
     display: grid;
-    grid-template-columns: repeat(3, 175px);
+    grid-template-columns: repeat(4, 130px);
     grid-template-rows: 69px;
     justify-content: center;
     gap: 16px;

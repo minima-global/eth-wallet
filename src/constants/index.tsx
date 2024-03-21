@@ -1,6 +1,35 @@
 import { Asset } from "../types/Asset";
 import { Networks } from "../types/Network";
 
+// This file stores web3 related constants such as addresses, token definitions, ETH currency references and ABI's
+
+import { SUPPORTED_CHAINS, Token } from '@uniswap/sdk-core'
+
+// Addresses
+
+export const POOL_FACTORY_CONTRACT_ADDRESS =
+  '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+export const QUOTER_CONTRACT_ADDRESS =
+  '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
+
+// Currencies and Tokens
+
+export const USDT_TOKEN = new Token(
+  SUPPORTED_CHAINS['1'],
+  '0xdac17f958d2ee523a2206206994597c13d831ec7',
+  6,
+  'USDT',
+  'USD//T'
+)
+
+export const WRAPPED_MINIMA_TOKEN = new Token(
+  SUPPORTED_CHAINS['1'],
+  '0x669c01CAF0eDcaD7c2b8Dc771474aD937A7CA4AF',
+  18,
+  'WMINIMA',
+  'Wrapped Minima'
+)
+
 const defaultAssetsStored: Asset[] = [
   {
     name: "Ethereum",
