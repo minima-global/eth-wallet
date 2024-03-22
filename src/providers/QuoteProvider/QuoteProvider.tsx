@@ -5,7 +5,7 @@ import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/I
 
 import { computePoolAddress } from "@uniswap/v3-sdk";
 
-import { Contract, JsonRpcProvider, formatUnits, parseUnits } from "ethers";
+import { Contract, formatUnits, parseUnits } from "ethers";
 import {
   POOL_FACTORY_CONTRACT_ADDRESS,
   QUOTER_CONTRACT_ADDRESS,
@@ -13,13 +13,13 @@ import {
 import { CurrentConfig } from "./config";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
 
-const READABLE_FORM_LEN = 4;
+const READABLE_FORM_LEN = 20;
 
-export function fromReadableAmount(amount: number, decimals: number) {
+function fromReadableAmount(amount: number, decimals: number) {
   return parseUnits(amount.toString(), decimals);
 }
 
-export function toReadableAmount(rawAmount: number, decimals: number): string {
+function toReadableAmount(rawAmount: number, decimals: number): string {
   return formatUnits(rawAmount, decimals).slice(0, READABLE_FORM_LEN);
 }
 

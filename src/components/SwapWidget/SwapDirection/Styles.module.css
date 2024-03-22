@@ -1,0 +1,8 @@
+.overlay {    
+    height: 24px;
+    left: 52%;
+    position: absolute;
+    /* Adjust by 2px to account for border display. */
+    transform: translate(-50%, calc(-50% - 2px));
+    width: 48px;
+}
