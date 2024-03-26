@@ -7,6 +7,9 @@ const SwapDirection = () => {
   const handleFlip = () => {
     formik.setFieldValue("input", formik.values.output);
     formik.setFieldValue("output", formik.values.input);
+    
+    formik.setFieldValue("inputAmount", formik.values.outputAmount);
+    formik.setFieldValue("outputAmount", formik.values.inputAmount);
   };
 
   return (

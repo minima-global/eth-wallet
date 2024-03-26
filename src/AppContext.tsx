@@ -151,6 +151,7 @@ const AppProvider = ({ children }: IProps) => {
             }
 
             if (defaultNetworks) {
+              console.log(JSON.parse(defaultNetworks.DATA));
               // set all networks saved
               setDefaultNetworks(JSON.parse(defaultNetworks.DATA));
             } else {

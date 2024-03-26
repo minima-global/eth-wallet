@@ -52,7 +52,7 @@ const defaultAssetsStored: Asset[] = [
     symbol: "USDT",
     balance: "",
     address: "",
-    decimals: 18,
+    decimals: 6,
     type: "erc20"
   },
 ];
@@ -71,7 +71,7 @@ export const etherscan = {
 export const networks: Networks = {
   mainnet: {
     name: "Ethereum",
-    rpc: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
+    rpc: "http://127.0.0.1:8545",
     chainId: "1",
     symbol: "ETH"
   },

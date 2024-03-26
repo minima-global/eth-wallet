@@ -4,13 +4,11 @@ import { useSpring, animated, config } from "react-spring";
 import { appContext } from "../../AppContext";
 import Dialog from "../UI/Dialog";
 
-import { networks } from "../../constants";
 import Cross from "../UI/Cross";
-import { QuoteContextProvider } from "../../providers/QuoteProvider/QuoteProvider";
 import SwapWidget from "../SwapWidget";
 
 const TokenSwap = () => {
-  const { _currentNavigation, _provider, _currentNetwork, handleNavigation } =
+  const { _currentNavigation, handleNavigation } =
     useContext(appContext);
 
   const springProps = useSpring({
@@ -25,8 +23,7 @@ const TokenSwap = () => {
   if (_currentNavigation !== "uniswap") {
     return null;
   }
-  console.log(networks[_currentNetwork].rpc);
-  console.log(networks[_currentNetwork].rpc);
+
   return (
     _currentNavigation === "uniswap" &&
     createPortal(
@@ -43,9 +40,7 @@ const TokenSwap = () => {
                 <Cross dismiss={() => handleNavigation("balance")} />
               </div>
               <div className="flex items-center justify-center my-4">
-                <QuoteContextProvider>
-                  <SwapWidget />
-                </QuoteContextProvider>
+                  <SwapWidget />                
               </div>
             </div>
           </animated.div>

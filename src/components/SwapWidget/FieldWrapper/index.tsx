@@ -1,3 +1,5 @@
+import { formatEther } from "ethers";
+import { useFormikContext } from "formik";
 import { useState } from "react";
 
 interface Props {
@@ -5,10 +7,12 @@ interface Props {
   token: JSX.Element;
   balance?: string;
   extraClass?: string;
+  
 }
 const FieldWrapper = ({ extraClass, type, token, balance }: Props) => {
   const [f, setF] = useState(false);
-  console.log(token);
+  const formik: any = useFormikContext();
+
   return (
     <div
       className={`${
@@ -22,15 +26,23 @@ const FieldWrapper = ({ extraClass, type, token, balance }: Props) => {
           {type === "input" ? "You pay" : "You receive"}
         </label>
         <input
+          {...formik.getFieldProps(type === 'input' ? 'inputAmount' : 'outputAmount')}
           onBlur={() => setF(false)}
           onFocus={() => setF(true)}
           placeholder="0"
           className="text-2xl truncate bg-gray-800 font-mono focus:border-none focus:outline-none placeholder:text-teal-300 font-bold"
         />
       </div>
-      <div className="my-auto bg-gray-700 bg-opacity-10  p-4 grid grid-rows-[1fr_auto]">
+      <div className="my-auto bg-gray-700 bg-opacity-10 p-4 pb-0 grid grid-rows-[1fr_auto]">
         <div>{token}</div>
-        <p className="text-sm font-bold text-gray-500">Balance: <span className="font-mono">{balance}</span></p>
+        <div className="grid grid-cols-[1fr_auto] items-center">
+          <p className="text-sm font-bold text-gray-500 pb-4">
+            Balance: <span className="font-mono text-sm">{formatEther(balance!)}</span>
+          </p>
+          {type === "input" && (
+            <button type="button" onClick={() => formik.setFieldValue("inputAmount", formatEther(balance!))} className="p-0 text-sm font-bold text-teal-300 focus:outline-none hover:font-semibold">Max</button>
+          )}
+        </div>
       </div>
     </div>
   );
