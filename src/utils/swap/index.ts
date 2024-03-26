@@ -1,14 +1,16 @@
 import { Token, TradeType } from '@uniswap/sdk-core'
 import { Trade } from '@uniswap/v3-sdk'
-import { formatUnits, parseUnits } from 'ethers'
+import { formatUnits } from 'ethers'
+import { ethers } from 'ethers-5'
 
 const MAX_DECIMALS = 4
+
 
 export function fromReadableAmount(
   amount: number,
   decimals: number
-): bigint {
-  return parseUnits(amount.toString(), decimals)
+) {
+  return ethers.utils.parseUnits(amount.toString(), decimals)
 }
 
 export function toReadableAmount(rawAmount: number, decimals: number): string {

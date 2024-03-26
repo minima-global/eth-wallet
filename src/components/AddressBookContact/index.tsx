@@ -10,9 +10,9 @@ interface IProps {
 }
 const AddressBookContact = ({ contact = false, address }: IProps) => {
   const { _addressBook, promptAddressBookAdd } = useContext(appContext);
-  const {_wallet} = useWalletContext();
+  const {_address} = useWalletContext();
 
-  const ownAddress = _wallet!.address === address;
+  const ownAddress = _address === address;
   console.log("ownAddress", ownAddress);
   return (
     <div className="flex items-center gap-2 my-2">
