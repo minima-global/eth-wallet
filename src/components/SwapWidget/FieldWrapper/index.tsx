@@ -38,7 +38,7 @@ const FieldWrapper = ({ extraClass, type, token, balance, decimals }: Props) => 
         <div>{token}</div>
         <div className="grid grid-cols-[1fr_auto] items-center">
           <p className="text-sm font-bold text-gray-500 pb-4">
-            Balance: <span className="font-mono text-sm">{ formatUnits(balance!, decimals!).toString()}</span>
+            Balance: <span className="font-mono text-sm">{formatUnits(balance!, decimals!).toString().substring(0, 9)}</span>
           </p>
           {type === "input" && (
             <button type="button" onClick={() => formik.setFieldValue("inputAmount", formatUnits(balance!, decimals!).toString())} className="p-0 text-sm font-bold text-teal-300 focus:outline-none hover:font-semibold">Max</button>
