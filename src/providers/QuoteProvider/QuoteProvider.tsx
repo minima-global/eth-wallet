@@ -6,6 +6,7 @@ import getOutputQuote from "../../components/SwapWidget/libs/getOutputQuote";
 import { appContext } from "../../AppContext";
 import usePoolInfo from "../../hooks/usePoolInfo";
 import { FeeAmount, Pool, Route } from "@uniswap/v3-sdk";
+import Decimal from "decimal.js";
 
 const READABLE_FORM_LEN = 20;
 
@@ -41,7 +42,8 @@ export const QuoteContextProvider = ({ children }: Props) => {
       values.output.name
     );
 
-    if (values.inputAmount === 0) return;
+    if (!Number(values.inputAmount) || new Decimal(values.inputAmount).lte(0))
+      return;
 
     (async () => {
       // Create a new Pool Instance..
@@ -55,7 +57,6 @@ export const QuoteContextProvider = ({ children }: Props) => {
       );
 
       const swapRoute = new Route([pool], _tokenA, _tokenB);
-
 
       const quoteData = await getOutputQuote(
         _tokenA,
@@ -80,9 +81,11 @@ export const QuoteContextProvider = ({ children }: Props) => {
 
   return (
     <QuoteContext.Provider
-      value={{
-        // todo
-      }}
+      value={
+        {
+          // todo
+        }
+      }
     >
       {children}
     </QuoteContext.Provider>

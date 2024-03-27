@@ -55,6 +55,8 @@ const AppProvider = ({ children }: IProps) => {
     decimal: ".",
     thousands: ",",
   });
+  const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] = useState(false);
+  
 
 
   useEffect(() => {
@@ -217,6 +219,10 @@ const AppProvider = ({ children }: IProps) => {
     setTokenDetails(prevState => prevState === token ? false : token);
     setPromptTokenDetails((prevState) => !prevState);
   };
+
+  const promptAllowanceApprovalModal = () => {
+    setPromptAllowanceApprovalModal(prevState => !prevState);
+  }
 
   const setRPCNetwork = (network: string, networks: Networks) => {
     const networkToConnect =
@@ -399,6 +405,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _promptAddressBookAdd,
         promptAddressBookAdd,
+
+        _promptAllowanceApprovalModal,
+        promptAllowanceApprovalModal,
 
         _promptAccountNameUpdate,
         promptAccountNameUpdate,

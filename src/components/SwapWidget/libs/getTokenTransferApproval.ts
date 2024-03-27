@@ -1,10 +1,15 @@
 import { Token } from "@uniswap/sdk-core";
-import { Contract, JsonRpcProvider, Signer, TransactionRequest } from "ethers";
+import {
+  Contract,
+  JsonRpcProvider,
+  MaxUint256,
+  Signer,
+  TransactionRequest,
+} from "ethers";
 import {
   ERC20_ABI,
   SWAP_ROUTER_ADDRESS,
 } from "../../../providers/QuoteProvider/libs/constants";
-import { fromReadableAmount } from "../../../utils/swap";
 
 export enum TransactionState {
   Failed = "Failed",
@@ -15,7 +20,7 @@ export enum TransactionState {
 }
 export async function getTokenTransferApproval(
   token: Token,
-  inputAmount: number,
+  amount: string,
   signer: Signer,
   provider: JsonRpcProvider,
   address: string
@@ -26,11 +31,12 @@ export async function getTokenTransferApproval(
   }
 
   try {
+    console.log('allowance for', token.address);
     const tokenContract = new Contract(token.address, ERC20_ABI, signer);
 
     const transaction = await tokenContract.approve(
       SWAP_ROUTER_ADDRESS,
-      fromReadableAmount(inputAmount, token.decimals).toString()
+      amount
     );
 
     return sendTransactionViaWallet(

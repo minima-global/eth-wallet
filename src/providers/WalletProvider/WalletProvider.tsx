@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Wallet, parseUnits, formatEther, Contract,  Signer, NonceManager } from "ethers";
+import { Wallet, parseUnits, formatEther, Contract,  Signer } from "ethers";
 import { appContext } from "../../AppContext";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
 import { TransactionResponse } from "ethers";
@@ -44,7 +44,6 @@ export const WalletContextProvider = ({ children }: Props) => {
   useMemo(async () => {
     if (!_generatedKey || _provider === null) return;
 
-    
     const wallet = new Wallet(_generatedKey, _provider);
     const address = await wallet.getAddress();
     const network = await _provider.getNetwork();
@@ -57,7 +56,7 @@ export const WalletContextProvider = ({ children }: Props) => {
 
     const balance = await _provider.getBalance(address);
     setBalance(formatEther(balance));
-    setWallet(new NonceManager(wallet));
+    setWallet(wallet);
     setNetwork(network.name);
     setAddress(address);
     setChainId(network.chainId);

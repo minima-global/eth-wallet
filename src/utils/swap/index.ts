@@ -7,10 +7,10 @@ const MAX_DECIMALS = 4
 
 
 export function fromReadableAmount(
-  amount: number,
+  amount: string,
   decimals: number
 ) {
-  return ethers.utils.parseUnits(amount.toString(), decimals)
+  return ethers.utils.parseUnits(amount, decimals)
 }
 
 export function toReadableAmount(rawAmount: number, decimals: number): string {

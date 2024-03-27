@@ -8,9 +8,11 @@ interface Props {
   balance?: string;
   decimals?: number;
   extraClass?: string;
+  inputRef?: any;
+  buttonRef?: any;
   
 }
-const FieldWrapper = ({ extraClass, type, token, balance, decimals }: Props) => {
+const FieldWrapper = ({ extraClass, type, token, balance, decimals, inputRef, buttonRef }: Props) => {
   const [f, setF] = useState(false);
   const formik: any = useFormikContext();
 
@@ -27,6 +29,7 @@ const FieldWrapper = ({ extraClass, type, token, balance, decimals }: Props) => 
           {type === "input" ? "You pay" : "You receive"}
         </label>
         <input
+          ref={inputRef}
           {...formik.getFieldProps(type === 'input' ? 'inputAmount' : 'outputAmount')}
           onBlur={() => setF(false)}
           onFocus={() => setF(true)}
@@ -41,7 +44,7 @@ const FieldWrapper = ({ extraClass, type, token, balance, decimals }: Props) => 
             Balance: <span className="font-mono text-sm">{formatUnits(balance!, decimals!).toString().substring(0, 9)}</span>
           </p>
           {type === "input" && (
-            <button type="button" onClick={() => formik.setFieldValue("inputAmount", formatUnits(balance!, decimals!).toString())} className="p-0 text-sm font-bold text-teal-300 focus:outline-none hover:font-semibold">Max</button>
+            <button ref={buttonRef} type="button" onClick={() => formik.setFieldValue("inputAmount", formatUnits(balance!, decimals!).toString())} className="p-0 text-sm font-bold text-teal-300 focus:outline-none hover:font-semibold">Max</button>
           )}
         </div>
       </div>

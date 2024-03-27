@@ -344,37 +344,23 @@ task("fundme", "Fund my eth a/c", async (taskArgs, hre) => {
 
   const myAddress = "0xE6001ca8Cd546107F29eafc7a8fD4a57826913DA";
 
-  console.log('USDT CONTRACT', await usdtContract.getAddress());
+  console.log('balance for minima whale (minima)', await minimaContract.balanceOf("0x5534fF8d19EBF33D8e57C552f88d3A5dEE4fb669"));
+  console.log('balance for tether whale (binance)', await usdtContract.balanceOf("0xF977814e90dA44bFA03b6295A0616a897441aceC"));
+
+  await ether.sendTransaction({
+    to: myAddress,
+    value: hre.ethers.parseUnits("1000", "ether"),
+  });
 
   await minimaContract.transfer(
     myAddress,
     hre.ethers.parseUnits("1000", "ether")
   );
 
-  try {
-    await usdtContract.transfer(
-      myAddress,
-      hre.ethers.parseUnits("1000", "ether")
-    );
-    
-  } catch (error) {
-    console.error(error);
-  }
-  const tx = await ether.sendTransaction({
-    to: myAddress,
-    value: hre.ethers.parseUnits("1000", "ether"),
-  });
-
-  console.log(await tx.wait());
-
-  console.log(
-    hre.ethers.formatUnits(
-      await hre.ethers.provider.getBalance(
-        "0xE6001ca8Cd546107F29eafc7a8fD4a57826913DA"
-      ),
-      "ether"
-    )
-  );
+  // await usdtContract.transfer(
+  //   myAddress,
+  //   hre.ethers.parseUnits("1000", "ether")
+  // );
 });
 
 const config: HardhatUserConfig = {
