@@ -23,23 +23,22 @@ const useTokenApprovals = () => {
     // Return a promise
     return tokenContract
       .allowance(_address, SWAP_ROUTER_ADDRESS)
-      .then((allowance: any) => {
-        console.log('Allowance', allowance.toString());
-        // Check if allowance is sufficient
-        if (new Decimal(allowance.toString).gt(0) && new Decimal(allowance.toString()).gte(requiredAmount)) {
-          console.log("User has approved tokens for spending by the contract");
-          // Proceed with desired action in your contract
+      .then((allowance) => {
+        console.log(typeof allowance);
+        console.log(BigInt(allowance));
+
+        const allowanceDecimal = new Decimal(allowance.toString());
+        const requiredAmountDecimal = new Decimal(requiredAmount);
+
+        // Compare the two Decimal objects
+        if (allowanceDecimal.lt(requiredAmountDecimal)) {
           return true;
-        } else {
-          console.log(
-            "User has not approved sufficient tokens for spending by the contract"
-          );
-          // Prompt user to approve tokens or adjust contract logic accordingly
-          throw new Error("Insufficient allowance");
+        } else if (allowanceDecimal.gte(requiredAmountDecimal)) {
+          return false;
         }
       })
-      .catch(() => {        
-        return false;
+      .catch(() => {
+        return true;
       });
   };
 

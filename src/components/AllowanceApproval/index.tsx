@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { appContext } from "../../AppContext";
 import AnimatedDialog from "../UI/AnimatedDialog";
 import Cross from "../UI/Cross";
@@ -8,12 +8,37 @@ import { SUPPORTED_CHAINS, Token } from "@uniswap/sdk-core";
 import { getTokenTransferApproval } from "../SwapWidget/libs/getTokenTransferApproval";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { MaxUint256, NonceManager } from "ethers";
+import useTokenApprovals from "../../hooks/useTokenApprovals";
+import Decimal from "decimal.js";
 
-const AllowanceApproval = ({ token }) => {
+const AllowanceApproval = ({ token, setApproval }) => {
   const formik: any = useFormikContext();
-  const {  _wallet, _address } = useWalletContext();
-  const { _provider, _promptAllowanceApprovalModal, promptAllowanceApprovalModal } =
-    useContext(appContext);
+  const { _wallet, _address } = useWalletContext();
+  const {    
+    _promptAllowanceApprovalModal,
+    promptAllowanceApprovalModal,
+  } = useContext(appContext);
+
+  const checkAllowances = useTokenApprovals();
+
+  useEffect(() => {
+    const inputTokenAddress = formik.values.input.address;
+
+    (async () => {
+      if (
+        formik.values.inputAmount &&
+        Number(formik.values.inputAmount) &&
+        new Decimal(formik.values.inputAmount).gt(0)
+      ) {
+        const state = await checkAllowances(
+          inputTokenAddress,
+          formik.values.inputAmount
+        );
+
+        setApproval(state);
+      }
+    })();
+  }, [formik.values]);
 
   return (
     <AnimatedDialog
@@ -21,6 +46,7 @@ const AllowanceApproval = ({ token }) => {
       isOpen={_promptAllowanceApprovalModal}
       onClose={promptAllowanceApprovalModal}
       extraClass="z-[25]"
+      dialogStyles="!shadow-sm !shadow-gray-600"
     >
       <div className="px-4 grid grid-cols-[1fr_auto]">
         <div className="text-center">
@@ -33,9 +59,8 @@ const AllowanceApproval = ({ token }) => {
           initialValues={{
             amount: MaxUint256.toString(),
           }}
-          onSubmit={async ({amount}) => {
-
-            console.log('hello');
+          onSubmit={async ({ amount }) => {
+            console.log("hello");
             const _tokenA = new Token(
               SUPPORTED_CHAINS["1"],
               formik.values.input.address,
@@ -44,7 +69,6 @@ const AllowanceApproval = ({ token }) => {
               formik.values.input.name
             );
 
-
             try {
               console.log("Approve token to be spent", _tokenA);
               const nonceManager = new NonceManager(_wallet!);
@@ -52,15 +76,15 @@ const AllowanceApproval = ({ token }) => {
                 _tokenA,
                 amount,
                 nonceManager, // signer
-                _provider,
                 _address!
               );
-              console.log("TOKEN APPROVAL STATUS", tokenApproval);
+              
+              console.log("SUCCESS", tokenApproval);
+              
             } catch (error) {
+              console.log("ERROR");
               console.error(error);
             }
-
-
           }}
         >
           {({ handleSubmit }) => (

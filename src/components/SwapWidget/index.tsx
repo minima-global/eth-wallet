@@ -24,7 +24,7 @@ import {
 import { fromReadableAmount } from "../../utils/swap";
 
 import JSBI from "jsbi";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useState } from "react";
 import { appContext } from "../../AppContext";
 import {
   MAX_FEE_PER_GAS,
@@ -34,9 +34,8 @@ import {
 import usePoolInfo from "../../hooks/usePoolInfo";
 import getOutputQuote from "./libs/getOutputQuote";
 import { NonceManager } from "ethers";
-import useTokenApprovals from "../../hooks/useTokenApprovals";
-import Decimal from "decimal.js";
 import AllowanceApproval from "../AllowanceApproval";
+import Decimal from "decimal.js";
 
 const SwapWidget = () => {
   const { _network, _wallet, _address } = useWalletContext();
@@ -44,58 +43,7 @@ const SwapWidget = () => {
   const { tokens } = useTokenStoreContext();
   const poolInfo = usePoolInfo();
 
-  const checkAllowances = useTokenApprovals();
-  const [mustApprove, setApproval] = useState(true);
-  const inputRef: any = useRef(null);
-  const buttonRef: any = useRef(null);
-  
-
-  useEffect(() => {
-    if (_network === "mainnet") {
-      const handleChange = async () => {        
-        if (
-          inputRef.current &&
-          Number(inputRef.current.value) &&
-          new Decimal(inputRef.current.value).gt(0)
-        ) {
-          const state = await checkAllowances(
-            "0xdac17f958d2ee523a2206206994597c13d831ec7",
-            inputRef.current.value
-          );
-          console.log('curr state', state)
-          // should user approve tokens?
-          setApproval(state);
-        }
-      };
-      const handleButtonClick = async () => {        
-        if (
-          buttonRef
-        ) {          
-          const state = await checkAllowances(
-            "0xdac17f958d2ee523a2206206994597c13d831ec7",
-            inputRef.current.value
-          );
-          // should user approve tokens?
-          setApproval(state);
-        }
-      };
-
-      const subscribe = inputRef.current.addEventListener(
-        "input",
-        handleChange
-      );
-      const subscribeToButtonMax = buttonRef.current.addEventListener(
-        "click",
-        handleButtonClick
-      );
-
-      return () => {
-        if (subscribe) subscribe.removeEventListener("input", handleChange);
-        if (subscribeToButtonMax)
-          subscribeToButtonMax.removeEventListener("click", handleButtonClick);
-      };
-    }
-  }, []);
+  const [mustApprove, setApproval] = useState<boolean | null>(null);
 
   if (_network !== "mainnet") {
     return <p>This feature is only available on mainnet.</p>;
@@ -155,7 +103,10 @@ const SwapWidget = () => {
               route: swapRoute,
               inputAmount: CurrencyAmount.fromRawAmount(
                 _tokenA,
-                fromReadableAmount(inputAmount.toString(), _tokenA.decimals).toString()
+                fromReadableAmount(
+                  inputAmount.toString(),
+                  _tokenA.decimals
+                ).toString()
               ),
               outputAmount: CurrencyAmount.fromRawAmount(
                 _tokenB,
@@ -201,10 +152,14 @@ const SwapWidget = () => {
             console.error(error && error.reason ? error.reason : error);
           }
         }}
+
       >
         {({ handleSubmit, values }) => (
           <QuoteContextProvider>
-            <AllowanceApproval token={getTokenWrapper(values.input!)} />
+            <AllowanceApproval
+              setApproval={setApproval}
+              token={getTokenWrapper(values.input!)}
+            />
 
             <form onSubmit={handleSubmit} className="relative">
               <FieldWrapper
@@ -214,8 +169,6 @@ const SwapWidget = () => {
                 token={
                   <>{values.input ? getTokenWrapper(values.input) : null}</>
                 }
-                inputRef={inputRef}
-                buttonRef={buttonRef}
               />
               <SwapDirection />
               <FieldWrapper
@@ -227,22 +180,28 @@ const SwapWidget = () => {
                   <>{values.output ? getTokenWrapper(values.output) : null}</>
                 }
               />
-              {!mustApprove && (
-                <button
-                  disabled={mustApprove}
-                  type="submit"
-                  className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
-                >
-                  Swap
-                </button>
-              )}
-              {mustApprove && (
-                <button
-                  onClick={promptAllowanceApprovalModal}
-                  className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-purple-300 text-black text-lg w-full font-bold my-2"
-                >
-                  Approve {values.input!.symbol}
-                </button>
+              {!!values.inputAmount && !new Decimal(values.inputAmount).isZero() && (
+                <>
+                  {!mustApprove && (
+                    <button
+                      type="submit"
+                      className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
+                    >
+                      Swap
+                    </button>
+                  )}
+                  {mustApprove && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        promptAllowanceApprovalModal();
+                      }}
+                      className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-purple-300 text-black text-lg w-full font-bold my-2"
+                    >
+                      Approve {values.input!.symbol}
+                    </button>
+                  )}
+                </>
               )}
             </form>
           </QuoteContextProvider>
