@@ -44,6 +44,9 @@ const AppProvider = ({ children }: IProps) => {
   const [_promptTokenDetails, setPromptTokenDetails] = useState<false | any>(false);
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
   const [_promptTokenImport, setImportTokenImport] = useState(false);
+
+  const [_triggerBalanceUpdate, setTriggerBalanceUpdate] = useState(false);
+
   const [_promptAccountNameUpdate, setPromptAccountNameUpdate] =
     useState(false);
   const [_promptAddressBookAdd, setPromptAddressBookAdd] = useState(false);
@@ -411,6 +414,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _promptAccountNameUpdate,
         promptAccountNameUpdate,
+
+        _triggerBalanceUpdate,
+        setTriggerBalanceUpdate,
 
         _provider,
         setProvider,

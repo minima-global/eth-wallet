@@ -3,10 +3,9 @@ import { appContext } from "../../AppContext";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import ConversionRateUSD from "../ConversionRateUSD";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
-import { formatEther, formatUnits, parseUnits } from "ethers";
+import { formatUnits } from "ethers";
 import ImportToken from "../ImportToken";
 import { _defaults } from "../../constants";
-import { toReadableAmount } from "../../utils/swap";
 
 const TokenList = () => {
   const { _currentNavigation, promptTokenDetails } = useContext(appContext);
@@ -49,7 +48,7 @@ const TokenList = () => {
               <div>
                 <h3 className="font-bold">{token.name}</h3>
                 <p className="font-mono text-sm">
-                  {token.balance && formatEther(token.balance).toString()}
+                  {token.balance && formatUnits(token.balance, token.decimals).toString()}
                 </p>
               </div>
               <div>

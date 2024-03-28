@@ -55,7 +55,7 @@ const TokenStoreContext = createContext<Context | null>(null);
 
 export const TokenStoreContextProvider = ({ children }: Props) => {
   const [tokens, setTokens] = useState<Asset[]>([]);
-  const { _provider, _defaultAssets } = useContext(appContext);
+  const { _provider, _defaultAssets, _triggerBalanceUpdate } = useContext(appContext);
   const { _wallet: signer, _address } = useWalletContext();
 
   const fetchTokenBalance = useCallback(
@@ -102,7 +102,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
         }
       })();
     }
-  }, [_provider, _defaultAssets, fetchTokenBalance]);
+  }, [_provider, _defaultAssets, fetchTokenBalance, _triggerBalanceUpdate]);
 
   const addToken = (token: Asset) => {
     setTokens((prevTokens) => [...prevTokens, token]);

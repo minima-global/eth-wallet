@@ -4,9 +4,13 @@ import Cross from "../../UI/Cross";
 import FieldWrapper from "../FieldWrapper";
 import getTokenWrapper from "../libs/getTokenWrapper";
 import GasFeeEstimator from "../GasFeeEstimator";
+import { useContext } from "react";
+import { appContext } from "../../../AppContext";
 
 const ReviewSwap = ({ step, setStep, submitForm, error }) => {
   const formik: any = useFormikContext();
+
+  const { handleNavigation} = useContext(appContext);
 
   const { resetForm } = formik;
   const { inputAmount, outputAmount, input, output, receipt } = formik.values;
@@ -115,17 +119,17 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                   <path
                     d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
-                    stroke-width="0"
+                    strokeWidth="0"
                     fill="currentColor"
                   />
                   <path
                     d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    stroke-width="0"
+                    strokeWidth="0"
                     fill="currentColor"
                   />
                   <path
                     d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    stroke-width="0"
+                    strokeWidth="0"
                     fill="currentColor"
                   />
                 </svg>
@@ -201,17 +205,17 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                   <path
                     d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
-                    stroke-width="0"
+                    strokeWidth="0"
                     fill="currentColor"
                   />
                   <path
                     d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    stroke-width="0"
+                    strokeWidth="0"
                     fill="currentColor"
                   />
                   <path
                     d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    stroke-width="0"
+                    strokeWidth="0"
                     fill="currentColor"
                   />
                 </svg>
@@ -239,6 +243,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
               onClick={() => {
                 resetForm();
                 setStep(1);
+                handleNavigation("balance");
               }}
               type="button"
               className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-blue-100 text-black text-lg w-full font-bold my-2"

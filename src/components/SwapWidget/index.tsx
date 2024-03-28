@@ -20,7 +20,8 @@ import getTokenWrapper from "./libs/getTokenWrapper";
 
 const SwapWidget = () => {
   const { _network } = useWalletContext();
-  const { promptAllowanceApprovalModal } = useContext(appContext);
+  const { promptAllowanceApprovalModal, setTriggerBalanceUpdate } =
+    useContext(appContext);
   const { _wallet } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
@@ -113,14 +114,18 @@ const SwapWidget = () => {
             const res = await nonceManager.sendTransaction(tx);
 
             setFieldValue("receipt", await res.wait());
+
             setStep(4);
+            setTimeout(() => {
+              setTriggerBalanceUpdate((prevState) => !prevState);
+            }, 4000);
           } catch (error) {
             console.error(error);
             setStep(5);
-            if (error instanceof Error){
+            if (error instanceof Error) {
               return setError(error.message);
             }
-            
+
             return setError(JSON.stringify(error));
           }
         }}

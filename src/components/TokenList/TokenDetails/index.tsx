@@ -4,7 +4,7 @@ import { useSpring, animated, config } from "react-spring";
 import { createPortal } from "react-dom";
 import Dialog from "../../UI/Dialog";
 import Cross from "../../UI/Cross";
-import { formatEther } from "ethers";
+import { formatUnits } from "ethers";
 import { createAvatar } from "@dicebear/core";
 import { rings } from "@dicebear/collection";
 import { _defaults } from "../../../constants";
@@ -59,8 +59,12 @@ const TokenDetails = () => {
                         <Bear extraClass="w-[48px]" input={address} />
                       )}
 
-                      <h6 className="font-bold text-xl my-4 mb-2">{tokenName}</h6>
-                      <p className="font-mono dark:text-teal-300">{formatEther(balance)}</p>
+                      <h6 className="font-bold text-xl my-4 mb-2">
+                        {tokenName}
+                      </h6>
+                      <p className="font-mono dark:text-teal-300">
+                        {formatUnits(balance, decimals).toString()}
+                      </p>
                     </div>
                     <div className="px-4 my-8">
                       <div>
