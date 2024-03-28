@@ -91,7 +91,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
           </div>
 
           <div className="px-8 my-4">
-            <p className="text-center animate-pulse font-bold text-teal-300">
+            <p className="text-center animate-pulse font-bold text-violet-300">
               Swapping...
             </p>
             <div className="grid grid-cols-[1fr_auto_1fr]">
@@ -176,25 +176,9 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
           </div>
 
           <div className="px-8 my-4">
-            <div className="flex items-center justify-center gap-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2.5"
-                stroke="#5eead4"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M5 12l5 5l10 -10" />
-              </svg>
-              <p className="text-center font-bold text-teal-300">
-                Swap Successful
-              </p>
-            </div>
+            <p className="text-center font-bold text-teal-300">
+              Swap Successful
+            </p>
 
             <div className="grid grid-cols-[1fr_auto_1fr]">
               <div />
@@ -291,7 +275,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
           </div>
 
           <div className="px-8 my-4">
-            <div>              
+            <div>
               <p className="text-center font-bold text-red-500">
                 Something went wrong
               </p>
@@ -301,7 +285,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
               <div />
 
               <div className="flex gap-2 items-center my-4">
-                <p>{error ?  error : "Let's go back and try again."}</p>
+                <p>{error ? error : "Let's go back and try again."}</p>
               </div>
               <div />
             </div>

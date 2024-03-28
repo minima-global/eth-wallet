@@ -24,7 +24,7 @@ const SwapWidget = () => {
   const { _wallet } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
-  const [step, setStep] = useState(5);
+  const [step, setStep] = useState(1);
   const [error, setError] = useState<false | string>(false);
 
   if (_network !== "mainnet") {
