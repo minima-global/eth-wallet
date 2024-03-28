@@ -7,6 +7,7 @@ import usePoolInfo from "../../hooks/usePoolInfo";
 import { FeeAmount, Pool, Route } from "@uniswap/v3-sdk";
 import Decimal from "decimal.js";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
+import createDecimal from "../../utils/createDecimal";
 
 const READABLE_FORM_LEN = 20;
 
@@ -32,20 +33,19 @@ export const QuoteContextProvider = ({ children }: Props) => {
 
   useEffect(() => {
     if (
-      !Number(values.inputAmount) ||
+      createDecimal(values.inputAmount) === null ||
       new Decimal(values.inputAmount).lte(0) ||
       !_poolContract
     )
       return;
 
     (async () => {
-      const [fee, tickSpacing, liquidity, slot0] =
-      await Promise.all([
+      const [fee, tickSpacing, liquidity, slot0] = await Promise.all([
         _poolContract.fee(),
         _poolContract.tickSpacing(),
         _poolContract.liquidity(),
         _poolContract.slot0(),
-      ])
+      ]);
 
       const poolInfo = {
         fee,
@@ -53,7 +53,7 @@ export const QuoteContextProvider = ({ children }: Props) => {
         liquidity,
         sqrtPriceX96: slot0[0],
         tick: slot0[1],
-      }
+      };
 
       const pool = new Pool(
         tokenA,
@@ -62,7 +62,7 @@ export const QuoteContextProvider = ({ children }: Props) => {
         poolInfo.sqrtPriceX96.toString(),
         poolInfo.liquidity.toString(),
         parseInt(poolInfo.tick)
-      );      
+      );
 
       const swapRoute = new Route([pool], tokenA, tokenB);
 

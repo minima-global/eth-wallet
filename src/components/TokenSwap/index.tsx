@@ -33,8 +33,8 @@ const TokenSwap = () => {
             <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
               <div className="grid grid-cols-[1fr_auto] pr-4">
                 <div>
-                  <h3 className="px-4 text-lg font-bold text-center">
-                    Swap tokens
+                  <h3 className="px-4 text-xl font-bold text-center">
+                    Swap USDT for WMINIMA
                   </h3>
                 </div>
                 <Cross dismiss={() => handleNavigation("balance")} />

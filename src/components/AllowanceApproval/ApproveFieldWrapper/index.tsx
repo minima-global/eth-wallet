@@ -5,14 +5,15 @@ import { useState } from "react";
 interface Props {
   token: JSX.Element;
   extraClass?: string;
+  disabled?: boolean;
 }
-const ApproveFieldWrapper = ({ extraClass, token }: Props) => {
+const ApproveFieldWrapper = ({ disabled, extraClass, token }: Props) => {
   const [f, setF] = useState(false);
   const formik: any = useFormikContext();
 
   return (
     <div
-      className={`${
+      className={`${disabled ? "opacity-30" : ""} ${
         extraClass && extraClass
       }  bg-gray-800 rounded pb-0 grid grid-cols-[1fr_minmax(0,_142.16px)] ${
         f ? "border border-teal-300" : ""
@@ -23,6 +24,7 @@ const ApproveFieldWrapper = ({ extraClass, token }: Props) => {
           Approve amount
         </label>
         <input
+          disabled={formik.isSubmitting}
           {...formik.getFieldProps("amount")}
           onBlur={() => setF(false)}
           onFocus={() => setF(true)}

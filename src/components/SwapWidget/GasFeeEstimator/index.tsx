@@ -21,17 +21,19 @@ import {
   MAX_PRIORITY_FEE_PER_GAS,
   SWAP_ROUTER_ADDRESS,
 } from "../../../providers/QuoteProvider/libs/constants";
-import { NonceManager } from "ethers";
-import Decimal from "decimal.js";
+
 
 const GasFeeEstimator = () => {
   const formik: any = useFormikContext();
   const { _provider } = useContext(appContext);
   const { _address, _poolContract, _wallet } = useWalletContext();
 
-  const { tokenA, tokenB, inputAmount, gas } = formik.values;
+  const { isValid } = formik;
+  const { tokenA, tokenB, inputAmount, gas, locked } = formik.values;
   useEffect(() => {
-    if (!_poolContract) return;
+  
+    if (!_poolContract || locked || utils.createDecimal(inputAmount) === null || !isValid) return;
+
     (async () => {
       const [liquidity, slot0] = await Promise.all([
         _poolContract.liquidity(),
@@ -88,15 +90,10 @@ const GasFeeEstimator = () => {
         maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
       };
 
-      console.log(tx);
-
       const gasFee = await _provider.getFeeData();
-      console.log(gasFee);
       const gasUnits = await _wallet!.estimateGas(tx);
-      console.log("gasUnits", gasUnits);
       const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei
 
-      console.log(gasUnits, gasFee);
       if (maxFeePerGas) {
         const _gas = await utils.calculateGasFee(
           gasUnits.toString(),
@@ -104,14 +101,13 @@ const GasFeeEstimator = () => {
           maxPriorityFeePerGas.toString()
         );
 
-        console.log(_gas);
         // calculated gas..
         formik.setFieldValue("gas", _gas.finalGasFee);
       }
 
       formik.setFieldValue("tx", tx);
     })();
-  }, [formik.values.inputAmount, _poolContract]);
+  }, [formik.values.inputAmount, _poolContract, locked]);
 
   return (
     <div className="grid grid-cols-[1fr_auto] items-center">

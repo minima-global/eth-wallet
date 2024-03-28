@@ -5,6 +5,9 @@ const SwapDirection = () => {
   const formik: any = useFormikContext();
 
   const handleFlip = () => {
+    formik.setFieldValue("locked", true);
+    formik.setFieldValue("gas", null);
+
     formik.setFieldValue("input", formik.values.output);
     formik.setFieldValue("output", formik.values.input);
     

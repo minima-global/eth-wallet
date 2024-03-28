@@ -9,6 +9,7 @@ interface Props {
   position: string;
   children: any;
   dialogStyles?: string;
+  animationStyle?: string;
 }
 const AnimatedDialog = ({
   isOpen,
@@ -17,13 +18,14 @@ const AnimatedDialog = ({
   position,
   children,
   dialogStyles,
+  animationStyle
 }: Props) => {
   const springProps = useSpring({
     opacity: isOpen ? 1 : 0,
     transform: isOpen
       ? "translateY(0%) scale(1)"
       : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config[animationStyle ? animationStyle : "wobbly"],
   });
 
   return (
