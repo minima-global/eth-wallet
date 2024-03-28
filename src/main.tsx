@@ -16,8 +16,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <App />
             </GasContextProvider>
           </TokenStoreContextProvider>
-        {/* <ActivityHandlerContextProvider>
-        </ActivityHandlerContextProvider> */}
       </WalletContextProvider>
     </AppProvider>
   </React.StrictMode>

@@ -16,7 +16,6 @@ const useTokenApprovals = () => {
     tokenAddress: string,
     requiredAmount: string
   ) => {
-    console.log(requiredAmount);
     // Create ERC-20 token contract instance
     const tokenContract = new Contract(tokenAddress, ERC20_ABI, _provider);
 
@@ -24,8 +23,6 @@ const useTokenApprovals = () => {
     return tokenContract
       .allowance(_address, SWAP_ROUTER_ADDRESS)
       .then((allowance) => {
-        console.log(typeof allowance);
-        console.log(BigInt(allowance));
 
         const allowanceDecimal = new Decimal(allowance.toString());
         const requiredAmountDecimal = new Decimal(requiredAmount);

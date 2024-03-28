@@ -71,7 +71,7 @@ export const etherscan = {
 export const networks: Networks = {
   mainnet: {
     name: "Ethereum",
-    rpc: "http://127.0.0.1:8545",
+    rpc: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
     chainId: "1",
     symbol: "ETH"
   },

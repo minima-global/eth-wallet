@@ -1,14 +1,15 @@
 import { Currency, CurrencyAmount, Token, TradeType } from "@uniswap/sdk-core";
 import { Route, SwapQuoter } from "@uniswap/v3-sdk";
 import { fromReadableAmount } from "../../../utils/swap";
-import { JsonRpcProvider, AbiCoder } from "ethers";
+import { JsonRpcProvider, AbiCoder, NonceManager } from "ethers";
 import { QUOTER_CONTRACT_ADDRESS } from "../../../constants";
+import { Signer } from "ethers-5";
 
 async function getOutputQuote(
   tokenIn: Token,
-  amountIn: number,
+  amountIn: string,
   route: Route<Currency, Currency>,
-  provider: JsonRpcProvider
+  provider: JsonRpcProvider | Signer | NonceManager
 ) {
   if (!provider) {
     throw new Error("Provider required to get pool state");

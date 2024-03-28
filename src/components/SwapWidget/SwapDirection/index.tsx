@@ -10,6 +10,9 @@ const SwapDirection = () => {
     
     formik.setFieldValue("inputAmount", formik.values.outputAmount);
     formik.setFieldValue("outputAmount", formik.values.inputAmount);
+    
+    formik.setFieldValue("tokenA", formik.values.tokenB);
+    formik.setFieldValue("tokenB", formik.values.tokenA);
   };
 
   return (

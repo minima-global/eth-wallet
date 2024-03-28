@@ -6,42 +6,25 @@ import { useWalletContext } from "../../providers/WalletProvider/WalletProvider"
 import { _defaults } from "../../constants";
 import { Asset } from "../../types/Asset";
 import { QuoteContextProvider } from "../../providers/QuoteProvider/QuoteProvider";
+
 import {
-  FeeAmount,
-  Pool,
-  Route,
-  SwapOptions,
-  SwapRouter,
-  Trade,
-} from "@uniswap/v3-sdk";
-import {
-  CurrencyAmount,
-  Percent,
   SUPPORTED_CHAINS,
   Token,
-  TradeType,
-} from "@uniswap/sdk-core";
-import { fromReadableAmount } from "../../utils/swap";
 
-import JSBI from "jsbi";
+} from "@uniswap/sdk-core";
+
 import { useContext, useState } from "react";
 import { appContext } from "../../AppContext";
-import {
-  MAX_FEE_PER_GAS,
-  MAX_PRIORITY_FEE_PER_GAS,
-  SWAP_ROUTER_ADDRESS,
-} from "../../providers/QuoteProvider/libs/constants";
-import usePoolInfo from "../../hooks/usePoolInfo";
-import getOutputQuote from "./libs/getOutputQuote";
-import { NonceManager } from "ethers";
 import AllowanceApproval from "../AllowanceApproval";
 import Decimal from "decimal.js";
+import GasFeeEstimator from "./GasFeeEstimator";
+import { NonceManager } from "ethers";
 
 const SwapWidget = () => {
-  const { _network, _wallet, _address } = useWalletContext();
-  const { _provider, promptAllowanceApprovalModal } = useContext(appContext);
+  const { _network, _wallet } = useWalletContext();
+  const { promptAllowanceApprovalModal } = useContext(appContext);
   const { tokens } = useTokenStoreContext();
-  const poolInfo = usePoolInfo();
+  
 
   const [mustApprove, setApproval] = useState<boolean | null>(null);
 
@@ -57,99 +40,40 @@ const SwapWidget = () => {
           outputAmount: 0,
           input: tokens.find((t) => t.address === _defaults["wMinima"].mainnet),
           output: tokens.find((t) => t.address === _defaults["Tether"].mainnet),
+          tx: null,
+          gas: null,
+          tokenA: new Token(
+            SUPPORTED_CHAINS["1"],
+            "0x669c01CAF0eDcaD7c2b8Dc771474aD937A7CA4AF",
+            18,
+            "WMINIMA",
+            "Wrapped Minima"
+          ),
+          tokenB: new Token(
+            SUPPORTED_CHAINS["1"],
+            "0xdac17f958d2ee523a2206206994597c13d831ec7",
+            6,
+            "USDT",
+            "Tether"
+          )
         }}
-        onSubmit={async ({ input, output, inputAmount }) => {
-          if (!input || !output) return;
+        onSubmit={async ({ input, output, tx }) => {
+          if (!input || !output || !tx) return;
 
-          const _tokenA = new Token(
-            SUPPORTED_CHAINS["1"],
-            input.address,
-            input.decimals,
-            input.symbol,
-            input.name
-          );
-
-          const _tokenB = new Token(
-            SUPPORTED_CHAINS["1"],
-            output.address,
-            output.decimals,
-            output.symbol,
-            output.name
-          );
-
-          const pool = new Pool(
-            _tokenA,
-            _tokenB,
-            FeeAmount.HIGH,
-            poolInfo.sqrtPriceX96.toString(),
-            poolInfo.liquidity.toString(),
-            parseInt(poolInfo.tick)
-          );
-
-          const swapRoute = new Route([pool], _tokenA, _tokenB);
-
+      
           try {
             const nonceManager = new NonceManager(_wallet!);
 
-            const quoteData = await getOutputQuote(
-              _tokenA,
-              inputAmount,
-              swapRoute,
-              _provider
-            );
+          
 
-            // Create an unchecked Trade..
-            const uncheckedTrade = Trade.createUncheckedTrade({
-              route: swapRoute,
-              inputAmount: CurrencyAmount.fromRawAmount(
-                _tokenA,
-                fromReadableAmount(
-                  inputAmount.toString(),
-                  _tokenA.decimals
-                ).toString()
-              ),
-              outputAmount: CurrencyAmount.fromRawAmount(
-                _tokenB,
-                JSBI.BigInt(quoteData)
-              ),
-              tradeType: TradeType.EXACT_INPUT,
-            });
-
-            // console.log("Approve token to be spent", _tokenA);
-            // const tokenApproval = await getTokenTransferApproval(
-            //   _tokenA,
-            //   inputAmount,
-            //   nonceManager, // signer
-            //   _provider,
-            //   _address!
-            // );
-            // console.log("TOKEN APPROVAL STATUS", tokenApproval);
-
-            const options: SwapOptions = {
-              slippageTolerance: new Percent(50, 10_000), // 50 bips, or 0.50%
-              deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
-              recipient: _address!,
-            };
-            const methodParameters = SwapRouter.swapCallParameters(
-              [uncheckedTrade],
-              options
-            );
-
-            const tx = {
-              data: methodParameters.calldata,
-              to: SWAP_ROUTER_ADDRESS,
-              value: methodParameters.value,
-              from: _address,
-              maxFeePerGas: MAX_FEE_PER_GAS,
-              maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
-            };
-            console.log("EXECUTING SWAP!");
+          
             const res = await nonceManager.sendTransaction(tx);
+
             console.log(await res.wait());
             console.log("SWAP COMPLETED!");
-          } catch (error: any) {
+          } catch (error) {
             console.error(error);
-            console.error(error && error.reason ? error.reason : error);
+            // console.error(error && error.reason ? error.reason : error);
           }
         }}
 
@@ -180,6 +104,7 @@ const SwapWidget = () => {
                   <>{values.output ? getTokenWrapper(values.output) : null}</>
                 }
               />
+
               {!!values.inputAmount && !new Decimal(values.inputAmount).isZero() && (
                 <>
                   {!mustApprove && (
@@ -201,6 +126,8 @@ const SwapWidget = () => {
                       Approve {values.input!.symbol}
                     </button>
                   )}
+
+                  <GasFeeEstimator />
                 </>
               )}
             </form>

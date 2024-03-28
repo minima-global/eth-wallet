@@ -6,6 +6,7 @@ import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { formatEther, formatUnits, parseUnits } from "ethers";
 import ImportToken from "../ImportToken";
 import { _defaults } from "../../constants";
+import { toReadableAmount } from "../../utils/swap";
 
 const TokenList = () => {
   const { _currentNavigation, promptTokenDetails } = useContext(appContext);
@@ -48,7 +49,7 @@ const TokenList = () => {
               <div>
                 <h3 className="font-bold">{token.name}</h3>
                 <p className="font-mono text-sm">
-                  {formatUnits(token.balance, token.decimals).toString()}
+                  {token.balance && formatEther(token.balance).toString()}
                 </p>
               </div>
               <div>
