@@ -115,7 +115,7 @@ const GasFeeEstimator = () => {
         <a
           href="https://eth-converter.com/"
           target="_blank"
-          className="text-sm"
+          className="text-sm font-bold text-violet-500"
         >
           Convert to $ value
         </a>
@@ -127,7 +127,7 @@ const GasFeeEstimator = () => {
           height="18"
           viewBox="0 0 24 24"
           strokeWidth="2.5"
-          stroke="#a855f7"
+          stroke="currentColor"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -145,7 +145,7 @@ const GasFeeEstimator = () => {
           height="16"
           viewBox="0 0 24 24"
           strokeWidth="1.5"
-          stroke="#f9e79f"
+          stroke="currentColor"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -153,7 +153,7 @@ const GasFeeEstimator = () => {
           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
           <path d="M4 12c0 -1.657 1.592 -3 3.556 -3c1.963 0 3.11 1.5 4.444 3c1.333 1.5 2.48 3 4.444 3s3.556 -1.343 3.556 -3" />
         </svg>
-        <p className="text-sm font-bold text-[#f9e79f]">
+        <p className="text-sm font-bold text-black dark:text-[#f9e79f]">
           <span className="font-mono">{Math.floor(gas).toString()}</span> GWEI
         </p>
       </div>

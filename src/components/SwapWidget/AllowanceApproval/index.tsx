@@ -155,7 +155,7 @@ const AllowanceApproval = ({ token }) => {
                 disabled={isSubmitting || !isValid}
                 onClick={() => setStep(2)}
                 type="button"
-                className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
+                className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
               >
                 {errors.amount ? errors.amount : "Review Approval"}
               </button>
@@ -172,7 +172,7 @@ const AllowanceApproval = ({ token }) => {
                 }
               />
 
-              <p className="text-sm text-yellow-500 my-2 text-center">
+              <p className="text-sm text-slate-600 dark:text-yellow-500 my-2 text-center">
                 Set to maximum so you don't have to do this everytime you want
                 to swap.
               </p>

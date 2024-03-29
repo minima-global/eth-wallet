@@ -183,7 +183,7 @@ const SwapWidget = () => {
                   <button
                     disabled={!isValid}
                     type="submit"
-                    className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
+                    className="py-4 disabled:bg-gray-100 disabled:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
                   >
                     {errors.inputAmount ? errors.inputAmount : "Error"}
                   </button>
@@ -198,7 +198,7 @@ const SwapWidget = () => {
                         disabled={!isValid}
                         onClick={() => setStep(2)}
                         type="button"
-                        className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
+                        className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
                       >
                         {errors.inputAmount
                           ? errors.inputAmount

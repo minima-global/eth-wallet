@@ -140,15 +140,6 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
               <div />
             </div>
 
-            {/* <div className="border-b border-gray-800 my-4"></div> */}
-
-            {/* <button
-              onClick={() => submitForm()}
-              type="button"
-              className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
-            >
-              Done
-            </button> */}
           </div>
         </>
       )}
@@ -163,7 +154,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                 height="60"
                 viewBox="0 0 24 24"
                 strokeWidth="2.5"
-                stroke="#5eead4"
+                stroke="currentColor"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -180,7 +171,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
           </div>
 
           <div className="px-8 my-4">
-            <p className="text-center font-bold text-teal-300">
+            <p className="text-center font-bold text-teal-500 dark:text-teal-300">
               Swap Successful
             </p>
 
@@ -246,7 +237,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                 handleNavigation("balance");
               }}
               type="button"
-              className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-blue-100 text-black text-lg w-full font-bold my-2"
+              className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-blue-500  dark:text-black dark:bg-blue-100 text-white text-lg w-full font-bold my-2"
             >
               Done
             </button>
