@@ -1,4 +1,4 @@
-import { Contract, parseUnits } from "ethers";
+import { Contract, MaxUint256, parseUnits } from "ethers";
 import { useContext } from "react";
 import {
   ERC20_ABI,
@@ -30,7 +30,7 @@ const useTokenApprovals = () => {
         const requiredAmountDecimal = new Decimal(requiredAmountToWei.toString());
 
         // Compare the two Decimal objects
-        if (allowanceDecimal.lt(requiredAmountDecimal)) {
+        if (allowanceDecimal.lt(requiredAmountDecimal) && requiredAmountDecimal.lt(MaxUint256.toString())) {
           
           return true;
         } else if (allowanceDecimal.gte(requiredAmountDecimal)) {

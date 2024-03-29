@@ -1,6 +1,7 @@
 import { Token } from "@uniswap/sdk-core";
 import {
   Contract,
+  MaxUint256,
   Signer,
   TransactionReceipt,
   parseUnits,
@@ -21,18 +22,19 @@ export async function getTokenTransferApproval(
   token: Token,
   amount: string,
   signer: Signer,
-  address: string,
+  address: string
 ): Promise<TransactionReceipt> {
   if (!signer || !address) {
     throw Error("No Provider Found");
   }
 
   const tokenContract = new Contract(token.address, ERC20_ABI, signer);
-  const toWei = parseUnits(amount, token.decimals);
-  const transaction = await tokenContract.approve(
-    SWAP_ROUTER_ADDRESS,
-    toWei
-  );
+
+  let toWei = parseUnits(amount, token.decimals);
+  if (amount === MaxUint256.toString()) {
+    toWei = MaxUint256;
+  }
+  const transaction = await tokenContract.approve(SWAP_ROUTER_ADDRESS, toWei);
 
   return transaction.wait();
 }
@@ -40,7 +42,7 @@ export async function getTokenTransferApproval(
 export async function resetApproval(
   token: Token,
   signer: Signer,
-  address: string,
+  address: string
 ): Promise<TransactionReceipt> {
   if (!signer || !address) {
     throw Error("No Provider Found");
@@ -48,14 +50,10 @@ export async function resetApproval(
 
   const tokenContract = new Contract(token.address, ERC20_ABI, signer);
 
-  const transaction = await tokenContract.approve(
-    SWAP_ROUTER_ADDRESS,
-    0
-  );
+  const transaction = await tokenContract.approve(SWAP_ROUTER_ADDRESS, 0);
 
   return transaction.wait();
 }
-
 
 export async function estimateGasForApproval(
   token: Token,

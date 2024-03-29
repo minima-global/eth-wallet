@@ -13,7 +13,7 @@ const AddressBookContact = ({ contact = false, address }: IProps) => {
   const {_address} = useWalletContext();
 
   const ownAddress = _address === address;
-  console.log("ownAddress", ownAddress);
+  // console.log("ownAddress", ownAddress);
   return (
     <div className="flex items-center gap-2 my-2">
       <Bear extraClass="w-[34px]" input={address} />

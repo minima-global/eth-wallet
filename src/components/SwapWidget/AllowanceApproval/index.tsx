@@ -19,7 +19,7 @@ import GasFeeEstimator from "./GasFeeEstimator";
 const AllowanceApproval = ({ token }) => {
   const formik: any = useFormikContext();
   const { _wallet, _address } = useWalletContext();
-  const { _promptAllowanceApprovalModal, promptAllowanceApprovalModal } =
+  const { _promptAllowanceApprovalModal, promptAllowanceApprovalModal, setTriggerBalanceUpdate } =
     useContext(appContext);
 
   const [step, setStep] = useState(1);
@@ -36,7 +36,7 @@ const AllowanceApproval = ({ token }) => {
       if (
         !inputAmount ||
         createDecimal(inputAmount) === null ||
-        createDecimal(inputAmount)?.isZero()
+        createDecimal(inputAmount)?.isZero() || createDecimal(formik.values.input.balance)?.isZero()
       ) {
         setFieldValue("locked", false);
       }
@@ -88,7 +88,7 @@ const AllowanceApproval = ({ token }) => {
                     throw new Error("Invalid amount");
                   }
 
-                  if (createDecimal(val)?.greaterThan(MaxUint256.toString())) {
+                  if (createDecimal(val)?.times(10**token.decimals).greaterThan(MaxUint256.toString())) {
                     throw new Error("Exceeded Max Amount");
                   }
 
@@ -132,7 +132,10 @@ const AllowanceApproval = ({ token }) => {
               );
 
               setStep(4);
-
+              setTimeout(() => {
+                setTriggerBalanceUpdate((prevState) => !prevState);
+              }, 4000);              
+              
               resetForm();
             } catch (error) {
               setStep(5);

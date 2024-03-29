@@ -9,7 +9,7 @@ import ApproveFieldWrapper from "../ApproveFieldWrapper";
 const ReviewApproval = ({ token, step, setStep, submitForm, error }) => {
   const formik: any = useFormikContext();
 
-  const { promptAllowanceApprovalModal } = useContext(appContext);
+  const { promptAllowanceApprovalModal, handleNavigation } = useContext(appContext);
 
   const { resetForm } = formik;
   const {receipt } = formik.values;
@@ -134,6 +134,7 @@ const ReviewApproval = ({ token, step, setStep, submitForm, error }) => {
                 resetForm();
                 setStep(1);
                 promptAllowanceApprovalModal();
+                handleNavigation("balance");
               }}
               type="button"
               className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-blue-100 text-black text-lg w-full font-bold my-2"

@@ -12,7 +12,7 @@ import { useContext, useState } from "react";
 import { appContext } from "../../AppContext";
 import AllowanceApproval from "./AllowanceApproval";
 import Decimal from "decimal.js";
-import { NonceManager } from "ethers";
+import { MaxUint256, NonceManager } from "ethers";
 import GasFeeEstimator from "./GasFeeEstimator";
 import { createDecimal } from "../../utils";
 import ReviewSwap from "./ReviewSwap";
@@ -61,6 +61,10 @@ const SwapWidget = () => {
                 const spendAmount = decimalVal.times(
                   10 ** parent.input.decimals
                 );
+
+                if (spendAmount.gt(MaxUint256.toString())) {
+                  throw new Error("You exceeded the max amount");
+                }
 
                 if (spendAmount.greaterThan(parent.input.balance)) {
                   throw new Error("Insufficient funds");

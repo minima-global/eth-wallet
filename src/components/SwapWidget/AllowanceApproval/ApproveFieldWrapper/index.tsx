@@ -30,7 +30,7 @@ const ApproveFieldWrapper = ({
           Approve amount
         </label>
         <input
-          disabled={formik.isSubmitting || reviewMode}
+          disabled={true}
           {...formik.getFieldProps("amount")}
           onBlur={() => setF(false)}
           onFocus={() => setF(true)}
