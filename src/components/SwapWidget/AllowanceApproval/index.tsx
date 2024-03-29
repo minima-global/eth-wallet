@@ -1,30 +1,29 @@
 import { useContext, useEffect, useState } from "react";
-import { appContext } from "../../AppContext";
-import AnimatedDialog from "../UI/AnimatedDialog";
-import Cross from "../UI/Cross";
+import { appContext } from "../../../AppContext";
+import AnimatedDialog from "../../UI/AnimatedDialog";
+import Cross from "../../UI/Cross";
 import { Formik, useFormikContext } from "formik";
 import ApproveFieldWrapper from "./ApproveFieldWrapper";
 import { SUPPORTED_CHAINS, Token } from "@uniswap/sdk-core";
-import { getTokenTransferApproval } from "../SwapWidget/libs/getTokenTransferApproval";
-import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import { getTokenTransferApproval } from "../libs/getTokenTransferApproval";
+import { useWalletContext } from "../../../providers/WalletProvider/WalletProvider";
 import { MaxUint256, NonceManager } from "ethers";
-import useTokenApprovals from "../../hooks/useTokenApprovals";
+import useTokenApprovals from "../../../hooks/useTokenApprovals";
 import Decimal from "decimal.js";
-import { createDecimal } from "../../utils";
+import { createDecimal } from "../../../utils";
 
 import * as yup from "yup";
-
+import ReviewApproval from "./ReviewApproval";
+import GasFeeEstimator from "./GasFeeEstimator";
 
 const AllowanceApproval = ({ token }) => {
   const formik: any = useFormikContext();
   const { _wallet, _address } = useWalletContext();
-  const {    
-    _promptAllowanceApprovalModal,
-    promptAllowanceApprovalModal,
-  } = useContext(appContext);
+  const { _promptAllowanceApprovalModal, promptAllowanceApprovalModal } =
+    useContext(appContext);
 
-  const [step, setStep] = useState(0);
-  const [error, setError] = useState<false|string>();
+  const [step, setStep] = useState(1);
+  const [error, setError] = useState<false | string>();
 
   const checkAllowances = useTokenApprovals();
   const { setFieldValue } = formik;
@@ -34,9 +33,11 @@ const AllowanceApproval = ({ token }) => {
     const inputTokenAddress = formik.values.input.address;
 
     (async () => {
-      
-      if (!inputAmount || createDecimal(inputAmount) === null || createDecimal(inputAmount)?.isZero()) {
-        console.log('seting to false..');
+      if (
+        !inputAmount ||
+        createDecimal(inputAmount) === null ||
+        createDecimal(inputAmount)?.isZero()
+      ) {
         setFieldValue("locked", false);
       }
 
@@ -46,10 +47,11 @@ const AllowanceApproval = ({ token }) => {
         new Decimal(inputAmount).gt(0)
       ) {
         const state = await checkAllowances(
+          formik.values.input.decimals,
           inputTokenAddress,
           formik.values.inputAmount
         );
-        console.log('setting locked state to ' + state);
+
         setFieldValue("locked", state);
       }
     })();
@@ -71,26 +73,25 @@ const AllowanceApproval = ({ token }) => {
       </div>
       <div className="my-4 px-4">
         <Formik
-           validationSchema={yup.object().shape({
+          validationSchema={yup.object().shape({
             amount: yup
-              .string()   
-              .required("Enter an amount")         
+              .string()
+              .required("Enter an amount")
               .matches(/^\d+(\.\d+)?$/, "Invalid amount")
               .test("check for insufficient funds", function (val) {
-                const { path, parent, createError } = this;
-  
+                const { path, createError } = this;
+
                 if (!val || val.length === 0) return false;
-  
+
                 try {
                   if (createDecimal(val) === null) {
                     throw new Error("Invalid amount");
                   }
-                  
+
                   if (createDecimal(val)?.greaterThan(MaxUint256.toString())) {
                     throw new Error("Exceeded Max Amount");
                   }
-                                  
-                    
+
                   return true;
                 } catch (error: any) {
                   console.error(error);
@@ -100,16 +101,18 @@ const AllowanceApproval = ({ token }) => {
                       message: error.message,
                     });
                   }
-  
+
                   return false;
                 }
               }),
           })}
           initialValues={{
             amount: MaxUint256.toString(),
+            gas: null,
+            receipt: null
           }}
-          onSubmit={async ({ amount }, {resetForm, setStatus}) => {
-            setStatus(undefined);
+          onSubmit={async ({ amount }, { resetForm }) => {
+
             const _tokenA = new Token(
               SUPPORTED_CHAINS["1"],
               formik.values.input.address,
@@ -118,45 +121,66 @@ const AllowanceApproval = ({ token }) => {
               formik.values.input.name
             );
 
+            setStep(3);
             try {
               const nonceManager = new NonceManager(_wallet!);
-              const tokenApproval = await getTokenTransferApproval(
+              await getTokenTransferApproval(
                 _tokenA,
                 amount,
                 nonceManager, // signer
                 _address!
               );
-              
-              console.log("SUCCESS", tokenApproval);
+
+              setStep(4);
 
               resetForm();
-              setStatus("Allowance approved!");
-              
             } catch (error) {
+              setStep(5);
               if (error instanceof Error) {
-                return setStatus(error.message);
+                return setError(error.message);
               }
 
-              return setStatus("Transaction rejected!");
+              return setError("Transaction rejected!");
             }
           }}
         >
-          {({ handleSubmit, isSubmitting, isValid, errors, status }) => (
+          {({ handleSubmit, isSubmitting, isValid, errors, submitForm }) => (
             <form onSubmit={handleSubmit}>
               <ApproveFieldWrapper disabled={isSubmitting} token={token} />
 
-              {status && <p className="break-all my-2">{status}</p>}
               <button
                 disabled={isSubmitting || !isValid}
-                type="submit"
+                onClick={() => setStep(2)}
+                type="button"
                 className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
               >
-                {errors.amount ? errors.amount : "Approve"}
+                {errors.amount ? errors.amount : "Review Approval"}
               </button>
+
+              <GasFeeEstimator
+                token={
+                  new Token(
+                    SUPPORTED_CHAINS["1"],
+                    formik.values.input.address,
+                    formik.values.input.decimals,
+                    formik.values.input.symbol,
+                    formik.values.input.name
+                  )
+                }
+              />
+
               <p className="text-sm text-yellow-500 my-2 text-center">
                 Set to maximum so you don't have to do this everytime you want
                 to swap.
               </p>
+
+              <ReviewApproval
+                token={token}
+                step={step}
+                setStep={setStep}
+                submitForm={submitForm}
+                error={error}
+              />
             </form>
           )}
         </Formik>

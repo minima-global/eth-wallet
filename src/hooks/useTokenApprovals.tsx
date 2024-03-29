@@ -1,4 +1,4 @@
-import { Contract } from "ethers";
+import { Contract, parseUnits } from "ethers";
 import { useContext } from "react";
 import {
   ERC20_ABI,
@@ -13,6 +13,7 @@ const useTokenApprovals = () => {
   const { _address } = useWalletContext();
 
   const checkAllowances = async (
+    tokenDecimals: string,
     tokenAddress: string,
     requiredAmount: string
   ) => {
@@ -23,12 +24,14 @@ const useTokenApprovals = () => {
     return tokenContract
       .allowance(_address, SWAP_ROUTER_ADDRESS)
       .then((allowance) => {
-
+        
+        const requiredAmountToWei = parseUnits(requiredAmount, tokenDecimals);
         const allowanceDecimal = new Decimal(allowance.toString());
-        const requiredAmountDecimal = new Decimal(requiredAmount);
+        const requiredAmountDecimal = new Decimal(requiredAmountToWei.toString());
 
         // Compare the two Decimal objects
         if (allowanceDecimal.lt(requiredAmountDecimal)) {
+          
           return true;
         } else if (allowanceDecimal.gte(requiredAmountDecimal)) {
           return false;

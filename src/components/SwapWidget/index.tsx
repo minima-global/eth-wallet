@@ -10,7 +10,7 @@ import { SUPPORTED_CHAINS, Token } from "@uniswap/sdk-core";
 
 import { useContext, useState } from "react";
 import { appContext } from "../../AppContext";
-import AllowanceApproval from "../AllowanceApproval";
+import AllowanceApproval from "./AllowanceApproval";
 import Decimal from "decimal.js";
 import { NonceManager } from "ethers";
 import GasFeeEstimator from "./GasFeeEstimator";

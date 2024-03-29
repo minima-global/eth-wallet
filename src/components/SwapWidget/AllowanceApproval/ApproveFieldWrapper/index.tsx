@@ -6,8 +6,14 @@ interface Props {
   token: JSX.Element;
   extraClass?: string;
   disabled?: boolean;
+  reviewMode?: boolean;
 }
-const ApproveFieldWrapper = ({ disabled, extraClass, token }: Props) => {
+const ApproveFieldWrapper = ({
+  reviewMode,
+  disabled,
+  extraClass,
+  token,
+}: Props) => {
   const [f, setF] = useState(false);
   const formik: any = useFormikContext();
 
@@ -24,7 +30,7 @@ const ApproveFieldWrapper = ({ disabled, extraClass, token }: Props) => {
           Approve amount
         </label>
         <input
-          disabled={formik.isSubmitting}
+          disabled={formik.isSubmitting || reviewMode}
           {...formik.getFieldProps("amount")}
           onBlur={() => setF(false)}
           onFocus={() => setF(true)}
@@ -34,15 +40,19 @@ const ApproveFieldWrapper = ({ disabled, extraClass, token }: Props) => {
       </div>
       <div className=" bg-gray-700 bg-opacity-10 pb-0 grid grid-rows-[1fr_auto]">
         <div className="m-auto">{token}</div>
-        <div className="grid items-center pb-2">
-          <button
-            type="button"
-            onClick={() => formik.setFieldValue("amount", MaxUint256.toString())}
-            className="p-0 text-sm font-bold text-teal-300 focus:outline-none hover:font-semibold"
-          >
-            Max
-          </button>
-        </div>
+        {!reviewMode && (
+          <div className="grid items-center pb-2">
+            <button
+              type="button"
+              onClick={() =>
+                formik.setFieldValue("amount", MaxUint256.toString())
+              }
+              className="p-0 text-sm font-bold text-teal-300 focus:outline-none hover:font-semibold"
+            >
+              Max
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
