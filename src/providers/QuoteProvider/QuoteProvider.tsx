@@ -3,7 +3,6 @@ import { formatUnits } from "ethers";
 import { useFormikContext } from "formik";
 import getOutputQuote from "../../components/SwapWidget/libs/getOutputQuote";
 import { appContext } from "../../AppContext";
-import usePoolInfo from "../../hooks/usePoolInfo";
 import { FeeAmount, Pool, Route } from "@uniswap/v3-sdk";
 import Decimal from "decimal.js";
 import { useWalletContext } from "../WalletProvider/WalletProvider";

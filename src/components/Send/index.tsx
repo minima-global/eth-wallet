@@ -329,7 +329,7 @@ const Send = () => {
                     {step === 3 && (
                       <div className="pb-4">
                         <div className="mt-4 mb-4 bg-teal-500 px-4 flex items-center justify-between">
-                          <AddressBookContact address={_address} />
+                          <AddressBookContact address={_address!} />
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="34"
