@@ -42,7 +42,6 @@ const SwapWidget = () => {
             .matches(/^\d+(\.\d+)?$/, "Invalid amount")
             .test("check for insufficient funds", function (val) {
               const { path, parent, createError } = this;
-              console.log(parent);
               if (!val || val.length === 0) return false;
 
               if (new Decimal(parent.input.balance).isZero()) {

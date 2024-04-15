@@ -30,18 +30,10 @@ const GasFeeEstimator = () => {
   const {isValid} = formik;
   const { tokenA, tokenB, inputAmount, gas, locked } = formik.values;
   useEffect(() => {
-
-    console.log('Locked State', locked);
-    
-
     if (!_poolContract || locked || utils.createDecimal(inputAmount) === null)
       return;
 
-
-
     (async () => {
-      console.log('Calculating gas');
-
       const [liquidity, slot0] = await Promise.all([
         _poolContract.liquidity(),
         _poolContract.slot0()

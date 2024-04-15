@@ -242,14 +242,23 @@ const Dashboard = () => {
               />
             </svg>
           </div>
-          <div onClick={(e) => e.stopPropagation()} className="justify-center items-center hidden md:flex">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="justify-center items-center hidden md:flex"
+          >
             <UserAccount />
           </div>
-          <div onClick={(e) => e.stopPropagation()} className="flex justify-end gap-2">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex justify-end gap-2"
+          >
             <div className="flex md:hidden">
               <UserAccount />
             </div>
-            <div onClick={(e) => e.stopPropagation()} className="flex items-center">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center"
+            >
               <svg
                 onClick={promptSettings}
                 className="hover:cursor-pointer hover:animate-spin"
@@ -289,8 +298,7 @@ const Dashboard = () => {
           </section>
         </main>
         <footer>
-          <div />
-          <nav>
+          <nav className="grid grid-cols-4">
             <button
               className={` flex flex-col items-center justify-center gap-1 transition-all delay-100 duration-100 font-bold ${
                 _currentNavigation === "balance" ? "bg-opacity-50" : ""
@@ -352,8 +360,8 @@ const Dashboard = () => {
                 strokeLinejoin="round"
               >
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M20 10h-16l5.5 -6" />
-                <path d="M4 14h16l-5.5 6" />
+                <path d="M10 14l11 -11" />
+                <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
               </svg>
               <p
                 className={`${
@@ -363,6 +371,45 @@ const Dashboard = () => {
                 }`}
               >
                 Send
+              </p>
+            </button>
+            <button
+              className={` flex flex-col items-center justify-center gap-1 transition-all delay-100 duration-100 font-bold ${
+                _currentNavigation === "receive" ? "bg-opacity-50 " : ""
+              }`}
+              disabled={_currentNavigation === "receive"}
+              onClick={() =>
+                window.open(`${etherscan[_network].rpc}${_address}`)
+              }
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`${
+                  _currentNavigation === "uniswap"
+                    ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
+                    : ""
+                }`}
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M20 10h-16l5.5 -6" />
+                <path d="M4 14h16l-5.5 6" />
+              </svg>
+              <p
+                className={`${
+                  _currentNavigation === "receive"
+                    ? "text-teal-500 font-extrabold transition-all delay-200 duration-100"
+                    : ""
+                }`}
+              >
+                Swap
               </p>
             </button>
             <button
@@ -404,7 +451,6 @@ const Dashboard = () => {
               </p>
             </button>
           </nav>
-          <div />
         </footer>
       </div>
     </>
