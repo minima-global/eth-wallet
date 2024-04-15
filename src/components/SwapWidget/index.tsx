@@ -12,7 +12,7 @@ import { useContext, useState } from "react";
 import { appContext } from "../../AppContext";
 import AllowanceApproval from "./AllowanceApproval";
 import Decimal from "decimal.js";
-import { MaxUint256, NonceManager } from "ethers";
+import { MaxUint256, NonceManager, parseUnits } from "ethers";
 import GasFeeEstimator from "./GasFeeEstimator";
 import { createDecimal } from "../../utils";
 import ReviewSwap from "./ReviewSwap";
@@ -22,7 +22,7 @@ const SwapWidget = () => {
   const { _network } = useWalletContext();
   const { promptAllowanceApprovalModal, setTriggerBalanceUpdate } =
     useContext(appContext);
-  const { _wallet } = useWalletContext();
+  const { _wallet, _balance } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
   const [step, setStep] = useState(1);
@@ -42,10 +42,10 @@ const SwapWidget = () => {
             .matches(/^\d+(\.\d+)?$/, "Invalid amount")
             .test("check for insufficient funds", function (val) {
               const { path, parent, createError } = this;
-
+              console.log(parent);
               if (!val || val.length === 0) return false;
 
-              if (new Decimal(parent.input.balance).isZero()) {
+              if (new Decimal(parent.input.balance).isZero()) {                
                 return createError({
                   path,
                   message: "Insufficient funds",
@@ -72,6 +72,54 @@ const SwapWidget = () => {
 
                 return true;
               } catch (error: any) {
+                if (error instanceof Error) {
+                  return createError({
+                    path,
+                    message: error.message,
+                  });
+                }
+
+                return false;
+              }
+            }),
+          gas: yup
+            .string()
+            .required("Gas is required")
+            .test("has sufficient funds to pay for gas", function (val) {
+              const { path, createError } = this;
+              
+              if (!val || val.length === 0) return false;
+
+              // We check whether the user has enough funds to pay for gas.
+              if (new Decimal(_balance).isZero()) {
+                return createError({
+                  path,
+                  message: "Insufficient funds, low on ETH for gas",
+                });
+              }
+
+              try {
+                const decimalVal = createDecimal(val);
+                if (decimalVal === null) {
+                  throw new Error("Invalid gas amount");
+                }
+
+                const gasFeeGwei = new Decimal(
+                  parseUnits(val, "gwei").toString()
+                );
+
+                // spendAmount is in Ethereum..
+                if (
+                  gasFeeGwei.greaterThan(
+                    parseUnits(_balance, "ether").toString()
+                  )
+                ) {
+                  throw new Error("Insufficient funds, low on ETH for gas");
+                }
+
+                return true;
+              } catch (error: any) {
+                console.error(error);
                 if (error instanceof Error) {
                   return createError({
                     path,
@@ -139,7 +187,7 @@ const SwapWidget = () => {
             <AllowanceApproval token={getTokenWrapper(values.input!)} />
 
             <form onSubmit={handleSubmit} className="relative">
-              <>
+              <>                
                 <FieldWrapper
                   disabled={
                     values.locked || new Decimal(values.input!.balance).isZero()
@@ -168,7 +216,8 @@ const SwapWidget = () => {
                     <>{values.output ? getTokenWrapper(values.output) : null}</>
                   }
                 />
-                {values.locked !== null && values.locked && (
+                {/* If widget is locked then we need to approve.. */}
+                {values.locked && (
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -179,7 +228,8 @@ const SwapWidget = () => {
                     Approve {values.input!.symbol}
                   </button>
                 )}
-                {(!values.locked || values.locked === null) && !isValid && (
+                {/* If widget is not locked and there is an error then show error.. */}
+                {!values.locked && errors.inputAmount && (
                   <button
                     disabled={!isValid}
                     type="submit"
@@ -187,15 +237,16 @@ const SwapWidget = () => {
                   >
                     {errors.inputAmount ? errors.inputAmount : "Error"}
                   </button>
-                )}
-                {!!values.inputAmount &&
-                  isValid &&
+                )}              
+
+                {/* If widget is not locked && there are no errors.. then show review button! */}
+                {!errors.inputAmount &&
                   createDecimal(values.inputAmount) !== null &&
                   !new Decimal(values.inputAmount).isZero() &&
-                  (!values.locked || values.locked === null) && (
+                  values.locked !== null && (
                     <>
                       <button
-                        disabled={!isValid}
+                        disabled={!!errors.inputAmount}
                         onClick={() => setStep(2)}
                         type="button"
                         className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
@@ -204,6 +255,7 @@ const SwapWidget = () => {
                           ? errors.inputAmount
                           : "Review Swap"}
                       </button>
+
                       <GasFeeEstimator />
                     </>
                   )}

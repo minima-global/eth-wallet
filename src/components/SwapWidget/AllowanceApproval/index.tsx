@@ -9,7 +9,6 @@ import { getTokenTransferApproval } from "../libs/getTokenTransferApproval";
 import { useWalletContext } from "../../../providers/WalletProvider/WalletProvider";
 import { MaxUint256, NonceManager } from "ethers";
 import useTokenApprovals from "../../../hooks/useTokenApprovals";
-import Decimal from "decimal.js";
 import { createDecimal } from "../../../utils";
 
 import * as yup from "yup";
@@ -19,8 +18,11 @@ import GasFeeEstimator from "./GasFeeEstimator";
 const AllowanceApproval = ({ token }) => {
   const formik: any = useFormikContext();
   const { _wallet, _address } = useWalletContext();
-  const { _promptAllowanceApprovalModal, promptAllowanceApprovalModal, setTriggerBalanceUpdate } =
-    useContext(appContext);
+  const {
+    _promptAllowanceApprovalModal,
+    promptAllowanceApprovalModal,
+    setTriggerBalanceUpdate,
+  } = useContext(appContext);
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState<false | string>();
@@ -29,23 +31,21 @@ const AllowanceApproval = ({ token }) => {
   const { setFieldValue } = formik;
   const { inputAmount } = formik.values;
 
+  const inputAmountIsInvalidOrZero =
+    !inputAmount ||
+    createDecimal(inputAmount) === null ||
+    createDecimal(inputAmount)?.isZero() ||
+    createDecimal(formik.values.input.balance)?.isZero();
+
   useEffect(() => {
     const inputTokenAddress = formik.values.input.address;
 
     (async () => {
-      if (
-        !inputAmount ||
-        createDecimal(inputAmount) === null ||
-        createDecimal(inputAmount)?.isZero() || createDecimal(formik.values.input.balance)?.isZero()
-      ) {
+      if (inputAmountIsInvalidOrZero) {
         setFieldValue("locked", false);
       }
-
-      if (
-        inputAmount &&
-        createDecimal(inputAmount) !== null &&
-        new Decimal(inputAmount).gt(0)
-      ) {
+      
+      if (!inputAmountIsInvalidOrZero) {
         const state = await checkAllowances(
           formik.values.input.decimals,
           inputTokenAddress,
@@ -55,7 +55,7 @@ const AllowanceApproval = ({ token }) => {
         setFieldValue("locked", state);
       }
     })();
-  }, [formik.values]);
+  }, [inputAmount]);
 
   return (
     <AnimatedDialog
@@ -88,7 +88,11 @@ const AllowanceApproval = ({ token }) => {
                     throw new Error("Invalid amount");
                   }
 
-                  if (createDecimal(val)?.times(10**token.decimals).greaterThan(MaxUint256.toString())) {
+                  if (
+                    createDecimal(val)
+                      ?.times(10 ** token.decimals)
+                      .greaterThan(MaxUint256.toString())
+                  ) {
                     throw new Error("Exceeded Max Amount");
                   }
 
@@ -109,10 +113,9 @@ const AllowanceApproval = ({ token }) => {
           initialValues={{
             amount: MaxUint256.toString(),
             gas: null,
-            receipt: null
+            receipt: null,
           }}
           onSubmit={async ({ amount }, { resetForm }) => {
-
             const _tokenA = new Token(
               SUPPORTED_CHAINS["1"],
               formik.values.input.address,
@@ -134,8 +137,8 @@ const AllowanceApproval = ({ token }) => {
               setStep(4);
               setTimeout(() => {
                 setTriggerBalanceUpdate((prevState) => !prevState);
-              }, 4000);              
-              
+              }, 4000);
+
               resetForm();
             } catch (error) {
               setStep(5);

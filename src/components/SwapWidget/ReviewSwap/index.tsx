@@ -10,9 +10,9 @@ import { appContext } from "../../../AppContext";
 const ReviewSwap = ({ step, setStep, submitForm, error }) => {
   const formik: any = useFormikContext();
 
-  const { handleNavigation} = useContext(appContext);
+  const { handleNavigation } = useContext(appContext);
 
-  const { resetForm } = formik;
+  const { resetForm, errors } = formik;
   const { inputAmount, outputAmount, input, output, receipt } = formik.values;
 
   return (
@@ -56,13 +56,25 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
 
             <GasFeeEstimator />
 
-            <button
-              onClick={() => submitForm()}
-              type="button"
-              className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
-            >
-              Confirm Swap
-            </button>
+            {!errors.gas && (
+              <button
+                onClick={() => submitForm()}
+                type="button"
+                className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
+              >
+                Confirm Swap
+              </button>
+            )}
+
+            {errors.gas && (
+              <button
+              disabled={true}
+              type="submit"
+              className="py-4 disabled:bg-gray-100 disabled:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
+              >
+                {errors.gas ? errors.gas : "Error gas"}
+              </button>
+            )}
           </div>
         </>
       )}
@@ -139,7 +151,6 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
               </div>
               <div />
             </div>
-
           </div>
         </>
       )}

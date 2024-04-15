@@ -30,15 +30,15 @@ export const QuoteContextProvider = ({ children }: Props) => {
 
   const { values, setFieldValue }: any = useFormikContext();
 
-  useEffect(() => {
-    if (
-      createDecimal(values.inputAmount) === null ||
-      new Decimal(values.inputAmount).lte(0) ||
-      !_poolContract
-    )
-      return;
+  const widgetNotReady =
+    createDecimal(values.inputAmount) === null ||
+    new Decimal(values.inputAmount).lte(0) ||
+    !_poolContract;
 
-    (async () => {
+  useEffect(() => {
+    if (widgetNotReady) return;
+
+    const fetchData = async () => {
       const [fee, tickSpacing, liquidity, slot0] = await Promise.all([
         _poolContract.fee(),
         _poolContract.tickSpacing(),
@@ -76,8 +76,18 @@ export const QuoteContextProvider = ({ children }: Props) => {
         "outputAmount",
         toReadableAmount(quoteData[0], tokenB.decimals)
       );
-    })();
+    };
+
+    // Initial fetch
+    fetchData();
+
+    // Set up interval to fetch data every 10 seconds
+    const intervalId = setInterval(fetchData, 10000);
+
+    // Clean up interval on unmount or when dependencies change
+    return () => clearInterval(intervalId);
   }, [
+    widgetNotReady,
     values.inputAmount,
     values.input,
     values.output,

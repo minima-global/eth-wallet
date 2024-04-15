@@ -31,15 +31,16 @@ const FieldWrapper = ({
     <div
       className={`${disabled ? "opacity-30" : ""} ${
         extraClass && extraClass
-      }   bg-gray-100 dark:bg-gray-800 rounded pb-0 grid grid-cols-[1fr_minmax(0,_142.16px)] ${
+      }   bg-gray-100 dark:bg-gray-800 rounded pb-0 grid grid-cols-1 md:grid-cols-[1fr_minmax(0,_142.16px)] ${
         f ? "border border-teal-300" : ""
-      }`}
+      } overflow-hidden`}
     >
       <div className="p-4">
         <label className="block text-sm text-gray-500 font-bold">
           {type === "input" ? "You pay" : "You receive"}
         </label>
         <input
+          readOnly={type !== "input"}
           disabled={disabled || reviewMode}
           ref={inputRef}
           {...formik.getFieldProps(
@@ -51,7 +52,11 @@ const FieldWrapper = ({
           className="text-2xl truncate bg-gray-100 dark:bg-gray-800 font-mono focus:border-none focus:outline-none placeholder:text-teal-300 font-bold"
         />
       </div>
-      <div className={`bg-gray-400 dark:bg-gray-700 bg-opacity-10 p-4 pb-0 grid grid-rows-[1fr_auto] ${reviewMode ? " flex items-center py-0" : ""}`}>
+      <div
+        className={`bg-gray-400 dark:bg-gray-700 bg-opacity-10 p-4 pb-0 grid grid-rows-[1fr_auto] ${
+          reviewMode ? " flex items-center py-0" : ""
+        }`}
+      >
         <div>{token}</div>
         <div className="grid grid-cols-[1fr_auto] items-center">
           {!reviewMode && (
