@@ -82,11 +82,19 @@ export const QuoteContextProvider = ({ children }: Props) => {
     fetchData();
 
     // Set up interval to fetch data every 10 seconds
-    const intervalId = setInterval(fetchData, 10000);
+    const intervalId = setInterval(() => {
+      const requiresNewQuote = !values.locked && values.receipt === null;
+
+      if (requiresNewQuote) {
+        fetchData();
+      }
+    }, 10000);
 
     // Clean up interval on unmount or when dependencies change
     return () => clearInterval(intervalId);
   }, [
+    values.locked,
+    values.receipt,
     widgetNotReady,
     values.inputAmount,
     values.input,

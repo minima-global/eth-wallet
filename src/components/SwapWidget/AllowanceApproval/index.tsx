@@ -42,7 +42,7 @@ const AllowanceApproval = ({ token }) => {
 
     (async () => {
       if (inputAmountIsInvalidOrZero) {
-        setFieldValue("locked", false);
+        setFieldValue("locked", null);
       }
       
       if (!inputAmountIsInvalidOrZero) {

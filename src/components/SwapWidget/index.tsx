@@ -45,7 +45,7 @@ const SwapWidget = () => {
               console.log(parent);
               if (!val || val.length === 0) return false;
 
-              if (new Decimal(parent.input.balance).isZero()) {                
+              if (new Decimal(parent.input.balance).isZero()) {
                 return createError({
                   path,
                   message: "Insufficient funds",
@@ -87,7 +87,7 @@ const SwapWidget = () => {
             .required("Gas is required")
             .test("has sufficient funds to pay for gas", function (val) {
               const { path, createError } = this;
-              
+
               if (!val || val.length === 0) return false;
 
               // We check whether the user has enough funds to pay for gas.
@@ -161,6 +161,8 @@ const SwapWidget = () => {
           setStep(3);
 
           try {
+            setFieldValue("locked", true);
+
             const nonceManager = new NonceManager(_wallet!);
 
             const res = await nonceManager.sendTransaction(tx);
@@ -187,7 +189,7 @@ const SwapWidget = () => {
             <AllowanceApproval token={getTokenWrapper(values.input!)} />
 
             <form onSubmit={handleSubmit} className="relative">
-              <>                
+              <>
                 <FieldWrapper
                   disabled={
                     values.locked || new Decimal(values.input!.balance).isZero()
@@ -217,7 +219,7 @@ const SwapWidget = () => {
                   }
                 />
                 {/* If widget is locked then we need to approve.. */}
-                {values.locked && (
+                {values.locked !== null && values.locked && (
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -237,19 +239,19 @@ const SwapWidget = () => {
                   >
                     {errors.inputAmount ? errors.inputAmount : "Error"}
                   </button>
-                )}              
+                )}
 
                 {/* If widget is not locked && there are no errors.. then show review button! */}
                 {!errors.inputAmount &&
                   createDecimal(values.inputAmount) !== null &&
                   !new Decimal(values.inputAmount).isZero() &&
-                  values.locked !== null && (
+                  values.locked !== null && !values.locked && (
                     <>
                       <button
                         disabled={!!errors.inputAmount}
                         onClick={() => setStep(2)}
                         type="button"
-                        className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
+                        className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
                       >
                         {errors.inputAmount
                           ? errors.inputAmount
