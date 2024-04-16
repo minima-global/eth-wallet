@@ -1,6 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { appContext } from "../../AppContext";
 import { JsonRpcProvider } from "ethers";
+import { sql } from "../../utils/SQL";
+
 
 const SetUpJsonRPC = () => {
   const { _promptJsonRpcSetup, updateApiKeys } = useContext(appContext);
@@ -34,10 +36,28 @@ const SetUpJsonRPC = () => {
   };
   const [step, setStep] = useState(SETUPSTATE["INTRO"]);
 
-  const [apiKey, setApiKey] = useState("05c98544804b478994665892aeff361c");
+  const [apiKey, setApiKey] = useState("");
   const [apiKeySecret, setApiKeySecret] = useState(
-    "vcVkdmQvUPFN0+uUFtvvxDREfltH0z5wmX96V1rNWF3KemNdeLT4qg"
+    ""
   );
+
+  useEffect(() => {
+    (async () => {
+      const cachedApiKeys: any = await sql(
+        `SELECT * FROM cache WHERE name = 'API_KEYS'`
+      );
+
+      if (cachedApiKeys) {
+        const userKeys: any = JSON.parse(cachedApiKeys.DATA);
+
+        setApiKey(userKeys.apiKey);
+        setApiKeySecret(userKeys.apiKeySecret);
+      }
+
+    })();
+
+
+  }, []);
 
   const handleCheckboxChange = (event) => {
     const { id, checked } = event.target;
@@ -220,7 +240,7 @@ const SetUpJsonRPC = () => {
                 placeholder="e.g. vcGUP0+u....1rNeLT4qg"
                 className="w-full p-2 rounded-lg text-2xl truncate bg-gray-100 dark:bg-gray-800 font-mono focus:border-none focus:outline-none dark:placeholder:text-teal-300 font-bold"
               />
-              <p className="mt-2 text-[13px] text-green-400">
+              <p className="mt-2 text-[13px] font-bold dark:text-green-400">
                 You can find this in your API Settings where you can click to
                 reveal your secret.
               </p>
@@ -394,7 +414,7 @@ const SetUpJsonRPC = () => {
                   <label
                     htmlFor="ethereumCheckbox"
                     className={`${
-                      checking.ethereum ? "!text-teal-300" : "!text-red-300"
+                      checking.ethereum ? "dark:!text-teal-300" : "!text-red-300"
                     }`}
                   >
                     I have enabled Ethereum mainnet on Infura
@@ -411,7 +431,7 @@ const SetUpJsonRPC = () => {
                   <label
                     htmlFor="ethereumCheckbox"
                     className={`${
-                      checking.sepolia ? "!text-teal-300" : "!text-red-300"
+                      checking.sepolia ? "dark:!text-teal-300" : "!text-red-300"
                     }`}
                   >
                     I have enabled Sepolia on Infura API
@@ -428,7 +448,7 @@ const SetUpJsonRPC = () => {
                   <label
                     htmlFor="expansionCheckbox"
                     className={`${
-                      checking.expansion ? "!text-teal-300" : "!text-red-300"
+                      checking.expansion ? "dark:!text-teal-300" : "!text-red-300"
                     }`}
                   >
                     I have enabled the Gas API in the Expansion section
