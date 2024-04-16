@@ -5,7 +5,7 @@ import { TransactionResponse } from "ethers";
 import { ContractTransactionResponse } from "ethers";
 import { Asset } from "./types/Asset";
 import { Network, Networks } from "./types/Network";
-import defaultAssetsStored, { _defaults, networks } from "./constants";
+import defaultAssetsStored, { _defaults } from "./constants";
 
 export const appContext = createContext({} as any);
 
@@ -24,6 +24,10 @@ interface IProps {
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
   const [isWorking, setWorking] = useState(false);
+  const [userKeys, setUserKeys] = useState<{
+    apiKey: string;
+    apiKeySecret: string;
+  } | null>(null);
   const [_defaultAssets, setDefaultAssets] = useState<{ assets: Asset[] }>({
     assets: [],
   });
@@ -40,8 +44,13 @@ const AppProvider = ({ children }: IProps) => {
   // mainnet, sepolia, hardhat, etc...
   const [_provider, setProvider] = useState<JsonRpcProvider | null>(null); //  new JsonRpcProvider(networks["sepolia"].rpc)
   const [_promptReadMode, setReadMode] = useState<null | boolean>(null);
+  const [_promptJsonRpcSetup, setPromptJsonRpcSetup] = useState<null | boolean>(
+    false
+  );
   const [_promptSettings, setPromptSettings] = useState(false);
-  const [_promptTokenDetails, setPromptTokenDetails] = useState<false | any>(false);
+  const [_promptTokenDetails, setPromptTokenDetails] = useState<false | any>(
+    false
+  );
   const [_promptSelectNetwork, setSelectNetwork] = useState(false);
   const [_promptTokenImport, setImportTokenImport] = useState(false);
 
@@ -58,9 +67,8 @@ const AppProvider = ({ children }: IProps) => {
     decimal: ".",
     thousands: ",",
   });
-  const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] = useState(false);
-  
-
+  const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] =
+    useState(false);
 
   useEffect(() => {
     (async () => {
@@ -130,10 +138,9 @@ const AppProvider = ({ children }: IProps) => {
 
               return setReadMode(response.response.mode === "READ");
             }
-            
-            return setReadMode(false);
-          });          
 
+            return setReadMode(false);
+          });
 
           (async () => {
             setWorking(true);
@@ -153,34 +160,92 @@ const AppProvider = ({ children }: IProps) => {
             // Get all user's saved addresses
             const addressBook: any = await sql(
               `SELECT * FROM cache WHERE name = 'ADDRESSBOOK'`
-            );           
+            );
+
+            const cachedApiKeys: any = await sql(
+              `SELECT * FROM cache WHERE name = 'API_KEYS'`
+            );
+
+            // USER PREFERENCES
+            if (cachedApiKeys) {
+              setUserKeys(JSON.parse(cachedApiKeys.DATA));
+
+              // DEFAULT NETWORK
+              if (cachedNetwork) {
+                const previouslySetNetwork = JSON.parse(cachedNetwork.DATA);
+                setRPCNetwork(
+                  previouslySetNetwork.default,
+                  JSON.parse(defaultNetworks.DATA),
+                  JSON.parse(cachedApiKeys.DATA)
+                );
+              } else {
+                // initialize it..
+                const initializeFirstNetwork = {
+                  default: "sepolia",
+                };
+                await sql(
+                  `INSERT INTO cache (name, data) VALUES ('CURRENT_NETWORK', '${JSON.stringify(
+                    initializeFirstNetwork
+                  )}')`
+                );
+                setRPCNetwork(
+                  initializeFirstNetwork.default,
+                  JSON.parse(defaultNetworks.DATA),
+                  JSON.parse(cachedApiKeys.DATA)
+                );
+              }
+            } else {
+              // No default api keys.. let's set up
+              promptJsonRpcSetup();
+            }
 
             if (addressBook) {
               setAddressBook(JSON.parse(addressBook.DATA));
             }
 
             if (defaultNetworks) {
-              // console.log(JSON.parse(defaultNetworks.DATA));
               // set all networks saved
               setDefaultNetworks(JSON.parse(defaultNetworks.DATA));
             } else {
+
               // Initialize networks
               await sql(
                 `INSERT INTO cache (name, data) VALUES ('DEFAULTNETWORKS', '${JSON.stringify(
-                  networks
+                  {
+                    mainnet: {
+                      name: "Ethereum",
+                      rpc: "https://mainnet.infura.io/v3/",
+                      chainId: "1",
+                      symbol: "ETH",
+                    },
+                    sepolia: {
+                      name: "SepoliaETH",
+                      rpc: "https://sepolia.infura.io/v3/",
+                      chainId: "11155111",
+                      symbol: "SepoliaETH",
+                    },
+                  }
                 )}')`
               );
-              setDefaultNetworks(networks);
+              setDefaultNetworks({
+                mainnet: {
+                  name: "Ethereum",
+                  rpc: "https://mainnet.infura.io/v3/",
+                  chainId: "1",
+                  symbol: "ETH",
+                },
+                sepolia: {
+                  name: "SepoliaETH",
+                  rpc: "https://sepolia.infura.io/v3/",
+                  chainId: "11155111",
+                  symbol: "SepoliaETH",
+                },
+              });
             }
 
-            // User preference
-            if (cachedNetwork) {
-              const previouslySetNetwork = JSON.parse(cachedNetwork.DATA);
-              setRPCNetwork(
-                previouslySetNetwork.default,
-                JSON.parse(defaultNetworks.DATA)
-              );
-            } else {
+            /**
+             * We now require the User to set up his default networks in the start of the App
+             * else {
               // initialize
               await sql(
                 `INSERT INTO cache (name, data) VALUES ('CURRENT_NETWORK', '${JSON.stringify(
@@ -190,6 +255,8 @@ const AppProvider = ({ children }: IProps) => {
 
               setRPCNetwork("sepolia", networks);
             }
+             * 
+             */
 
             setWorking(false);
           })();
@@ -221,24 +288,43 @@ const AppProvider = ({ children }: IProps) => {
   const promptTokenImport = () => {
     setImportTokenImport((prevState) => !prevState);
   };
-  
+
+  const promptJsonRpcSetup = () => {
+    setPromptJsonRpcSetup((prevState) => !prevState);
+  };
+
   const promptTokenDetails = (token: any) => {
-    setTokenDetails(prevState => prevState === token ? false : token);
+    setTokenDetails((prevState) => (prevState === token ? false : token));
     setPromptTokenDetails((prevState) => !prevState);
   };
 
   const promptAllowanceApprovalModal = () => {
-    setPromptAllowanceApprovalModal(prevState => !prevState);
-  }
+    setPromptAllowanceApprovalModal((prevState) => !prevState);
+  };
 
-  const setRPCNetwork = (network: string, networks: Networks) => {
-    const networkToConnect =
-      networks && networks[network]
-        ? new JsonRpcProvider(networks[network].rpc)
-        : null;
+  const setRPCNetwork = (
+    network: string,
+    networks: Networks,
+    cachedApiKeys: any
+  ) => {
 
-    setProvider(networkToConnect);
-    setCurrentNetwork(network);
+    let rpcUrl = networks && networks[network] ? networks[network].rpc : null;
+
+    if (rpcUrl) {
+      // Check if the RPC URL is an Infura URL
+      const isInfura = rpcUrl.includes("infura.io");
+
+      // If it's an Infura URL and an API key is available, append the API key
+      if (isInfura && cachedApiKeys.apiKey) {
+        rpcUrl += cachedApiKeys.apiKey;
+      }
+
+      const networkToConnect = new JsonRpcProvider(rpcUrl);
+      setProvider(networkToConnect);
+      setCurrentNetwork(network);
+    } else {
+      console.error("Network configuration not found.");
+    }
   };
 
   const verifyRPCNetwork = async (network: string) => {
@@ -328,6 +414,31 @@ const AppProvider = ({ children }: IProps) => {
     setPromptAddressBookAdd(false);
   };
 
+  const updateApiKeys = async (apiKey: string, apiKeySecret: string) => {
+    const updatedData: { apiKey: string; apiKeySecret: string } = {
+      apiKey,
+      apiKeySecret,
+    };
+
+    setUserKeys(updatedData);
+
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'API_KEYS'`);
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('API_KEYS', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'API_KEYS'`
+      );
+    }
+  };
+
   const updatePreferredNetwork = async (name: string) => {
     const updatedData = {
       default: name,
@@ -338,7 +449,7 @@ const AppProvider = ({ children }: IProps) => {
       `SELECT * FROM cache WHERE name = 'DEFAULTNETWORKS'`
     );
 
-    setRPCNetwork(name, JSON.parse(defaultNetworks.DATA));
+    setRPCNetwork(name, JSON.parse(defaultNetworks.DATA), userKeys);
 
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'CURRENT_NETWORK'`
@@ -372,12 +483,18 @@ const AppProvider = ({ children }: IProps) => {
         loaded,
         isWorking,
 
+        userKeys,
+        updateApiKeys,
+
         _promptReadMode,
 
         updatePreferredNetwork,
 
         _promptTokenImport,
         promptTokenImport,
+
+        _promptJsonRpcSetup,
+        promptJsonRpcSetup,
 
         _promptSettings,
         promptSettings,

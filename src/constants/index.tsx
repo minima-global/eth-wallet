@@ -71,13 +71,13 @@ export const etherscan = {
 export const networks: Networks = {
   mainnet: {
     name: "Ethereum",
-    rpc: "https://mainnet.infura.io/v3/05c98544804b478994665892aeff361c",
+    rpc: "https://mainnet.infura.io/v3/",
     chainId: "1",
     symbol: "ETH"
   },
   sepolia: {
     name: "SepoliaETH",
-    rpc: "https://sepolia.infura.io/v3/05c98544804b478994665892aeff361c",
+    rpc: "https://sepolia.infura.io/v3/",
     chainId: "11155111",
     symbol: "SepoliaETH"
   }

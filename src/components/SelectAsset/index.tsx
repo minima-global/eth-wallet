@@ -4,7 +4,7 @@ import { useSpring, animated, config } from "react-spring";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { Asset } from "../../types/Asset";
-import { formatEther } from "ethers";
+import { formatUnits } from "ethers";
 import defaultAssetsStored, { _defaults } from "../../constants";
 import { appContext } from "../../AppContext";
 
@@ -100,7 +100,7 @@ const SelectAsset = () => {
             {formik.values.asset.name}
           </h6>
           <p className="m-0 p-0 text-sm font-mono text-black dark:text-white">
-          {formik.values.asset.type === 'erc20' && formatEther(formik.values.asset.balance)}
+          {formik.values.asset.type === 'erc20' && formatUnits(formik.values.asset.balance, formik.values.asset.decimals)}
           {formik.values.asset.type !== 'erc20' && formik.values.asset.balance}
           </p>
         </div>
@@ -161,7 +161,7 @@ const SelectAsset = () => {
                     {token.name}
                   </h6>
                   <p className="m-0 p-0 text-sm opacity-80 font-mono text-white dark:text-black">
-                    {formatEther(token.balance)}
+                    {formatUnits(token.balance, token.decimals)}
                   </p>
                 </div>
               </li>

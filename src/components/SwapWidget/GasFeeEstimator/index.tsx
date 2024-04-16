@@ -27,7 +27,6 @@ const GasFeeEstimator = () => {
   const { _provider } = useContext(appContext);
   const { _address, _poolContract, _wallet } = useWalletContext();
 
-  const {isValid} = formik;
   const { tokenA, tokenB, inputAmount, gas, locked } = formik.values;
   useEffect(() => {
     if (!_poolContract || locked || utils.createDecimal(inputAmount) === null)
