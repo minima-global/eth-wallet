@@ -222,24 +222,50 @@ const Dashboard = () => {
         >
           <div>
             <svg
-              className="animate-pulse temporary-animate"
-              xmlns="http://www.w3.org/2000/svg"
-              width="44"
-              height="44"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="#ffedd5"
+              width="48"
+              height="46"
+              className="rounded-lg"
+              viewBox="0 0 512 512"
               fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path
-                className="fill-white dark:fill-black dark:opacity-80"
-                d="M12 3a8 8 0 0 1 7.996 7.75l.004 .25l-.001 6.954l.01 .103a2.78 2.78 0 0 1 -1.468 2.618l-.163 .08c-1.053 .475 -2.283 .248 -3.129 -.593l-.137 -.146a.65 .65 0 0 0 -1.024 0a2.65 2.65 0 0 1 -4.176 0a.65 .65 0 0 0 -.512 -.25c-.2 0 -.389 .092 -.55 .296a2.78 2.78 0 0 1 -4.859 -2.005l.008 -.091l.001 -6.966l.004 -.25a8 8 0 0 1 7.996 -7.75zm2.82 10.429a1 1 0 0 0 -1.391 -.25a2.5 2.5 0 0 1 -2.858 0a1 1 0 0 0 -1.142 1.642a4.5 4.5 0 0 0 5.142 0a1 1 0 0 0 .25 -1.392zm-4.81 -4.429l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993zm4 0l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993z"
-                strokeWidth="0"
-                fill="currentColor"
-              />
+              <rect width="512" height="512" fill="white" />
+              <g clip-path="url(#clip0_2017_33)">
+                <path
+                  d="M255.969 85.5L253.697 93.2709V318.745L255.969 321.028L359.936 259.162L255.969 85.5Z"
+                  fill="#343434"
+                />
+                <path
+                  d="M255.97 85.5L152 259.162L255.97 321.028V211.589V85.5Z"
+                  fill="#8C8C8C"
+                />
+                <path
+                  d="M255.969 340.844L254.688 342.416V422.733L255.969 426.497L360 279.01L255.969 340.844Z"
+                  fill="#3C3C3B"
+                />
+                <path
+                  d="M255.97 426.497V340.844L152 279.01L255.97 426.497Z"
+                  fill="#8C8C8C"
+                />
+                <path
+                  d="M255.97 321.028L359.937 259.162L255.97 211.589V321.028Z"
+                  fill="#141414"
+                />
+                <path
+                  d="M152 259.162L255.97 321.028V211.589L152 259.162Z"
+                  fill="#393939"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_2017_33">
+                  <rect
+                    width="208"
+                    height="341"
+                    fill="white"
+                    transform="translate(152 85.5)"
+                  />
+                </clipPath>
+              </defs>
             </svg>
           </div>
           <div

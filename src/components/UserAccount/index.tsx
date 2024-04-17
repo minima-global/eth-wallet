@@ -201,7 +201,7 @@ const UserAccount = () => {
                           {_addressBook[_address!] &&
                           _addressBook[_address!].length
                             ? _addressBook[_address!]
-                            : "MiniGhost"}
+                            : "Minimalist"}
                         </h3>
 
                         <svg
