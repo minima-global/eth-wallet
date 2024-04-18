@@ -230,7 +230,7 @@ const Dashboard = () => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <rect width="512" height="512" fill="white" />
-              <g clip-path="url(#clip0_2017_33)">
+              <g clipPath="url(#clip0_2017_33)">
                 <path
                   d="M255.969 85.5L253.697 93.2709V318.745L255.969 321.028L359.936 259.162L255.969 85.5Z"
                   fill="#343434"

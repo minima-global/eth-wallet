@@ -71,8 +71,8 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid, recipient
       </div>
       <div className="flex justify-between px-4">
         <h3></h3>
-        <button className={`text-black dark:text-white p-0 focus:ring-transparent focus:outline-none focus:border-none ${copied ? 'animate-pulse text-teal-300' : ''}`} onClick={handleCopy}>
-          {copied? "Copied!" : "Copy transaction ID"}
+        <button type="button" className={`text-teal-500 dark:text-teal-300 p-0 focus:ring-transparent focus:outline-none focus:border-none ${copied ? 'animate-pulse text-teal-300' : ''}`} onClick={handleCopy}>
+          {copied ? "Copied!" : "Copy transaction ID"}
         </button>
       </div>
       <div className="flex justify-between px-4 mb-1 mt-3">

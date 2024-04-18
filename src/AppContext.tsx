@@ -165,8 +165,7 @@ const AppProvider = ({ children }: IProps) => {
             const cachedApiKeys: any = await sql(
               `SELECT * FROM cache WHERE name = 'API_KEYS'`
             );
-
-            console.log('cachedApiKeys',cachedApiKeys);
+            
             // USER PREFERENCES
             if (cachedApiKeys) {
               setUserKeys(JSON.parse(cachedApiKeys.DATA));

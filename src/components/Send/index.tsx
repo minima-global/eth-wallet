@@ -161,6 +161,7 @@ const Send = () => {
                   { amount, address, asset },
                   { setFieldValue }
                 ) => {
+                  setError(false);
                   setLoading(true);
                   try {
                     if (asset.type === "ether") {
