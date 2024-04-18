@@ -48,11 +48,8 @@ const SetUpJsonRPC = () => {
   useEffect(() => {
     (async () => {
       if (loaded && loaded.current && userKeys !== null) {
-                
-
         setApiKey(userKeys.apiKey);
         setApiKeySecret(userKeys.apiKeySecret);
-        
       }
     })();
   }, [loaded, userKeys]);
@@ -206,7 +203,20 @@ const SetUpJsonRPC = () => {
                 {" "}
                 We will use Infura to get this API Key for you, please register
                 for the free account with
-                <a target="_blank" href="https://app.infura.io/register">
+                <a
+                  onClick={(e) => {
+                    if (window.navigator.userAgent.includes("Minima Browser")) {
+                      e.preventDefault();
+                      // @ts-ignore
+                      Android.openExternalBrowser(
+                        "https://app.infura.io/register",
+                        "_blank"
+                      );
+                    }
+                  }}
+                  target="_blank"
+                  href="https://app.infura.io/register"
+                >
                   Infura
                 </a>{" "}
                 and an API Key will be automatically generated for you. Click
