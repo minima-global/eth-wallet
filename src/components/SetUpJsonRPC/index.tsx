@@ -149,9 +149,9 @@ const SetUpJsonRPC = () => {
   }
 
   return (
-    <div className="bg-gray-200 dark:bg-black absolute left-0 right-0 bottom-0 top-0 z-[20000]">
+    <div className="bg-gray-200 dark:bg-black fixed left-0 right-0 bottom-0 top-0 z-[20000] overflow-y-scroll">
       {step === SETUPSTATE["INTRO"] && (
-        <div className={`grid grid-rows-[56px_1fr_86px] h-full md:h-max`}>
+        <div className={`px-4 grid grid-rows-[56px_1fr_86px] h-full md:h-max`}>
           <header className="grid grid-cols-[1fr_minmax(0,_560px)_1fr]">
             <div />
             {_promptSettings && (
@@ -181,7 +181,7 @@ const SetUpJsonRPC = () => {
             )}
             <div />
           </header>
-          <main className="px-4 md:px-0 grid grid-cols-[1fr_minmax(0,_560px)_1fr]">
+          <main className="grid grid-cols-[1fr_minmax(0,_560px)_1fr]">
             <div />
             <section className="text-left">
               <h1 className="text-2xl font-bold dark:text-orange-300">
@@ -230,7 +230,7 @@ const SetUpJsonRPC = () => {
         </div>
       )}
       {step === SETUPSTATE["FORM"] && (
-        <div className="grid grid-rows-[56px_1fr_86px] h-full md:h-max">
+        <div className="px-4 grid grid-rows-[56px_1fr_86px] h-full md:h-max">
           <header />
           <main className="grid grid-cols-[1fr_minmax(0,_560px)_1fr]">
             <div />
@@ -355,7 +355,7 @@ const SetUpJsonRPC = () => {
         </div>
       )}
       {step === SETUPSTATE["CHECK"] && (
-        <div className="grid grid-rows-[56px_1fr_86px] h-full md:h-max">
+        <div className="px-4 grid grid-rows-[56px_1fr_86px] h-full md:h-max">
           <header />
           <main className="grid grid-cols-[1fr_minmax(0,_560px)_1fr]">
             <div />
