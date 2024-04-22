@@ -119,16 +119,16 @@ const ImportToken = () => {
                       address: yup
                         .string()
                         .required("Enter a contract address")
-                        .test("testing address checksum", function (val) {
+                        .test("testing address checksum", async function (val) {
                           const { path, createError } = this;
 
                           if (!val || val.length === 0) return false;
 
                           try {
                             getAddress(val);
-                            new Contract(val, ERC20ABI, _provider);
-
-                            return true;
+                            const c = new Contract(val, ERC20ABI, _provider);
+                            await c.deployed();
+                            return true;  
                           } catch (error) {
                             return createError({
                               path,
@@ -204,14 +204,14 @@ const ImportToken = () => {
                                 onBlur={handleBlur}
                                 placeholder="Token contract address"
                                 className={`mb-2 ${
-                                  dirty && errors.address
+                                  errors.address
                                     ? "!border-4 !border-red-500"
                                     : ""
                                 }`}
                               />
                             </label>
 
-                            {dirty && errors.address && (
+                            {errors.address && (
                               <div className="my-2 bg-red-500 text-white rounded px-4 py-1">
                                 {errors.address}
                               </div>
@@ -228,7 +228,7 @@ const ImportToken = () => {
                                     onBlur={handleBlur}
                                     placeholder="Token symbol"
                                     className={`mb-2 ${
-                                      dirty && errors.symbol
+                                      errors.symbol
                                         ? "!border-4 !border-red-500"
                                         : ""
                                     }`}
@@ -244,7 +244,7 @@ const ImportToken = () => {
                                     onBlur={handleBlur}
                                     placeholder="Token decimals"
                                     className={`mb-2 ${
-                                      dirty && errors.decimals
+                                      errors.decimals
                                         ? "!border-4 !border-red-500"
                                         : ""
                                     }`}
