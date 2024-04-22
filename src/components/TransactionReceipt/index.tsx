@@ -19,6 +19,8 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid, recipient
   const [copied, setCopied] = useState(false);
   useEffect(() => {
     (async () => {
+      if (!receipt) return;
+      
       // set BlockExplorer link according to network.. keep null if not known
       const network = await receipt.provider.getNetwork();
       if (network.name === "mainnet") {
@@ -40,7 +42,7 @@ const TransactionReceiptCard = ({ receipt, asset, amountSent, gasPaid, recipient
       const _tx = await receipt?.getTransaction();
       setTx(_tx!);
     })();
-  }, []);
+  }, [receipt]);
 
   const handleCopy = () => {
     setCopied(true);

@@ -17,8 +17,6 @@ import * as utils from "../../../utils";
 import JSBI from "jsbi";
 import { useWalletContext } from "../../../providers/WalletProvider/WalletProvider";
 import {
-  MAX_FEE_PER_GAS,
-  MAX_PRIORITY_FEE_PER_GAS,
   SWAP_ROUTER_ADDRESS,
 } from "../../../providers/QuoteProvider/libs/constants";
 
@@ -79,18 +77,21 @@ const GasFeeEstimator = () => {
         options
       );
 
+      const gasFee = await _provider.getFeeData();
+      const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei
+
       const tx = {
         data: methodParameters.calldata,
         to: SWAP_ROUTER_ADDRESS,
         value: methodParameters.value,
         from: _address,
-        maxFeePerGas: MAX_FEE_PER_GAS,
-        maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+        maxFeePerGas: maxFeePerGas,
+        maxPriorityFeePerGas: maxPriorityFeePerGas,
       };
 
-      const gasFee = await _provider.getFeeData();
+
       const gasUnits = await _wallet!.estimateGas(tx);
-      const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei
+
 
       if (maxFeePerGas) {
         const _gas = await utils.calculateGasFee(
