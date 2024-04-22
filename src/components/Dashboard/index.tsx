@@ -401,12 +401,10 @@ const Dashboard = () => {
             </button>
             <button
               className={` flex flex-col items-center justify-center gap-1 transition-all delay-100 duration-100 font-bold ${
-                _currentNavigation === "receive" ? "bg-opacity-50 " : ""
+                _currentNavigation === "uniswap" ? "bg-opacity-50 " : ""
               }`}
-              disabled={_currentNavigation === "receive"}
-              onClick={() =>
-                window.open(`${etherscan[_network].rpc}${_address}`)
-              }
+              disabled={_currentNavigation === "uniswap"}
+              onClick={() => handleNavigation("uniswap")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
