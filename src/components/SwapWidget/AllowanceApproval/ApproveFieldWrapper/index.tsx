@@ -1,4 +1,3 @@
-import { MaxUint256 } from "ethers";
 import { useFormikContext } from "formik";
 import { useState } from "react";
 
@@ -9,7 +8,6 @@ interface Props {
   reviewMode?: boolean;
 }
 const ApproveFieldWrapper = ({
-  reviewMode,
   disabled,
   extraClass,
   token,
@@ -21,9 +19,9 @@ const ApproveFieldWrapper = ({
     <div
       className={`${disabled ? "opacity-30" : ""} ${
         extraClass && extraClass
-       }  bg-gray-100 dark:bg-gray-800 rounded pb-0 grid grid-cols-[1fr_minmax(0,_142.16px)] ${
+       }  bg-gray-100 dark:bg-gray-800 rounded pb-0 grid grid-cols-1 md:grid-cols-[1fr_minmax(0,_142.16px)] ${
         f ? "border border-teal-300" : ""
-      }`}
+      } overflow-hidden`}
     >
       <div className="p-4">
         <label className="block text-sm text-gray-500 font-bold">
@@ -40,7 +38,7 @@ const ApproveFieldWrapper = ({
       </div>
       <div className=" bg-gray-400 dark:bg-gray-700 bg-opacity-10 pb-0 grid grid-rows-[1fr_auto]">
         <div className="m-auto">{token}</div>
-        {!reviewMode && (
+        {/* {!reviewMode && (
           <div className="grid items-center pb-2">
             <button
               type="button"
@@ -52,7 +50,7 @@ const ApproveFieldWrapper = ({
               Max
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

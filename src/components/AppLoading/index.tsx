@@ -63,7 +63,7 @@ const AppLoading = () => {
                 </div>
 
                 <p className="font-bold mb-4 animate-pulse">
-                  Changing network...
+                  Connecting...
                 </p>
 
                 {takingTooLong && (

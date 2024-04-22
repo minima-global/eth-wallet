@@ -68,9 +68,9 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
 
             {errors.gas && (
               <button
-              disabled={true}
-              type="submit"
-              className="py-4 disabled:bg-gray-100 disabled:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
+                disabled={true}
+                type="submit"
+                className="py-4 disabled:bg-gray-100 disabled:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
               >
                 {errors.gas ? errors.gas : "Error gas"}
               </button>
@@ -110,13 +110,11 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
             <p className="text-center animate-pulse font-bold text-violet-300">
               Swapping...
             </p>
-            <div className="grid grid-cols-[1fr_auto_1fr]">
-              <div />
-
-              <div className="flex gap-2 items-center my-4">
-                <div className="flex items-center">
-                  {getTokenWrapper(input, inputAmount)}
-                </div>
+            <div className="grid md:grid-cols-[1fr_auto_1fr] items-center my-4">
+              <div className="flex items-center justify-center">
+                {getTokenWrapper(input, inputAmount)}
+              </div>
+              <div className="flex justify-center mr-2 my-2 md:my-0 transform rotate-90 md:rotate-0">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -145,11 +143,10 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                     fill="currentColor"
                   />
                 </svg>
-                <div className="flex items-center">
-                  {getTokenWrapper(output, outputAmount)}
-                </div>
               </div>
-              <div />
+              <div className="flex items-center justify-center">
+                {getTokenWrapper(output, outputAmount)}
+              </div>
             </div>
           </div>
         </>
@@ -182,46 +179,46 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
           </div>
 
           <div className="px-8 my-4">
-            <p className="text-center font-bold text-teal-500 dark:text-teal-300">
-              Swap Successful
-            </p>
+            <p className="text-center font-bold">Swap Successful</p>
 
             <div className="grid grid-cols-[1fr_auto_1fr]">
               <div />
 
-              <div className="flex gap-2 items-center my-4">
-                <div className="flex items-center">
+              <div className="grid md:grid-cols-[1fr_auto_1fr] items-center my-4">
+                <div className="flex items-center justify-center">
                   {getTokenWrapper(input, inputAmount)}
                 </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path
-                    d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
-                    strokeWidth="0"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    strokeWidth="0"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    strokeWidth="0"
-                    fill="currentColor"
-                  />
-                </svg>
-                <div className="flex items-center">
+                <div className="flex justify-center mr-2 my-2 md:my-0 transform rotate-90 md:rotate-0">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path
+                      d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
+                      strokeWidth="0"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                      strokeWidth="0"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                      strokeWidth="0"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+                <div className="flex items-center justify-center">
                   {getTokenWrapper(output, outputAmount)}
                 </div>
               </div>
@@ -233,7 +230,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
             {receipt && receipt.hash && (
               <div className="text-center my-4">
                 <a
-                  href={`https://etherscan.io/address/${receipt.hash}`}
+                  href={`https://etherscan.io/tx/${receipt.hash}`}
                   target="_blank"
                   className="text-purple-400 cursor-pointer"
                 >
@@ -302,7 +299,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
             {receipt && receipt.hash && (
               <div className="text-center my-4">
                 <a
-                  href={`https://etherscan.io/address/${receipt.hash}`}
+                  href={`https://etherscan.io/tx/${receipt.hash}`}
                   target="_blank"
                   className="text-purple-400 cursor-pointer"
                 >
