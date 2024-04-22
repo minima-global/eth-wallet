@@ -1,7 +1,7 @@
 {
   "name": "ethwallet",
   "private": true,
-  "version": "1.3.3",
+  "version": "1.4.1",
   "type": "module",
   "description": "A Wrapped Minima, ERC-20 compatible Wallet",
   "scripts": {

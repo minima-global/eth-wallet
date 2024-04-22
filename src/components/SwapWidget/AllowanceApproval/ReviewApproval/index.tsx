@@ -112,7 +112,7 @@ const ReviewApproval = ({ token, step, setStep, submitForm, error }) => {
           </div>
 
           <div className="px-8 my-4">
-            <p className="text-center font-bold text-teal-500 dark:text-teal-500 dark:text-teal-300">
+            <p className="text-center font-bold text-teal-500 dark:text-teal-300">
               Approval Successful
             </p>            
 
@@ -121,7 +121,7 @@ const ReviewApproval = ({ token, step, setStep, submitForm, error }) => {
             {receipt && receipt.hash && (
               <div className="text-center my-4">
                 <a
-                  href={`https://etherscan.io/address/${receipt.hash}`}
+                  href={`https://etherscan.io/tx/${receipt.hash}`}
                   target="_blank"
                   className="text-purple-400 cursor-pointer"
                 >
@@ -191,7 +191,7 @@ const ReviewApproval = ({ token, step, setStep, submitForm, error }) => {
             {receipt && receipt.hash && (
               <div className="text-center my-4">
                 <a
-                  href={`https://etherscan.io/address/${receipt.hash}`}
+                  href={`https://etherscan.io/tx/${receipt.hash}`}
                   target="_blank"
                   className="text-purple-400 cursor-pointer"
                 >

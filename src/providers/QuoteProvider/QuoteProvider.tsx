@@ -28,7 +28,7 @@ export const QuoteContextProvider = ({ children }: Props) => {
   const formik: any = useFormikContext();
   const { tokenA, tokenB } = formik.values;
 
-  const { values, setFieldValue }: any = useFormikContext();
+  const { values, setFieldValue, isSubmitting }: any = useFormikContext();
 
   const widgetNotReady =
     createDecimal(values.inputAmount) === null ||
@@ -78,14 +78,17 @@ export const QuoteContextProvider = ({ children }: Props) => {
       );
     };
 
+    const requiresNewQuote = !isSubmitting && !values.locked && values.receipt === null;
+
     // Initial fetch
-    fetchData();
+    if (requiresNewQuote) {
+      fetchData();
+    }
 
     // Set up interval to fetch data every 10 seconds
     const intervalId = setInterval(() => {
-      const requiresNewQuote = !values.locked && values.receipt === null;
 
-      if (requiresNewQuote) {
+      if (requiresNewQuote) {        
         fetchData();
       }
     }, 10000);
@@ -93,6 +96,7 @@ export const QuoteContextProvider = ({ children }: Props) => {
     // Clean up interval on unmount or when dependencies change
     return () => clearInterval(intervalId);
   }, [
+    isSubmitting,
     values.locked,
     values.receipt,
     widgetNotReady,
