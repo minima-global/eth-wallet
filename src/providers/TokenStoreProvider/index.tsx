@@ -55,8 +55,8 @@ const TokenStoreContext = createContext<Context | null>(null);
 
 export const TokenStoreContextProvider = ({ children }: Props) => {
   const [tokens, setTokens] = useState<Asset[]>([]);
-  const { _provider, _defaultAssets } = useContext(appContext);
-  const { _wallet: signer } = useWalletContext();
+  const { _provider, _defaultAssets, _triggerBalanceUpdate } = useContext(appContext);
+  const { _wallet: signer, _address } = useWalletContext();
 
   const fetchTokenBalance = useCallback(
     async (tokenAddress: string) => {
@@ -66,7 +66,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
       try {
         // Call balanceOf function
         const contract = new Contract(tokenAddress, ABI_ERC20, _provider);
-        const balance = await contract.balanceOf(signer!.address);
+        const balance = await contract.balanceOf(_address);
         return balance.toString();
       } catch (error) {
         // throw new Error(
@@ -74,7 +74,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
         // );
       }
     },
-    [_provider, signer]
+    [_provider, signer, _address]
   );
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
         }
       })();
     }
-  }, [_provider, _defaultAssets, fetchTokenBalance]);
+  }, [_provider, _defaultAssets, fetchTokenBalance, _triggerBalanceUpdate]);
 
   const addToken = (token: Asset) => {
     setTokens((prevTokens) => [...prevTokens, token]);

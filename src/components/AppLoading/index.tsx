@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import Dialog from "../UI/Dialog";
@@ -8,7 +8,8 @@ import { useSpring, animated, config } from "react-spring";
 import { appContext } from "../../AppContext";
 
 const AppLoading = () => {
-  const { isWorking } = useContext(appContext);
+  const { isWorking, promptSettings } = useContext(appContext);
+  const [takingTooLong, setTakingTooLong] = useState(false);
 
   const springProps = useSpring({
     opacity: isWorking ? 1 : 0,
@@ -17,6 +18,12 @@ const AppLoading = () => {
       : "translateY(-50%) scale(0.8)",
     config: config.wobbly,
   });
+
+  useEffect(() => {
+    setTakingTooLong(false);
+
+    setTimeout(() => setTakingTooLong(true), 10000);
+  }, []);
 
   if (!isWorking) {
     return null;
@@ -28,7 +35,7 @@ const AppLoading = () => {
         <div />
         <div className="flex justify-center items-end">
           <animated.div style={springProps}>
-            <div className="z-50 flex items-center justify-center pb-8 animate-pulse">
+            <div className="z-50 flex items-center justify-center pb-8">
               <div className="z-10 bg-black rounded-lg px-4 py-2 text-white text-center relative shadow-sm">
                 <div className="flex items-center justify-center mb-2">
                   <svg
@@ -55,7 +62,20 @@ const AppLoading = () => {
                   </svg>
                 </div>
 
-                <p className="font-bold mb-4">Changing network...</p>
+                <p className="font-bold mb-4 animate-pulse">
+                  Changing network...
+                </p>
+
+                {takingTooLong && (
+                  <div>
+                    <button
+                      className="bg-purple-300 text-black font-bold shadow-none"
+                      onClick={promptSettings}
+                    >
+                      Switch Networks
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </animated.div>

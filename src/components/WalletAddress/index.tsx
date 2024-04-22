@@ -4,13 +4,13 @@ import { useWalletContext } from "../../providers/WalletProvider/WalletProvider"
 import * as utils from "../../utils";
 
 const WalletAddress = ({ fullAddress = false }) => {
-  const { _wallet } = useWalletContext();
+  const { _address } = useWalletContext();
 
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     setCopied(true);
-    utils.copyToClipboard(_wallet!.address);
+    utils.copyToClipboard(_address!);
     setTimeout(() => {
       setCopied(false);
     }, 3000);
@@ -46,7 +46,7 @@ const WalletAddress = ({ fullAddress = false }) => {
           onKeyDown={handleKeyDown}
           onDoubleClick={handleDoubleClick}
           className="p-2 text-left font-bold rounded-full focus:bg-teal-200 pr-10 truncate focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
-          value={_wallet && _wallet.address ? _wallet.address : "N/A"}
+          value={_address ? _address : "N/A"}
         />
       )}
       {!fullAddress && (
@@ -57,12 +57,12 @@ const WalletAddress = ({ fullAddress = false }) => {
           onDoubleClick={handleDoubleClick}
           className="p-2 text-left font-bold rounded-full focus:bg-teal-200 focus:outline-teal-600 dark:focus:text-black px-3 text-sm !w-max !max-w-max bg-teal-300"
           value={
-            _wallet && _wallet.address
-              ? _wallet.address.substring(0, 8) +
+            _address
+              ? _address.substring(0, 8) +
                 "..." +
-                _wallet.address.substring(
-                  _wallet.address.length - 8,
-                  _wallet.address.length
+                _address.substring(
+                  _address.length - 8,
+                  _address.length
                 )
               : "N/A"
           }

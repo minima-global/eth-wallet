@@ -6,10 +6,12 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Wallet, parseUnits, formatEther } from "ethers";
+import { Wallet, parseUnits, formatEther, Contract,  Signer } from "ethers";
 import { appContext } from "../../AppContext";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
 import { TransactionResponse } from "ethers";
+import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json";
+
 
 
 type Props = {
@@ -19,8 +21,9 @@ type Context = {
   _address: string | null;
   _network: string;
   _chainId: string | null;
-  _wallet: Wallet | null;
+  _wallet: Signer | null;
   _balance: string;
+  _poolContract: Contract | null;
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
   transfer: (address: string, amount: string, gas: GasFeeCalculated) => Promise<TransactionResponse>;
@@ -32,18 +35,26 @@ export const WalletContextProvider = ({ children }: Props) => {
   const { _provider, _generatedKey } = useContext(appContext);
   const [_network, setNetwork] = useState("");
   const [_chainId, setChainId] = useState<string | null>(null);
-  const [_wallet, setWallet] = useState<Wallet | null>(null);
+  const [_wallet, setWallet] = useState<Signer | null>(null);
   const [_address, setAddress] = useState<string | null>(null);
   const [_balance, setBalance] = useState(""); // ether balance
+  const [_poolContract, setPoolContract] = useState<Contract | null>(null); // ether balance
   const [step, setStep] = useState(1);
 
   useMemo(async () => {
     if (!_generatedKey || _provider === null) return;
+
     const wallet = new Wallet(_generatedKey, _provider);
     const address = await wallet.getAddress();
     const network = await _provider.getNetwork();
+    const poolContract = new Contract(
+      "0x8E427a754b13Fa1A165Db583120daf7c3aBe4019",
+      IUniswapV3PoolABI.abi,
+      wallet
+    );
+    setPoolContract(poolContract);
 
-    const balance = await _provider.getBalance(wallet.address);
+    const balance = await _provider.getBalance(address);
     setBalance(formatEther(balance));
     setWallet(wallet);
     setNetwork(network.name);
@@ -89,6 +100,7 @@ export const WalletContextProvider = ({ children }: Props) => {
         _chainId,
         _wallet,
         _balance,
+        _poolContract,
         transfer,
 
         step,

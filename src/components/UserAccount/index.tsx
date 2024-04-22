@@ -19,7 +19,7 @@ const UserAccount = () => {
   const [promptUserAccountDetails, setPromptUserAccountDetails] =
     useState(false);
   const [nickname, setNickname] = useState("");
-  const { _wallet } = useWalletContext();
+  const { _address } = useWalletContext();
   const {
     _promptAccountNameUpdate,
     promptAccountNameUpdate,
@@ -66,13 +66,13 @@ const UserAccount = () => {
   useEffect(() => {
     if (
       _addressBook &&
-      _wallet &&
-      _wallet.address &&
-      _addressBook[_wallet!.address]
+      _address &&
+      _address &&
+      _addressBook[_address]
     ) {
-      setNickname(_addressBook[_wallet!.address]);
+      setNickname(_addressBook[_address]);
     }
-  }, [_addressBook, _wallet]);
+  }, [_addressBook, _address]);
 
   const springProps = useSpring({
     opacity: promptUserAccountDetails ? 1 : 0,
@@ -88,16 +88,16 @@ const UserAccount = () => {
         onClick={() => setPromptUserAccountDetails(true)}
         className="bg-black hover:bg-teal-300 bg-opacity-10 hover:cursor-pointer flex items-center w-max gap-2 justify-between px-1 rounded-lg text-center"
       >
-        {_wallet && _wallet!.address && (
+        {_address && (
           <div className="h-full flex items-center justify-center">
-            <Bear extraClass=" !h-full w-[34px]" input={_wallet!.address} />
+            <Bear extraClass=" !h-full w-[34px]" input={_address} />
           </div>
         )}
         <h3 className="truncate font-bold max-w-[128px] dark:text-black">
-          {_wallet &&
-          _addressBook[_wallet!.address] &&
-          _addressBook[_wallet!.address].length
-            ? _addressBook[_wallet!.address]
+          {_address &&
+          _addressBook[_address] &&
+          _addressBook[_address].length
+            ? _addressBook[_address]
             : "Account"}
         </h3>
         <svg
@@ -121,9 +121,9 @@ const UserAccount = () => {
         </svg>
       </div>
 
-      {_wallet && _wallet.address && (
+      {_address && (
         <BiggerQrCode
-          data={_wallet!.address}
+          data={_address}
           dismiss={promptQrCode}
           active={_promptQrCode}
         />
@@ -138,10 +138,10 @@ const UserAccount = () => {
                   <div className="flex justify-between items-center">
                     <Cross dismiss={() => setPromptUserAccountDetails(false)} />
                     <div>
-                      {_wallet && _wallet.address && (
+                      {_address && (
                         <div className="flex gap-2 items-center">
                           <div onClick={promptQrCode}>
-                            <QRCode size={34} value={_wallet!.address} />
+                            <QRCode size={34} value={_address} />
                           </div>
                           {window.navigator.userAgent.includes(
                             "Minima Browser"
@@ -150,7 +150,7 @@ const UserAccount = () => {
                               onClick={() => {
                                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                 // @ts-ignore
-                                Android.shareText(_wallet!.address);
+                                Android.shareText(_address);
                               }}
                             >
                               <svg
@@ -187,10 +187,10 @@ const UserAccount = () => {
                     onClick={promptAccountNameUpdate}
                     className="flex items-center justify-center"
                   >
-                    {_wallet && _wallet.address && (
+                    {_address && (
                       <Bear
                         extraClass=" w-[160px] md:w-[220px]"
-                        input={_wallet!.address}
+                        input={_address}
                       />
                     )}
                   </div>
@@ -198,10 +198,10 @@ const UserAccount = () => {
                     {!_promptAccountNameUpdate && (
                       <div className="flex gap-1 mt-3 items-center justify-center">
                         <h3 className="font-bold max-w-[128px] dark:text-teal-300 md:text-xl truncate">
-                          {_addressBook[_wallet!.address] &&
-                          _addressBook[_wallet!.address].length
-                            ? _addressBook[_wallet!.address]
-                            : "MiniGhost"}
+                          {_addressBook[_address!] &&
+                          _addressBook[_address!].length
+                            ? _addressBook[_address!]
+                            : "Minimalist"}
                         </h3>
 
                         <svg
@@ -234,7 +234,7 @@ const UserAccount = () => {
                         <svg
                           onClick={() =>
                             updateAddressBook(
-                              _wallet!.address,
+                              _address,
                               utils.sanitizeSQLInput(nickname)
                             )
                           }

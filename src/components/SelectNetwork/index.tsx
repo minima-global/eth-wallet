@@ -54,6 +54,7 @@ const SelectNetwork = () => {
         {_network === "mainnet" && <EthereumNetwork />}
         {_network === "unknown" && <CustomNetwork />}
         {_network === "sepolia" && <SepoliaNetwork />}
+        {_network.length === 0 && <p className="font-bold">Select Network</p>}
       </div>
 
       {_promptSelectNetwork &&

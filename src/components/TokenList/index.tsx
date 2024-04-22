@@ -3,7 +3,7 @@ import { appContext } from "../../AppContext";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import ConversionRateUSD from "../ConversionRateUSD";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
-import { formatEther } from "ethers";
+import { formatUnits } from "ethers";
 import ImportToken from "../ImportToken";
 import { _defaults } from "../../constants";
 
@@ -48,7 +48,7 @@ const TokenList = () => {
               <div>
                 <h3 className="font-bold">{token.name}</h3>
                 <p className="font-mono text-sm">
-                  {formatEther(token.balance ? token.balance : 0)}
+                  {token.balance && formatUnits(token.balance, token.decimals).toString()}
                 </p>
               </div>
               <div>

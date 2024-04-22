@@ -80,8 +80,8 @@ const DesktopNav = () => {
             strokeLinejoin="round"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M20 10h-16l5.5 -6" />
-            <path d="M4 14h16l-5.5 6" />
+            <path d="M10 14l11 -11" />
+            <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
           </svg>
           <p
             className={`${
@@ -91,6 +91,47 @@ const DesktopNav = () => {
             }`}
           >
             Send
+          </p>
+        </button>
+        <button
+          className={`bg-black flex items-center justify-center gap-3 transition-all delay-100 duration-100 font-bold ${
+            _currentNavigation === "uniswap" ? " outline outline-teal-500" : ""
+          } ${
+            _currentNavigation !== "uniswap"
+              ? "hover:bg-teal-500 hover:text-white"
+              : ""
+          }`}
+          disabled={_currentNavigation === "uniswap"}
+          onClick={() => handleNavigation("uniswap")}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`${
+              _currentNavigation === "uniswap"
+                ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
+                : ""
+            }`}
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M20 10h-16l5.5 -6" />
+            <path d="M4 14h16l-5.5 6" />
+          </svg>
+          <p
+            className={`${
+              _currentNavigation === "uniswap"
+                ? "text-teal-500 font-extrabold transition-all delay-200 duration-100"
+                : ""
+            }`}
+          >
+            Swap
           </p>
         </button>
         <button
