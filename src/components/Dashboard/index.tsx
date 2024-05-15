@@ -218,7 +218,7 @@ const Dashboard = () => {
               Android.showTitleBar();
             }
           }}
-          className="!grid grid-cols-[1fr_1fr] md:grid-cols-[1fr_minmax(0,_360px)_1fr]"
+          className="!grid grid-cols-[1fr_1fr_1fr] gap-2 md:grid-cols-[1fr_minmax(0,_360px)_1fr]"
         >
           <div>
             <svg
@@ -268,10 +268,23 @@ const Dashboard = () => {
               </defs>
             </svg>
           </div>
+
+          <div className="flex md:hidden">
+            <div className="mb-auto">
+              <p className="text-center text-xs tracking-tighter font-bold  text-yellow-100  shadow-sm shadow-yellow-300 max-w-max mx-auto px-4">
+                TESTING PURPOSE ONLY
+              </p>
+            </div>
+          </div>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="justify-center items-center hidden md:flex"
+            className="justify-center items-center hidden md:flex flex-col gap-2"
           >
+            <div className="mb-auto">
+              <p className="text-center text-xs tracking-tighter font-bold text-yellow-100  shadow-sm dark:shadow-yellow-300 max-w-max mx-auto px-4">
+                TESTING PURPOSE ONLY
+              </p>
+            </div>
             <UserAccount />
           </div>
           <div
