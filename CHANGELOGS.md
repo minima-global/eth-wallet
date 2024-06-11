@@ -8,3 +8,4 @@
 
 - Add DB Locked Modal
 - Synchornize when the ReadMode appears
+- Tweak Settings Design
