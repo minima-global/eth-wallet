@@ -70,6 +70,9 @@ const AppProvider = ({ children }: IProps) => {
   const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] =
     useState(false);
 
+  // display db locked, ask for unlock
+  const [_promptDatabaseLocked, setPromptDatabaseLocked] = useState(false);
+
   useEffect(() => {
     (async () => {
       // if MDS inited then we can run our init SQL/re-sql on network change
@@ -132,6 +135,12 @@ const AppProvider = ({ children }: IProps) => {
               if (response.response.mode === "WRITE") {
                 // Generate key for Eth Wallet
                 (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
+                  if (!resp.status) {
+                    if (resp.error && resp.error.includes("DB locked!")) {
+                      return setPromptDatabaseLocked(true);
+                    }
+                  }
+                  
                   setGeneratedKey(resp.response.seedrandom);
                 });
               }
@@ -300,6 +309,10 @@ const AppProvider = ({ children }: IProps) => {
 
   const promptAllowanceApprovalModal = () => {
     setPromptAllowanceApprovalModal((prevState) => !prevState);
+  };
+
+  const promptDatabaseLocked = () => {
+    setPromptDatabaseLocked((prevState) => !prevState);
   };
 
   const setRPCNetwork = (
@@ -535,6 +548,9 @@ const AppProvider = ({ children }: IProps) => {
 
         _promptAccountNameUpdate,
         promptAccountNameUpdate,
+
+        _promptDatabaseLocked,
+        promptDatabaseLocked,
 
         _triggerBalanceUpdate,
         setTriggerBalanceUpdate,

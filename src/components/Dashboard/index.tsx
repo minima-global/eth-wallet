@@ -18,6 +18,7 @@ import ReadMode from "../ReadMode";
 import AppLoading from "../AppLoading";
 import TokenDetails from "../TokenList/TokenDetails";
 import TokenSwap from "../TokenSwap";
+import DatabaseLocked from "../DatabaseLocked";
 
 const Dashboard = () => {
   const { _network, _address } = useWalletContext();
@@ -330,6 +331,7 @@ const Dashboard = () => {
             <AppLoading />
             <Settings />
             <ReadMode />
+            <DatabaseLocked />
             <Send />
             <DesktopNav />
             <TokenList />
