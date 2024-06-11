@@ -122,35 +122,39 @@ const AppProvider = ({ children }: IProps) => {
   }, [_provider, loaded]);
 
   useEffect(() => {
+    if (loaded && loaded.current && userKeys !== null && userKeys.apiKey) {
+      // Check if read or write mode
+      (window as any).MDS.cmd(`checkmode`, function (response: any) {
+        if (response.status) {
+          // If in write mode, generate & set key
+          if (response.response.mode === "WRITE") {
+            // Generate key for Eth Wallet
+            (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
+              if (!resp.status) {
+                if (resp.error && resp.error.includes("DB locked!")) {
+                  return setPromptDatabaseLocked(true);
+                }
+              }
+              
+              setGeneratedKey(resp.response.seedrandom);
+            });
+          }
+
+          return setReadMode(response.response.mode === "READ");
+        }
+
+        return setReadMode(false);
+      });
+    }
+  }, [loaded, userKeys]);
+
+  useEffect(() => {
     if (!loaded.current) {
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           loaded.current = true;
           // do something Minim-y
-
-          // Check if read or write mode
-          (window as any).MDS.cmd(`checkmode`, function (response: any) {
-            if (response.status) {
-              // If in write mode, generate & set key
-              if (response.response.mode === "WRITE") {
-                // Generate key for Eth Wallet
-                (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
-                  if (!resp.status) {
-                    if (resp.error && resp.error.includes("DB locked!")) {
-                      return setPromptDatabaseLocked(true);
-                    }
-                  }
-                  
-                  setGeneratedKey(resp.response.seedrandom);
-                });
-              }
-
-              return setReadMode(response.response.mode === "READ");
-            }
-
-            return setReadMode(false);
-          });
-
+          
           (async () => {
             setWorking(true);
             // Initialize cache-ing table
