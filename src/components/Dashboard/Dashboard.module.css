@@ -60,10 +60,6 @@
   min-width: 18px;
 }
 
-.grid > main .desktop__navigation {
-  display: none;
-  margin: 0 32px;
-}
 @media only screen and (min-width: 590px) {
   .grid > main .desktop__navigation {
     display: block;
@@ -100,9 +96,6 @@
   .grid > main .desktop__navigation nav a img {
     width: 14px;
     height: 14px;
-  }
-  .grid > footer {
-    display: none;
   }
 
   .tokens {

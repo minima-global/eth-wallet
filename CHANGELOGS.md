@@ -9,3 +9,6 @@
 - Add DB Locked Modal
 - Synchornize when the ReadMode appears
 - Tweak Settings Design
+- Tweak DesktopNav & FooterNav
+- Update wrapped Token icon
+- Get Ethereum Balance

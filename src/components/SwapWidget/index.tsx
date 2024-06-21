@@ -29,11 +29,10 @@ const SwapWidget = () => {
   const [error, setError] = useState<false | string>(false);
 
   if (_network !== "mainnet") {
-    return <p>This feature is only available on mainnet.</p>;
+    return <p className="text-xs opacity-80 text-center">This feature is only available on mainnet.</p>;
   }
 
-  return (
-    <div>
+  return (    
       <Formik
         validationSchema={yup.object().shape({
           inputAmount: yup
@@ -234,7 +233,7 @@ const SwapWidget = () => {
                   <button
                     disabled={!isValid}
                     type="submit"
-                    className="py-4 disabled:bg-gray-100 disabled:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
+                    className="py-4 !bg-opacity-30 disabled:text-white dark:disabled:bg-[#1B1B1B] dark:disabled:text-black hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
                   >
                     {errors.inputAmount ? errors.inputAmount : "Error"}
                   </button>
@@ -272,7 +271,6 @@ const SwapWidget = () => {
           </QuoteContextProvider>
         )}
       </Formik>
-    </div>
   );
 };
 

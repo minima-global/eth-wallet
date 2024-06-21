@@ -1,8 +1,12 @@
 import { useFormikContext } from "formik";
 import styles from "./Styles.module.css";
+import { useContext } from "react";
+import { appContext } from "../../../AppContext";
 
 const SwapDirection = () => {
   const formik: any = useFormikContext();
+
+  const { setSwapDirection } = useContext(appContext);
 
   const handleFlip = () => {
     formik.setFieldValue("locked", null);
@@ -16,6 +20,8 @@ const SwapDirection = () => {
     
     formik.setFieldValue("tokenA", formik.values.tokenB);
     formik.setFieldValue("tokenB", formik.values.tokenA);
+
+    setSwapDirection(prevState => prevState === 'wminima' ? 'usdt' : 'wminima');
   };
 
   return (

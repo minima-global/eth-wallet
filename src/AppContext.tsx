@@ -6,6 +6,7 @@ import { ContractTransactionResponse } from "ethers";
 import { Asset } from "./types/Asset";
 import { Network, Networks } from "./types/Network";
 import defaultAssetsStored, { _defaults } from "./constants";
+import useSwapWidget from "./hooks/useSwapWidget";
 
 export const appContext = createContext({} as any);
 
@@ -23,6 +24,9 @@ interface IProps {
 }
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
+
+  const swapWidgetProps = useSwapWidget();
+
   const [isWorking, setWorking] = useState(false);
   const [userKeys, setUserKeys] = useState<{
     apiKey: string;
@@ -564,6 +568,8 @@ const AppProvider = ({ children }: IProps) => {
         setRPCNetwork,
         verifyRPCNetwork,
         _currencyFormat,
+
+        ...swapWidgetProps
       }}
     >
       {children}
