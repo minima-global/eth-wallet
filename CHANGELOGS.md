@@ -12,3 +12,5 @@
 - Tweak DesktopNav & FooterNav
 - Update wrapped Token icon
 - Get Ethereum Balance
+- Update Send UI
+- Fetch balance after Send success
