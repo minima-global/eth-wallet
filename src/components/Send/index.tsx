@@ -30,9 +30,10 @@ const Send = () => {
     handleNavigation,
     _defaultNetworks,
     _currentNetwork,
+    setTriggerBalanceUpdate
   } = useContext(appContext);
   const { transferToken, tokens } = useTokenStoreContext();
-  const { _address, _balance, _network, transfer } = useWalletContext();
+  const { _address, _balance, _network, transfer, getEthereumBalance } = useWalletContext();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | false>(false);
@@ -45,6 +46,19 @@ const Send = () => {
         : "translateY(-50%) scale(0.8)",
     config: config.wobbly,
   });
+
+  const handlePullBalance = async () => {
+    // wait 3s before pulling balance for erc20 & eth
+    await new Promise(resolve => {
+      setTimeout(resolve, 3000);
+    });
+
+    setTriggerBalanceUpdate(true);
+    setTimeout(() => {
+      getEthereumBalance();
+      setTriggerBalanceUpdate(false);
+    }, 2000);
+  }
 
   const handleClearButton = (setFieldValueRef: any) => {
     setFieldValueRef("address", "");
@@ -186,6 +200,8 @@ const Send = () => {
                       setStep(4);
                       setFieldValue("gasPaid", gas?.finalGasFee);
                       setFieldValue("receipt", txResponse);
+
+                      await handlePullBalance();
                     } else {
                       // handle ERC 20 transfers
                       const txResponse = await transferToken(
@@ -457,29 +473,32 @@ const Send = () => {
                               type="button"
                               onClick={() => setStep(3)}
                               disabled={!isValid}
-                              className="bg-teal-300 bg-opacity-90 text-white font-bold disabled:text-opacity-10 disabled:bg-opacity-10"
+                              className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80"
                             >
                               Next
                             </button>
                           </div>
                         )}
                         {step === 3 && (
-                          <>
+                          <div className="px-4 grid grid-cols-2 gap-2">
                             <button
+                              disabled={loading}
                               type="button"
                               onClick={() => setStep(1)}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Reject
                             </button>
                             <button
                               type="submit"
-                              disabled={!isValid || loading || !gas}
-                              className="bg-teal-300 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              disabled={loading || !isValid || !gas}
+                              className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-10"
                             >
-                              Send
+                              {loading && "Sending..."}
+                              {!gas && "Fetching Gas"}
+                              {!loading && gas && "Send"}
                             </button>
-                          </>
+                          </div>
                         )}
                         {step === 4 && error && (
                           <p className="break-all text-center text-red-500">
@@ -487,20 +506,21 @@ const Send = () => {
                           </p>
                         )}
                         {step === 4 && error && (
-                          <>
+                          <div className="px-4 grid grid-cols-2 gap-2">
+                            <div />
                             <button
                               type="button"
                               onClick={() => {
                                 setStep(3);
                               }}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Back
                             </button>
-                          </>
+                          </div>
                         )}
                         {step === 4 && !error && (
-                          <>
+                          <div className="px-4 grid grid-cols-1">
                             <button
                               type="button"
                               onClick={() => {
@@ -509,11 +529,11 @@ const Send = () => {
                                 resetForm();
                                 handleNavigation("balance");
                               }}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Dismiss
                             </button>
-                          </>
+                          </div>
                         )}
                       </nav>
                     </div>
@@ -530,32 +550,3 @@ const Send = () => {
 };
 
 export default Send;
-
-// normal transfer json receipt
-/**
- * {
-    "_type": "TransactionReceipt",
-    "accessList": [],
-    "blockNumber": null,
-    "blockHash": null,
-    "chainId": "31337",
-    "data": "0x",
-    "from": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
-    "gasLimit": "21001",
-    "gasPrice": null,
-    "hash": "0x194ecbb10687e63b70eb105ba6f9cc09a23773d4c150ea7ea4e9d9dc1647da20",
-    "maxFeePerGas": "2750000000",
-    "maxPriorityFeePerGas": "1000000000",
-    "nonce": 1,
-    "signature": {
-        "_type": "signature",
-        "networkV": null,
-        "r": "0x42919c2e0360cda36f948ad2bd01f04ae07cd766ccd171e0afae2c852d322c86",
-        "s": "0x4ae5bfe941f9c4a9a75dee1c1ba87ab6f8ae1d905abe1afe617f01ae565cdedf",
-        "v": 28
-    },
-    "to": "0x95Eea59d1130f0A71afDE7a33d1fe4aFC3b63d9A",
-    "type": 2,
-    "value": "55000000000000000000"
-}
- */
