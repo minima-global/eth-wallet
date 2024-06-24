@@ -1,14 +1,19 @@
 import ConversionRateUSD from "../ConversionRateUSD";
 import { useGasContext } from "../../providers/GasProvider";
 import { useFormikContext } from "formik";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useSpring, animated, config } from "react-spring";
 import Dialog from "../UI/Dialog";
 import { createPortal } from "react-dom";
-import GasCard from "./GasCard";
+// import GasCard from "./GasCard";
 import Decimal from "decimal.js";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { appContext } from "../../AppContext";
+import useGasInfo from "../../hooks/useGasInfo";
+
+import * as utils from "../../utils";
+import { GasFeeCalculated } from "../../types/GasFeeInterface";
+import GasCard from "./GasCard";
 
 /**
  * @EIP1559
@@ -19,17 +24,16 @@ import { appContext } from "../../AppContext";
 function GasEstimation() {
   const formik: any = useFormikContext();
   const { _network } = useWalletContext();
+  const [gas, setGas] = useState<GasFeeCalculated | null>(null);
+  
   const {
-    defaultGas,
+    level,
     loading,
-    gas,
-    gasCard,
+    showGasCards,
     estimateGas,
     promptGasCards,
-    showGasCards,
-    clearGas,
-    asset,
   } = useGasContext();
+  const { gasInfo, gasCardData } = useGasInfo(3, level);
   const { _defaultNetworks, _currentNetwork } = useContext(appContext);
 
   const springProps = useSpring({
@@ -40,28 +44,40 @@ function GasEstimation() {
     config: config.wobbly,
   });
 
+  
   useEffect(() => {
-    estimateGas(
-      formik.values.amount,
-      formik.values.address,
-      formik.values.asset
-    );
-
-    const intervalled = setInterval(
-      async () =>
-        estimateGas(
+    const calculateFinalGasPrice = async () => {
+      try {
+        if (!gasInfo) {
+          return;
+        }
+  
+        // we have here the gas units required for transfer
+        const gasUnits = await estimateGas(
           formik.values.amount,
           formik.values.address,
           formik.values.asset
-        ),
-      15000
-    );
+        );
+  
+        const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } = gasInfo;
+  
+        // we have the gas price, getting sequential updates..
+  
+        const finalGas = await utils.calculateGasFee(
+          gasUnits!,
+          suggestedMaxFeePerGas,
+          suggestedMaxPriorityFeePerGas
+        );
 
-    return () => {
-      clearInterval(intervalled);
-      clearGas();
+        setGas(finalGas);
+      } catch (error) {
+        console.error(error);
+        setGas(null);
+      }
     };
-  }, [defaultGas]);
+    // calculate according to current gas price
+    calculateFinalGasPrice();
+  }, [gasInfo]);
 
   return (
     <div>
@@ -128,17 +144,17 @@ function GasEstimation() {
                           <GasCard
                             gasUnit={BigInt(gas!.gasUnits)}
                             type="low"
-                            card={gasCard!.low}
+                            card={gasCardData!.low}
                           />
                           <GasCard
                             gasUnit={BigInt(gas!.gasUnits)}
                             type="medium"
-                            card={gasCard!.medium}
+                            card={gasCardData!.medium}
                           />
                           <GasCard
                             gasUnit={BigInt(gas!.gasUnits)}
                             type="high"
-                            card={gasCard!.high}
+                            card={gasCardData!.high}
                           />
                         </div>
                       )}
@@ -152,7 +168,7 @@ function GasEstimation() {
                     <div className="grid grid-cols-2 divide-x">
                       <div className="text-center py-1">
                         <p>
-                          {new Decimal(gasCard!.estimatedBaseFee)
+                          {new Decimal(gasCardData!.estimatedBaseFee)
                             .toDecimalPlaces(0)
                             .toString()}{" "}
                           GWEI
@@ -161,11 +177,11 @@ function GasEstimation() {
                       </div>
                       <div className="text-center py-1">
                         <p>
-                          {new Decimal(gasCard!.latestPriorityFeeRange[0])
+                          {new Decimal(gasCardData!.latestPriorityFeeRange[0])
                             .toDecimalPlaces(1)
                             .toString()}{" "}
                           -{" "}
-                          {new Decimal(gasCard!.latestPriorityFeeRange[1])
+                          {new Decimal(gasCardData!.latestPriorityFeeRange[1])
                             .toDecimalPlaces(1)
                             .toString()}{" "}
                           GWEI
@@ -220,73 +236,85 @@ function GasEstimation() {
         )}
       </div>
 
-      <div
-        className={`flex justify-between items-center mx-4 ${
-          loading ? "animate-pulse temporary-pulse" : ""
-        }`}
-      >
-        <h3 className="font-bold">Gas Fee</h3>
+      {!gasInfo && !loading && <p className="text-xs text-center">Awaiting Gas Information...</p>}
 
-        {!gas && loading ? (
-          <Spinner />
-        ) : gas && gas.finalGasFee ? (
-          <div className="text-right">
-            <p className="text-sm">{gas.finalGasFee}</p>
-            <ConversionRateUSD
+      {!!gasInfo && (
+        <>
+          <div
+            className={`flex justify-between items-center mx-4 ${
+              loading ? "animate-pulse temporary-pulse" : ""
+            }`}
+          >
+            <h3 className="font-bold">Gas Fee <span className={`${level === 'high' && "text-violet-300"} ${level === 'low' && "text-teal-300"} ${level === 'medium' && "text-yellow-300"} text-xs`}>({level})</span></h3>
+
+            {!gas && loading ? (
+              <Spinner />
+            ) : gas && gas.finalGasFee ? (
+              <div className="text-right">
+                <p className="text-sm">{gas.finalGasFee}</p>
+                {/* <ConversionRateUSD
               amount={gas.finalGasFee ? gas.finalGasFee : "0"}
               asset={asset}
-            />
+            /> */}
+              </div>
+            ) : (
+              "N/A"
+            )}
           </div>
-        ) : (
-          "N/A"
-        )}
-      </div>
-      <div
-        className={`mt-4 flex justify-between items-center mx-4 ${
-          loading ? "animate-pulse temporary-pulse" : ""
-        }`}
-      >
-        <h3 className="font-bold">Total</h3>
-        <div>
-          {!gas && loading && <Spinner />}
+          <div
+            className={`mt-4 flex justify-between items-center mx-4 ${
+              loading ? "animate-pulse temporary-pulse" : ""
+            }`}
+          >
+            <h3 className="font-bold">Total</h3>
+            <div>
+              {!gas && loading && <Spinner />}
 
-          {gas && !loading && (
-            <div className="text-right font-mono">
-              {formik.values.asset.type === "ether" && (
-                <div className="flex">
-                  <h3 className="text-sm font-bold">
-                    {new Decimal(formik.values.amount)
-                      .plus(gas.finalGasFee)
-                      .toString()}{" "}
-                    {_defaultNetworks[_currentNetwork].symbol}
-                  </h3>
-                  <ConversionRateUSD
-                    amount={formik.values.amount}
-                    asset={{ type: "ether" }}
-                  />
-                </div>
-              )}
+              {gas && !loading && (
+                <div className="text-right font-mono">
+                  {formik.values.asset.type === "ether" && (
+                    <div className="flex">
+                      <h3 className="text-sm font-bold">
+                        {new Decimal(formik.values.amount)
+                          .plus(gas.finalGasFee)
+                          .toString()}{" "}
+                        {_defaultNetworks[_currentNetwork].symbol}
+                      </h3>
+                      <ConversionRateUSD
+                        amount={formik.values.amount}
+                        asset={{ type: "ether" }}
+                      />
+                    </div>
+                  )}
 
-              {formik.values.asset.type === "erc20" && (
-                <div>
-                  <h3 className="font-mono text-sm font-bold">
-                    {formik.values.amount} {formik.values.asset.symbol}
-                  </h3>
-                  <p className="font-mono text-sm">{gas.finalGasFee} <span className="font-bold">{_defaultNetworks[_currentNetwork].symbol}</span></p>
-                  <ConversionRateUSD
+                  {formik.values.asset.type === "erc20" && (
+                    <div>
+                      <h3 className="font-mono text-sm font-bold">
+                        {formik.values.amount} {formik.values.asset.symbol}
+                      </h3>
+                      <p className="font-mono text-sm">
+                        {gas.finalGasFee}{" "}
+                        <span className="font-bold">
+                          {_defaultNetworks[_currentNetwork].symbol}
+                        </span>
+                      </p>
+                      {/* <ConversionRateUSD
                     amount={gas.finalGasFee}
                     asset={{ type: "ether" }}
-                  />
-                  <ConversionRateUSD
+                  /> */}
+                      {/* <ConversionRateUSD
                     amount={formik.values.amount}
                     asset={asset}
-                  />
+                  /> */}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
+
       {loading && (
         <div className="mx-4 flex items-center justify-center gap-1">
           <svg

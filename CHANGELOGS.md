@@ -14,3 +14,5 @@
 - Get Ethereum Balance
 - Update Send UI
 - Fetch balance after Send success
+- Fix validation on Send Form check balance
+- Re-jig Send

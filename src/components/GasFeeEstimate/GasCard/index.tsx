@@ -9,7 +9,9 @@ interface IProps {
   gasUnit: bigint;
 }
 const GasCard = ({ type, card, gasUnit }: IProps) => {
-  const { defaultGas, selectGasCard, promptGasCards } = useGasContext();
+  const { promptGasCards } = useGasContext();
+
+  const { level, setLevel } = useGasContext();
 
   const [maxFee, setMaxFee] = useState<string | null>(null);
 
@@ -27,11 +29,11 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
   return (
     <div
       onClick={() => {
-        selectGasCard(type);
+        setLevel(type);
         promptGasCards();
       }}
       className={`grid grid-cols-3 py-2 hover:bg-gray-200 hover:text-black px-4 rounded-full ${
-        type === defaultGas
+        type === level
           ? "dark:bg-slate-300 bg-teal-300 text-black font-bold"
           : ""
       }`}
@@ -43,8 +45,8 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            strokeWidth={`${type === defaultGas ? "2.5" : "1.5"}`}
-            stroke={`${type === defaultGas ? "#000000" : "currentColor"}`}
+            strokeWidth={`${type === level ? "2.5" : "1.5"}`}
+            stroke={`${type === level ? "#000000" : "currentColor"}`}
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -62,8 +64,8 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            strokeWidth={`${type === defaultGas ? "2.5" : "1.5"}`}
-            stroke={`${type === defaultGas ? "#000000" : "currentColor"}`}
+            strokeWidth={`${type === level ? "2.5" : "1.5"}`}
+            stroke={`${type === level ? "#000000" : "currentColor"}`}
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -79,8 +81,8 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
             width="24"
             height="24"
             viewBox="0 0 24 24"
-            strokeWidth={`${type === defaultGas ? "2.5" : "1.5"}`}
-            stroke={`${type === defaultGas ? "#000000" : "currentColor"}`}
+            strokeWidth={`${type === level ? "2.5" : "1.5"}`}
+            stroke={`${type === level ? "#000000" : "currentColor"}`}
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
