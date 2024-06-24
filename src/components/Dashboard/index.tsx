@@ -275,20 +275,20 @@ const Dashboard = () => {
           </div>
 
           <div className="flex md:hidden">
-            <div className="mb-auto">
+            {/* <div className="mb-auto">
               <p className="text-center text-xs tracking-tighter font-bold  text-yellow-100  shadow-sm shadow-yellow-300 max-w-max mx-auto px-4">
                 TESTING PURPOSE ONLY
               </p>
-            </div>
+            </div> */}
           </div>
           <div
             onClick={(e) => e.stopPropagation()}
             className="justify-center items-center hidden md:flex flex-col gap-2"
           >
             <div className="mb-auto">
-              <p className="text-center text-xs tracking-tighter font-bold text-yellow-100  shadow-sm dark:shadow-yellow-300 max-w-max mx-auto px-4">
+              {/* <p className="text-center text-xs tracking-tighter font-bold text-yellow-100  shadow-sm dark:shadow-yellow-300 max-w-max mx-auto px-4">
                 TESTING PURPOSE ONLY
-              </p>
+              </p> */}
             </div>
             <UserAccount />
           </div>

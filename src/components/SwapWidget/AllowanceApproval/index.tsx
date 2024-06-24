@@ -17,11 +17,12 @@ import GasFeeEstimator from "./GasFeeEstimator";
 
 const AllowanceApproval = ({ token }) => {
   const formik: any = useFormikContext();
-  const { _wallet, _address } = useWalletContext();
+  const { _wallet, _address, getEthereumBalance } = useWalletContext();
   const {
     _promptAllowanceApprovalModal,
     promptAllowanceApprovalModal,
     setTriggerBalanceUpdate,
+    swapDirection
   } = useContext(appContext);
 
   const [step, setStep] = useState(1);
@@ -36,6 +37,19 @@ const AllowanceApproval = ({ token }) => {
     createDecimal(inputAmount) === null ||
     createDecimal(inputAmount)?.isZero() ||
     createDecimal(formik.values.input.balance)?.isZero();
+
+  const handlePullBalance = async () => {
+    // wait 3s before pulling balance for erc20 & eth
+    await new Promise(resolve => {
+      setTimeout(resolve, 3000);
+    });
+
+    setTriggerBalanceUpdate(true);
+    setTimeout(() => {
+      getEthereumBalance();
+      setTriggerBalanceUpdate(false);
+    }, 2000);
+  }
 
   useEffect(() => {
     const inputTokenAddress = formik.values.input.address;
@@ -55,7 +69,7 @@ const AllowanceApproval = ({ token }) => {
         setFieldValue("locked", state);
       }
     })();
-  }, [inputAmount]);
+  }, [inputAmount, step, swapDirection]);
 
   return (
     <AnimatedDialog
@@ -67,7 +81,7 @@ const AllowanceApproval = ({ token }) => {
     >
       <div className="px-4 grid grid-cols-[1fr_auto]">
         <div className="text-center">
-          <h3 className="font-bold">Approve Spend To Swap Contract</h3>{" "}
+          <h3 className="font-bold">Allowance approval on Swap Contract</h3>{" "}
         </div>
         <Cross dismiss={promptAllowanceApprovalModal} />
       </div>
@@ -135,9 +149,7 @@ const AllowanceApproval = ({ token }) => {
               );
 
               setStep(4);
-              setTimeout(() => {
-                setTriggerBalanceUpdate((prevState) => !prevState);
-              }, 4000);
+              await handlePullBalance();
 
               resetForm();
             } catch (error) {

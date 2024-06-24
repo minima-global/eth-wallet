@@ -19,10 +19,15 @@ import { useWalletContext } from "../../../providers/WalletProvider/WalletProvid
 import {
   SWAP_ROUTER_ADDRESS,
 } from "../../../providers/QuoteProvider/libs/constants";
+import useGasInfo from "../../../hooks/useGasInfo";
+import Decimal from "decimal.js";
 
 const GasFeeEstimator = () => {
   const formik: any = useFormikContext();
   const { _provider } = useContext(appContext);
+  
+  const { gasInfo } = useGasInfo(3, "medium");
+
   const { _address, _poolContract, _wallet } = useWalletContext();
 
   const { tokenA, tokenB, inputAmount, gas, locked } = formik.values;
@@ -77,21 +82,19 @@ const GasFeeEstimator = () => {
         options
       );
 
-      const gasFee = await _provider.getFeeData();
-      const { maxFeePerGas, maxPriorityFeePerGas } = gasFee; // wei
+      const feeData = await _provider.getFeeData();
+      const { maxFeePerGas, maxPriorityFeePerGas } = feeData;
 
       const tx = {
         data: methodParameters.calldata,
         to: SWAP_ROUTER_ADDRESS,
         value: methodParameters.value,
-        from: _address,
+        from: _address, 
         maxFeePerGas: maxFeePerGas,
         maxPriorityFeePerGas: maxPriorityFeePerGas,
       };
-
-
+      
       const gasUnits = await _wallet!.estimateGas(tx);
-
 
       if (maxFeePerGas) {
         const _gas = await utils.calculateGasFee(
@@ -99,14 +102,14 @@ const GasFeeEstimator = () => {
           maxFeePerGas.toString(),
           maxPriorityFeePerGas.toString()
         );
-
+        
         // calculated gas..
         formik.setFieldValue("gas", _gas.finalGasFee);
       }
 
       formik.setFieldValue("tx", tx);
     })();
-  }, [_poolContract, locked, inputAmount]);
+  }, [_poolContract, locked, inputAmount, gasInfo]);
 
   return (
     <>
@@ -155,7 +158,7 @@ const GasFeeEstimator = () => {
               <path d="M4 12c0 -1.657 1.592 -3 3.556 -3c1.963 0 3.11 1.5 4.444 3c1.333 1.5 2.48 3 4.444 3s3.556 -1.343 3.556 -3" />
             </svg>
             <p className="text-sm font-bold text-black dark:text-[#f9e79f]">
-              <span className="font-mono">{Math.floor(gas).toString()}</span>{" "}
+              <span className="font-mono">{new Decimal(gas).toFixed(0)}</span>{" "}
               GWEI
             </p>
           </div>

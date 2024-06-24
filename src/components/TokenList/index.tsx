@@ -64,7 +64,7 @@ const TokenList = () => {
                 <h3 className="font-bold">{token.name}</h3>
                 <p className="font-mono text-sm">
                   {token.balance &&
-                    formatUnits(token.balance, _network === 'sepolia' ? 18 : 6).toString()}
+                    formatUnits(token.balance, token.name === 'Tether' && _network === 'sepolia' ? 18 : 6).toString()}
                 </p>
               </div>
             </div>

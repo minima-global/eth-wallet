@@ -64,7 +64,7 @@ const FieldWrapper = ({
               <p className="text-sm font-bold text-gray-500 pb-4">
                 Balance:{" "}
                 <span className="font-mono text-sm">
-                  {formatUnits(balance!, decimals!).toString().substring(0, 9)}
+                  {balance && balance.length && formatUnits(balance!, decimals!).toString().substring(0, 9)}
                 </span>
               </p>
               {type === "input" && (

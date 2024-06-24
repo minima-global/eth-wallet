@@ -18,7 +18,7 @@ import { NonceManager } from "ethers";
     const { isValid } = formik;
     const { amount, gas } = formik.values;
     useEffect(() => {
-    
+
       if (utils.createDecimal(amount) === null || !isValid) return;
   
       (async () => {

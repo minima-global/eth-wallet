@@ -7,7 +7,6 @@ import {
 } from "../../types/GasFeeInterface";
 import { parseEther } from "ethers";
 import { useTokenStoreContext } from "../TokenStoreProvider";
-import { Asset } from "../../types/Asset";
 /**
  * @EIP1559
  * Calculating gas fee as with EIP1559,

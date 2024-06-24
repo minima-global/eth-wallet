@@ -4,13 +4,9 @@ import Cross from "../../UI/Cross";
 import FieldWrapper from "../FieldWrapper";
 import getTokenWrapper from "../libs/getTokenWrapper";
 import GasFeeEstimator from "../GasFeeEstimator";
-import { useContext } from "react";
-import { appContext } from "../../../AppContext";
 
 const ReviewSwap = ({ step, setStep, submitForm, error }) => {
   const formik: any = useFormikContext();
-
-  const { handleNavigation } = useContext(appContext);
 
   const { resetForm, errors } = formik;
   const { inputAmount, outputAmount, input, output, receipt } = formik.values;
@@ -241,8 +237,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
             <button
               onClick={() => {
                 resetForm();
-                setStep(1);
-                handleNavigation("balance");
+                setStep(1);              
               }}
               type="button"
               className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-blue-500  dark:text-black dark:bg-blue-100 text-white text-lg w-full font-bold my-2"
