@@ -38,24 +38,26 @@ const ImportToken = () => {
     <>
       <div className="flex justify-center my-4">
         <button
-          className="bg-violet-300 text-black dark:text-white bg-opacity-10 rounded flex items-center gap-2 font-bold text-lighter hover:bg-opacity-30"
+          className="flex items-center text-xs bg-white text-black hover:bg-opacity-80 dark:hover:bg-black dark:bg-[#1B1B1B] dark:text-[#FEFEFF]"
           onClick={promptTokenImport}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
           >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M12 5l0 14" />
-            <path d="M5 12l14 0" />
-          </svg>
+          <span className="text-black dark:text-[#FEFEFF]">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M12 5l0 14" />
+              <path d="M5 12l14 0" />
+            </svg>
+          </span>
           Import tokens
         </button>
       </div>

@@ -9,10 +9,11 @@ import ApproveFieldWrapper from "../ApproveFieldWrapper";
 const ReviewApproval = ({ token, step, setStep, submitForm, error }) => {
   const formik: any = useFormikContext();
 
-  const { promptAllowanceApprovalModal, handleNavigation } = useContext(appContext);
+  const { promptAllowanceApprovalModal } = useContext(appContext);
 
   const { resetForm } = formik;
   const {receipt } = formik.values;
+
 
   return (
     <AnimatedDialog
@@ -130,11 +131,11 @@ const ReviewApproval = ({ token, step, setStep, submitForm, error }) => {
               </div>
             )}
             <button
-              onClick={() => {
+              onClick={async () => {
                 resetForm();
                 setStep(1);
                 promptAllowanceApprovalModal();
-                handleNavigation("balance");
+                // trigger a widget locked state..
               }}
               type="button"
               className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-blue-500  dark:text-black dark:bg-blue-100 text-white text-lg w-full font-bold my-2"

@@ -21,7 +21,7 @@ const AddressBook = ({ setStep }: IProps) => {
   
   return (
     <div className="">
-      <h3 className="mx-4 font-bold text-sm mb-2 text-purple-500">Address book</h3>
+      <h3 className="mx-4 font-bold text-sm text-purple-500">Address book</h3>
       <ul className="max-h-[50%] h-[250px] overflow-y-scroll">
         <li
           key={_address}
@@ -29,10 +29,10 @@ const AddressBook = ({ setStep }: IProps) => {
             formik.setFieldValue("address", _address);
             setStep(2);
           }}
-          className="px-4 py-2 hover:bg-slate-200 hover:bg-opacity-50 hover:text-black hover:dark:text-white hover:dark:bg-slate-800 hover:cursor-pointer"
+          className="cursor-pointer px-3 py-2 hover:bg-gray-300 !bg-opacity-30 dark:hover:bg-[#1B1B1B]"
         >
           <h3 className="font-bold text-sm">Your Account</h3>
-          <p className="break-all">{_address}</p>
+          <p className="break-all font-mono font-bold">{_address}</p>
         </li>
         {_addressBook &&
          filteredEntries.map(([key, value]: any) => (
@@ -42,7 +42,7 @@ const AddressBook = ({ setStep }: IProps) => {
                 formik.setFieldValue("address", key);
                 setStep(2);
               }}
-              className="px-4 py-2 hover:bg-slate-200 hover:bg-opacity-50 hover:text-black hover:dark:text-white hover:dark:bg-slate-800 hover:cursor-pointer"
+              className="cursor-pointer px-3 py-2 hover:bg-gray-300 !bg-opacity-30 dark:hover:bg-[#1B1B1B]"
             >
               <h3 className="font-bold text-sm">{value}</h3>
               <p className="break-all">{key}</p>

@@ -8,11 +8,11 @@ import { QuoteContextProvider } from "../../providers/QuoteProvider/QuoteProvide
 import * as yup from "yup";
 import { SUPPORTED_CHAINS, Token } from "@uniswap/sdk-core";
 
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { appContext } from "../../AppContext";
 import AllowanceApproval from "./AllowanceApproval";
 import Decimal from "decimal.js";
-import { MaxUint256, NonceManager, parseUnits } from "ethers";
+import { MaxUint256, parseUnits } from "ethers";
 import GasFeeEstimator from "./GasFeeEstimator";
 import { createDecimal } from "../../utils";
 import ReviewSwap from "./ReviewSwap";
@@ -20,20 +20,41 @@ import getTokenWrapper from "./libs/getTokenWrapper";
 
 const SwapWidget = () => {
   const { _network } = useWalletContext();
-  const { promptAllowanceApprovalModal, setTriggerBalanceUpdate } =
+  const { promptAllowanceApprovalModal, setTriggerBalanceUpdate, swapDirection } =
     useContext(appContext);
-  const { _wallet, _balance } = useWalletContext();
+  const { _wallet, _balance, getEthereumBalance } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState<false | string>(false);
 
-  if (_network !== "mainnet") {
-    return <p>This feature is only available on mainnet.</p>;
+  const handlePullBalance = async () => {
+    // wait 3s before pulling balance for erc20 & eth
+    await new Promise(resolve => {
+      setTimeout(resolve, 3000);
+    });
+
+    setTriggerBalanceUpdate(true);
+    setTimeout(() => {
+      getEthereumBalance();
+      setTriggerBalanceUpdate(false);
+    }, 2000);
   }
 
-  return (
-    <div>
+  useEffect(() => {
+
+    (async () => {
+      await handlePullBalance();
+    })();
+
+
+  }, [_network, step, swapDirection]);
+
+  if (_network !== "mainnet") {
+    return <p className="text-xs opacity-80 text-center">This feature is only available on mainnet.</p>;
+  }
+
+  return (    
       <Formik
         validationSchema={yup.object().shape({
           inputAmount: yup
@@ -44,7 +65,10 @@ const SwapWidget = () => {
               const { path, parent, createError } = this;
               if (!val || val.length === 0) return false;
 
-              if (new Decimal(parent.input.balance).isZero()) {
+              const relTokenBalance = 
+              tokens && tokens.find((tkn) => tkn.address === parent.input!.address) ? tokens.find((tkn) => tkn.address === parent.input!.address)!.balance : ""
+
+              if (new Decimal(relTokenBalance).isZero()) {
                 return createError({
                   path,
                   message: "Insufficient funds",
@@ -54,7 +78,7 @@ const SwapWidget = () => {
               try {
                 const decimalVal = createDecimal(val);
                 if (decimalVal === null) {
-                  throw new Error("Invalid amount");
+                  throw new Error("Invalid amount`");
                 }
 
                 const spendAmount = decimalVal.times(
@@ -64,13 +88,14 @@ const SwapWidget = () => {
                 if (spendAmount.gt(MaxUint256.toString())) {
                   throw new Error("You exceeded the max amount");
                 }
-
-                if (spendAmount.greaterThan(parent.input.balance)) {
+                
+                if (spendAmount.greaterThan(relTokenBalance)) {
                   throw new Error("Insufficient funds");
                 }
 
                 return true;
               } catch (error: any) {
+
                 if (error instanceof Error) {
                   return createError({
                     path,
@@ -86,7 +111,7 @@ const SwapWidget = () => {
             .required("Gas is required")
             .test("has sufficient funds to pay for gas", function (val) {
               const { path, createError } = this;
-
+              
               if (!val || val.length === 0) return false;
 
               // We check whether the user has enough funds to pay for gas.
@@ -102,14 +127,11 @@ const SwapWidget = () => {
                 if (decimalVal === null) {
                   throw new Error("Invalid gas amount");
                 }
-
-                const gasFeeGwei = new Decimal(
-                  parseUnits(val, "gwei").toString()
-                );
-
+                
                 // spendAmount is in Ethereum..
+                
                 if (
-                  gasFeeGwei.greaterThan(
+                  new Decimal(parseUnits(val, "gwei").toString()).greaterThan(
                     parseUnits(_balance, "ether").toString()
                   )
                 ) {
@@ -118,7 +140,7 @@ const SwapWidget = () => {
 
                 return true;
               } catch (error: any) {
-                console.error(error);
+                // console.error(error);
                 if (error instanceof Error) {
                   return createError({
                     path,
@@ -161,17 +183,14 @@ const SwapWidget = () => {
 
           try {
             setFieldValue("locked", true);
+            const res = await _wallet!.sendTransaction(tx);
 
-            const nonceManager = new NonceManager(_wallet!);
-
-            const res = await nonceManager.sendTransaction(tx);
-
-            setFieldValue("receipt", await res.wait());
+            const receipt = await res.wait();
+            setFieldValue("receipt", receipt);
 
             setStep(4);
-            setTimeout(() => {
-              setTriggerBalanceUpdate((prevState) => !prevState);
-            }, 4000);
+            await handlePullBalance();
+            
           } catch (error) {
             console.error(error);
             setStep(5);
@@ -196,7 +215,7 @@ const SwapWidget = () => {
                       : false
                   }
                   type="input"
-                  balance={values.input?.balance}
+                  balance={tokens && tokens.find((tkn) => tkn.address === values.input!.address) ? tokens.find((tkn) => tkn.address === values.input!.address)!.balance : ""}
                   decimals={values.input?.decimals}
                   token={
                     <>{values.input ? getTokenWrapper(values.input) : null}</>
@@ -211,7 +230,7 @@ const SwapWidget = () => {
                   }
                   extraClass="mt-1"
                   type="output"
-                  balance={values.output?.balance}
+                  balance={tokens && tokens.find((tkn) => tkn.address === values.output!.address) ? tokens.find((tkn) => tkn.address === values.output!.address)!.balance : ""}
                   decimals={values.output?.decimals}
                   token={
                     <>{values.output ? getTokenWrapper(values.output) : null}</>
@@ -234,7 +253,7 @@ const SwapWidget = () => {
                   <button
                     disabled={!isValid}
                     type="submit"
-                    className="py-4 disabled:bg-gray-100 disabled:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
+                    className="py-4 !bg-opacity-30 disabled:text-white dark:disabled:bg-[#1B1B1B] dark:disabled:text-black hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
                   >
                     {errors.inputAmount ? errors.inputAmount : "Error"}
                   </button>
@@ -272,7 +291,6 @@ const SwapWidget = () => {
           </QuoteContextProvider>
         )}
       </Formik>
-    </div>
   );
 };
 

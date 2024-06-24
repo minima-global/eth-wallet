@@ -54,9 +54,6 @@ button {
   transition: border-color 0.25s;
   font-family: 500;
 }
-input:focus {
-  color: rgba(255, 255, 255, 0.87);
-}
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -74,9 +71,6 @@ button:focus-visible {
     color: rgb(148 163 184);
   }
 
-  input:focus {
-    color: #213547;
-  }
 }
 
 

@@ -27,6 +27,7 @@ type Context = {
   step: number;
   setStep: Dispatch<SetStateAction<number>>;
   transfer: (address: string, amount: string, gas: GasFeeCalculated) => Promise<TransactionResponse>;
+  getEthereumBalance: () => void;
 };
 
 const WalletContext = createContext<Context | null>(null);
@@ -90,6 +91,10 @@ export const WalletContextProvider = ({ children }: Props) => {
     return tx;
   };
 
+  const getEthereumBalance = async () => {
+    const balance = await _provider.getBalance(_address);
+    setBalance(formatEther(balance));
+  }
 
 
   return (
@@ -105,6 +110,8 @@ export const WalletContextProvider = ({ children }: Props) => {
 
         step,
         setStep,
+      
+        getEthereumBalance
       }}
     >
       {children}

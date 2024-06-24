@@ -29,6 +29,7 @@ const TokenDetails = () => {
   }
 
   const { name: tokenName, balance, decimals, address } = _tokenDetails;
+
   return (
     <>
       {_promptTokenDetails &&
@@ -46,7 +47,7 @@ const TokenDetails = () => {
                       {_defaults["wMinima"][_network] === address ? (
                         <img
                           alt="token-icon"
-                          src="./assets/token.svg"
+                          src="./assets/wtoken.svg"
                           className="w-[48px] h-[48px] rounded-full"
                         />
                       ) : _defaults["Tether"][_network] === address ? (
@@ -63,7 +64,8 @@ const TokenDetails = () => {
                         {tokenName}
                       </h6>
                       <p className="font-mono dark:text-teal-300">
-                        {formatUnits(balance, decimals).toString()}
+                        {/* Hack for getting custom USDT wrong decimals on Sepolia.. */}
+                        {formatUnits(balance, address === '0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C' ? 18 : decimals).toString()}
                       </p>
                     </div>
                     <div className="px-4 my-8">

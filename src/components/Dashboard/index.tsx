@@ -18,6 +18,11 @@ import ReadMode from "../ReadMode";
 import AppLoading from "../AppLoading";
 import TokenDetails from "../TokenList/TokenDetails";
 import TokenSwap from "../TokenSwap";
+import DatabaseLocked from "../DatabaseLocked";
+import NavigationButton from "../UI/NavigationButton";
+import HistoryIcon from "../UI/Icons/HistoryIcon";
+import SendIcon from "../UI/Icons/SendIcon";
+import SwapIcon from "../UI/Icons/SwapIcon";
 
 const Dashboard = () => {
   const { _network, _address } = useWalletContext();
@@ -218,7 +223,7 @@ const Dashboard = () => {
               Android.showTitleBar();
             }
           }}
-          className="!grid grid-cols-[1fr_1fr] md:grid-cols-[1fr_minmax(0,_360px)_1fr]"
+          className="!grid grid-cols-[1fr_1fr_1fr] gap-2 md:grid-cols-[1fr_minmax(0,_360px)_1fr]"
         >
           <div>
             <svg
@@ -268,10 +273,23 @@ const Dashboard = () => {
               </defs>
             </svg>
           </div>
+
+          <div className="flex md:hidden">
+            {/* <div className="mb-auto">
+              <p className="text-center text-xs tracking-tighter font-bold  text-yellow-100  shadow-sm shadow-yellow-300 max-w-max mx-auto px-4">
+                TESTING PURPOSE ONLY
+              </p>
+            </div> */}
+          </div>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="justify-center items-center hidden md:flex"
+            className="justify-center items-center hidden md:flex flex-col gap-2"
           >
+            <div className="mb-auto">
+              {/* <p className="text-center text-xs tracking-tighter font-bold text-yellow-100  shadow-sm dark:shadow-yellow-300 max-w-max mx-auto px-4">
+                TESTING PURPOSE ONLY
+              </p> */}
+            </div>
             <UserAccount />
           </div>
           <div
@@ -317,6 +335,7 @@ const Dashboard = () => {
             <AppLoading />
             <Settings />
             <ReadMode />
+            <DatabaseLocked />
             <Send />
             <DesktopNav />
             <TokenList />
@@ -324,156 +343,39 @@ const Dashboard = () => {
           </section>
         </main>
         <footer>
-          <nav className="grid grid-cols-4">
-            <button
-              className={` flex flex-col items-center justify-center gap-1 transition-all delay-100 duration-100 font-bold ${
-                _currentNavigation === "balance" ? "bg-opacity-50" : ""
-              }`}
-              disabled={_currentNavigation === "balance"}
-              onClick={() => handleNavigation("balance")}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`${
-                  _currentNavigation === "balance"
-                    ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
-                    : ""
-                }`}
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
-                <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
-              </svg>
-              <p
-                className={`${
-                  _currentNavigation === "balance"
-                    ? "text-teal-500 font-extrabold transition-all delay-200 duration-100"
-                    : ""
-                }`}
-              >
-                Balance
-              </p>
-            </button>
-            <button
-              className={`flex flex-col items-center justify-center gap-1 transition-all delay-100 duration-100 font-bold ${
-                _currentNavigation === "send" ? "bg-opacity-50 " : ""
-              }`}
-              disabled={_currentNavigation === "send"}
+          <nav className="grid grid-cols-3 sm:hidden">
+            <NavigationButton
+              footer
+              title="Send"
+              icon={<SendIcon />}
               onClick={() => handleNavigation("send")}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`${
-                  _currentNavigation === "send"
-                    ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
-                    : ""
-                }`}
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M10 14l11 -11" />
-                <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
-              </svg>
-              <p
-                className={`${
-                  _currentNavigation === "send"
-                    ? "text-teal-500 font-extrabold transition-all delay-200 duration-100"
-                    : ""
-                }`}
-              >
-                Send
-              </p>
-            </button>
-            <button
-              className={` flex flex-col items-center justify-center gap-1 transition-all delay-100 duration-100 font-bold ${
-                _currentNavigation === "uniswap" ? "bg-opacity-50 " : ""
-              }`}
-              disabled={_currentNavigation === "uniswap"}
+              active={_currentNavigation === "send"}
+            />
+            <NavigationButton
+              footer
+              title="Swap"
+              icon={<SwapIcon />}
               onClick={() => handleNavigation("uniswap")}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`${
-                  _currentNavigation === "uniswap"
-                    ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
-                    : ""
-                }`}
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M20 10h-16l5.5 -6" />
-                <path d="M4 14h16l-5.5 6" />
-              </svg>
-              <p
-                className={`${
-                  _currentNavigation === "receive"
-                    ? "text-teal-500 font-extrabold transition-all delay-200 duration-100"
-                    : ""
-                }`}
-              >
-                Swap
-              </p>
-            </button>
-            <button
-              className={` flex flex-col items-center justify-center gap-1 transition-all delay-100 duration-100 font-bold ${
-                _currentNavigation === "receive" ? "bg-opacity-50 " : ""
-              }`}
-              disabled={_currentNavigation === "receive"}
-              onClick={() =>
-                window.open(`${etherscan[_network].rpc}${_address}`)
-              }
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`${
-                  _currentNavigation === "activity"
-                    ? "text-white fill-teal-400 font-extrabold transition-all delay-100 duration-100"
-                    : ""
-                }`}
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M3 12h4l3 8l4 -16l3 8h4" />
-              </svg>
-              <p
-                className={`${
-                  _currentNavigation === "receive"
-                    ? "text-teal-500 font-extrabold transition-all delay-200 duration-100"
-                    : ""
-                }`}
-              >
-                History
-              </p>
-            </button>
+              active={_currentNavigation === "uniswap"}
+            />
+            <NavigationButton
+              footer
+              title="History"
+              icon={<HistoryIcon />}
+              onClick={(e) => {
+                if (window.navigator.userAgent.includes("Minima Browser")) {
+                  e.preventDefault();
+                  // @ts-ignore
+                  Android.openExternalBrowser(
+                    `${etherscan[_network].rpc}${_address}`,
+                    "_blank"
+                  );
+                }
+
+                window.open(`${etherscan[_network].rpc}${_address}`, "_blank");
+              }}
+              active={false}
+            />
           </nav>
         </footer>
       </div>

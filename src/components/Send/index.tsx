@@ -5,31 +5,46 @@ import { appContext } from "../../AppContext";
 import Dialog from "../UI/Dialog";
 import { Formik } from "formik";
 
-import styles from "./Balance.module.css";
 import GasEstimation from "../GasFeeEstimate";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import { formatEther, getAddress } from "ethers";
+import { formatEther, getAddress, parseUnits } from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
 import Decimal from "decimal.js";
-import { useGasContext } from "../../providers/GasProvider";
+// import { useGasContext } from "../../providers/GasProvider";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { _defaults } from "../../constants";
 import TransactionReceiptCard from "../TransactionReceipt";
+import Cross from "../UI/Cross";
+import InputWrapper from "../UI/FormComponents/InputWrapper";
+import useGasInfo from "../../hooks/useGasInfo";
+import { useGasContext } from "../../providers/GasProvider";
+
+import * as utils from "../../utils";
 
 const Send = () => {
-  const { gas, clearGas } = useGasContext();
-  const { _currentNavigation, handleNavigation, _defaultNetworks, _currentNetwork } = useContext(appContext);
-  const { transferToken, tokens } = useTokenStoreContext();
-  const { _address, _balance, _network, transfer } = useWalletContext();
+  const {
+    _currentNavigation,
+    handleNavigation,
+    _defaultNetworks,
+    _currentNetwork,
+    setTriggerBalanceUpdate
+  } = useContext(appContext);
+  const { tokens, transferToken } = useTokenStoreContext();
+  const { _address, _balance, _network, getEthereumBalance, transfer } = useWalletContext();
+  const { level } = useGasContext();
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | false>(false);
+  
+  const {gasInfo, setGas} = useGasInfo(step, level);
+  const { estimateGas } = useGasContext();
 
   const springProps = useSpring({
     opacity: _currentNavigation === "send" ? 1 : 0,
@@ -39,6 +54,19 @@ const Send = () => {
         : "translateY(-50%) scale(0.8)",
     config: config.wobbly,
   });
+
+  const handlePullBalance = async () => {
+    // wait 3s before pulling balance for erc20 & eth
+    await new Promise(resolve => {
+      setTimeout(resolve, 3000);
+    });
+
+    setTriggerBalanceUpdate(true);
+    setTimeout(() => {
+      getEthereumBalance();
+      setTriggerBalanceUpdate(false);
+    }, 2000);
+  }
 
   const handleClearButton = (setFieldValueRef: any) => {
     setFieldValueRef("address", "");
@@ -57,14 +85,14 @@ const Send = () => {
     createPortal(
       <Dialog>
         <div className="h-[100vh_-_64px] grid items-start mt-[80px]">
-          <animated.div className={styles["tokens"]} style={springProps}>
+          <animated.div style={springProps}>
             <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
-              <h3 className="px-4 text-lg font-bold text-center">
+              <h3 className="px-4 pb-3 text-lg font-bold text-center">
                 {step === 1 && "Send to"}
                 {step === 2 && "Enter amount"}
                 {step === 3 && "Transaction details"}
                 {step === 4 && !error && "Transaction Receipt"}
-                {step === 4 && error && "Transaction Response"}
+                {step === 4 && error && "Something went wrong"}
               </h3>
               <Formik
                 validationSchema={yup.object().shape({
@@ -80,13 +108,13 @@ const Send = () => {
                       } catch (error) {
                         return createError({
                           path,
-                          message: "Invalid Ethereum address",
+                          message: "Enter a valid Ethereum address",
                         });
                       }
                     }),
                   amount: yup
                     .string()
-                    .matches(/^\d*\.?\d+$/, "Must be a number")
+                    .matches(/^\d*\.?\d+$/, "Enter a valid number")
                     .required("Amount is required")
                     .test("has funds", function (val) {
                       const { path, createError, parent } = this;
@@ -94,56 +122,95 @@ const Send = () => {
                       try {
                         if (
                           parent.asset.type === "ether" &&
-                          (new Decimal(val).gt(_balance) ||
-                            new Decimal(val).isZero())
-                          // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
+                          (new Decimal(val).gt(_balance) || new Decimal(val).isZero())
                         ) {
-                          throw new Error();
+                          throw new Error("Insufficient funds");
                         }
-
+        
                         const assetBalance = parent.asset.balance;
-                        // TODO
+                        const decimals = parent.asset.name === "Tether" && _network !== 'sepolia' ? 6 : 18;
                         if (
                           parent.asset.type === "erc20" &&
-                          (new Decimal(val).gt(assetBalance) ||
+                          (new Decimal(parseUnits(val, decimals).toString()).gt(
+                            assetBalance
+                          ) ||
                             new Decimal(assetBalance).isZero())
-                          // || transactionTotal && new Decimal(transactionTotal!).gt(_wrappedMinimaBalance)
                         ) {
-                          throw new Error();
+                          throw new Error("Insufficient funds 2");
                         }
 
                         return true;
                       } catch (error) {
-                        return createError({
+                        if (error instanceof Error) {
+                          return createError({
+                            path,
+                            message: "Insufficient funds",
+                          });
+                        }
+
+                        createError({
                           path,
-                          message: "Insufficient funds",
+                          message: "Invalid amount",
                         });
                       }
                     })
-                    .test("has no gas", function () {
-                      const { path, createError } = this;
+                    .test("has no gas", function (val) {
+                      const { path, parent, createError } = this;
 
-                      try {
-                        if (
-                          new Decimal(_balance).isZero() ||
-                          (gas &&
-                            new Decimal(gas.finalGasFee).greaterThan(_balance))
-                        ) {
-                          throw new Error();
+                      try {       
+                        if (step < 2) {
+                          return true;
+                        }        
+                        
+                        if (isNaN(parseInt(val))) {
+                          throw new Error("Enter a valid number");
                         }
 
-                        return true;
+                        if (gasInfo === null) {
+                          throw new Error("Gas API not available");
+                        }
+
+                        if (new Decimal(_balance).isZero()) {
+                          throw new Error("Not enough ETH available to pay for gas.");
+                        }
+
+                        return estimateGas(val, parent.address, parent.asset).then(async (gasUnits) => {
+                          
+                          const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } = gasInfo;
+                          // calculate the transfer price
+                          const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
+
+                          if (parent.asset.type === "ether") {
+                            const total = new Decimal(calculateGasPrice.finalGasFee).plus(val);
+                            if (new Decimal(total).greaterThan(_balance)) {
+                              return createError({path, message: "Not enough ETH available to pay for gas."});
+                            }
+                          } else {
+                            if (new Decimal(calculateGasPrice.finalGasFee).greaterThan(_balance)) {
+                              return createError({path, message: "Not enough ETH available to pay for gas."});
+                            }
+                          }
+
+                          return true;
+                        });                      
                       } catch (error) {
-                        return createError({
-                          path,
-                          message:
-                            "Not enough eth available to pay for gas fees!",
-                        });
+                        if (error instanceof Error) {
+                          return createError({
+                            path,
+                            message:
+                              error.message,
+                          });
+                        }
+
+                        createError({
+                          path, message: "Something went wrong"
+                        })
                       }
                     }),
                 })}
                 initialValues={{
                   amount: "",
+                  gas: null,
                   asset: initialTokenShouldBeMinimaIfExists
                     ? initialTokenShouldBeMinimaIfExists
                     : {
@@ -151,11 +218,12 @@ const Send = () => {
                         symbol: _defaultNetworks[_currentNetwork].symbol,
                         balance: _balance,
                         address: "",
+                        decimals: _defaultNetworks[_currentNetwork].decimals,
                         type: "ether",
                       },
                   address: "",
                   receipt: null,
-                  gasPaid: ""
+                  gasPaid: "",
                 }}
                 onSubmit={async (
                   { amount, address, asset },
@@ -164,29 +232,47 @@ const Send = () => {
                   setError(false);
                   setLoading(true);
                   try {
+                    if (!gasInfo) {
+                      throw new Error("Gas API not available");
+                    }
+
+                    const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } = gasInfo;
+                    const gasUnits = await estimateGas(amount, address, asset);
+                    const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
+
                     if (asset.type === "ether") {
-                      const txResponse = await transfer(address, amount, gas!);
+                      
+                      const txResponse = await transfer(address, amount, calculateGasPrice);
                       setStep(4);
-                      setFieldValue("gasPaid", gas?.finalGasFee);
+                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
                       setFieldValue("receipt", txResponse);
+
+                      await handlePullBalance();
                     } else {
                       // handle ERC 20 transfers
                       const txResponse = await transferToken(
                         asset.address,
                         address,
                         amount,
-                        gas!
+                        calculateGasPrice
                       );
+
+                      
                       setStep(4);
-                      setFieldValue("gasPaid", gas?.finalGasFee);
+                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
                       setFieldValue("receipt", txResponse);
                     }
+
+                    await handlePullBalance();
                   } catch (error: any) {
                     console.error(error);
                     // display error message
                     setStep(4);
-                    setError(error && error.shortMessage ? error.shortMessage : "Transaction failed, please try again.");
-                    
+                    setError(
+                      error && error.shortMessage
+                        ? error.shortMessage
+                        : "Transaction failed, please try again."
+                    );
                   } finally {
                     setLoading(false);
                   }
@@ -199,45 +285,42 @@ const Send = () => {
                   getFieldProps,
                   handleChange,
                   handleBlur,
-                  touched,
                   errors,
                   values,
                   isValid,
                   dirty,
-                  resetForm
+                  resetForm,
                 }) => (
                   <form onSubmit={handleSubmit}>
                     {step === 1 && (
                       <div className="mb-4">
-                        <div className="px-4 py-4">
-                          <div className="mb-2">
-                            <input
-                              disabled={isSubmitting}
-                              required
-                              id="address"
-                              name="address"
-                              type="text"
-                              onBlur={handleBlur}
-                              placeholder="Recipient public (0x) Address or ENS name"
-                              className={`mb-2 ${
-                                dirty && errors.address
-                                  ? "!border-4 !border-red-500"
-                                  : ""
-                              }`}
-                              onChange={(e) => {
-                                handleChange(e);
-                                try {
-                                  getAddress(e.target.value);
-                                  setStep(2);
-                                } catch (error) {
-                                  // BAD
-                                }
-                              }}
-                            />
-                          </div>
+                        <div className="px-4">
+                          <input
+                            disabled={isSubmitting}
+                            required
+                            id="address"
+                            name="address"
+                            type="text"
+                            onBlur={handleBlur}
+                            placeholder="Recipient public (0x) Address or ENS name"
+                            className={`w-full bg-gray-100 bg-opacity-30 p-4 dark:bg-[#1B1B1B] mb-2 ${
+                              dirty && errors.address
+                                ? "outline !outline-red-500"
+                                : "focus:outline-violet-300"
+                            }`}
+                            onChange={(e) => {
+                              handleChange(e);
+                              try {
+                                getAddress(e.target.value);
+                                setStep(2);
+                              } catch (error) {
+                                // BAD
+                              }
+                            }}
+                          />
 
                           {dirty && errors.address && (
-                            <div className="my-2 bg-red-500 text-white rounded px-4 py-1">
+                            <div className="my-2 bg-red-600 text-white font-bold rounded p-2">
                               {errors.address}
                             </div>
                           )}
@@ -246,84 +329,62 @@ const Send = () => {
                       </div>
                     )}
                     {step === 2 && (
-                      <div className="mt-4">
-                        <div className={styles["input_button_wrapper"]}>
-                          <input
-                            disabled={isSubmitting}
-                            required
-                            {...getFieldProps("address")}
-                            type="text"
-                            readOnly
-                            placeholder="Recipient public (0x) Address or ENS name"
-                          />
-                          <button
-                            onClick={() => handleClearButton(setFieldValue)}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="32"
-                              height="32"
-                              viewBox="0 0 22 22"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              fill="none"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path
-                                stroke="none"
-                                d="M0 0h24v24H0z"
-                                fill="none"
-                              />
-                              <path d="M18 6l-12 12" />
-                              <path d="M6 6l12 12" />
-                            </svg>
-                          </button>
+                      <div>
+                        <div className="px-4">
+                          <div className="rounded grid grid-cols-[1fr_auto] items-center bg-gray-100 bg-opacity-30 p-4 outline outline-violet-300">
+                            <input
+                              disabled={isSubmitting}
+                              required
+                              {...getFieldProps("address")}
+                              type="text"
+                              readOnly
+                              placeholder="Recipient public (0x) Address or ENS name"
+                              className={`w-full bg-transparent !outline-none dark:bg-[#1B1B1B]`}
+                            />
+                            <Cross
+                              dismiss={() => handleClearButton(setFieldValue)}
+                            />
+                          </div>
                         </div>
                         <div className="mt-2 mx-4">
                           <SelectAsset />
                         </div>
-                        <div className="mt-2 mx-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              disabled={isSubmitting}
-                              required
-                              {...getFieldProps("amount")}
-                              type="text"
-                              autoFocus
-                              placeholder="Amount"
-                              className={`font-mono ${
-                                touched.amount && errors.amount
-                                  ? "!border-4 !border-red-500"
-                                  : ""
-                              }`}
-                            />
-                            <span className="border text-center border-slate-700 text-sm font-bold border-l-0 border-r-0 py-2 px-3">
-                              {values.asset.symbol}
-                              <button
-                                onClick={() =>
-                                  setFieldValue("amount", values.asset.type !== 'erc20' ? values.asset.balance : formatEther(values.asset.balance))
-                                }
-                                type="button"
-                                className="p-0 text-black border-slate-600 dark:text-white w-full bg-transparent border text-sm dark:border-teal-300 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black"
-                              >
-                                Max
-                              </button>
-                            </span>
-                          </div>
+                        <div className="px-4 py-3">
+                          <InputWrapper
+                            errors={
+                              errors &&
+                              errors.amount ?
+                              errors.amount : false
+                            }
+                            wrapperStyle="mt-2"
+                            inputProps={{
+                              placeholder: "0.0",
+                              ...getFieldProps("amount"),
+                            }}
+                            label="Amount"
+                            action={
+                              <div className="flex items-center justify-center flex-col">
+                                <p className="font-bold text-xs">
+                                  {values.asset.symbol}
+                                </p>
+                                <button
+                                  onClick={() =>
+                                    setFieldValue(
+                                      "amount",
+                                      values.asset.type !== "erc20"
+                                        ? values.asset.balance
+                                        : formatEther(values.asset.balance)
+                                    )
+                                  }
+                                  type="button"
+                                  className="!outline-none p-0 m-0 tracking-wide hover:text-black dark:text-teal-300 dark:hover:text-teal-500 font-bold"
+                                >
+                                  MAX
+                                </button>
+                              </div>
+                            }
+                          />
 
-                          <div className="mx-4 text-purple-500 flex items-center justify-end">
-                            <ConversionRateUSD
-                              amount={values.amount}
-                              asset={values.asset}
-                            />
-                          </div>
-
-                          {touched.amount && errors.amount && (
-                            <div className="mb-2 bg-red-500 text-white rounded px-4 py-1">
-                              {errors.amount}
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
@@ -384,8 +445,9 @@ const Send = () => {
 
                           <GasEstimation />
 
+
                           {errors.amount && (
-                            <p className="text-sm px-4 text-center text-red-500">
+                            <p className="mt-4 mx-3 bg-red-600 text-white font-bold rounded p-2">
                               {errors.amount}
                             </p>
                           )}
@@ -393,92 +455,105 @@ const Send = () => {
                       </div>
                     )}
                     {step === 4 && values.receipt && (
-                      <TransactionReceiptCard recipient={values.address} asset={values.asset} receipt={values.receipt} gasPaid={values.gasPaid} amountSent={values.amount} />
+                      <TransactionReceiptCard
+                        recipient={values.address}
+                        asset={values.asset}
+                        receipt={values.receipt}
+                        gasPaid={values.gasPaid}
+                        amountSent={values.amount}
+                      />
                     )}
                     <div
-                      className={` mt-8 ${styles["button__navigation"]} ${
-                        step === 1 || step === 4
-                          ? styles.button__navigation_one
-                          : ""
-                      }`}
+                      className={` mt-8 ${step === 1 || step === 4 ? "" : ""}`}
                     >
                       <nav>
                         {step === 1 && (
-                          <>
+                          <div className="px-4">
                             <button
                               onClick={() => handleNavigation("balance")}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4"
                             >
                               Cancel
                             </button>
-                          </>
+                          </div>
                         )}
                         {step === 2 && (
-                          <>
+                          <div className="px-4 grid grid-cols-2 gap-2">
                             <button
                               type="button"
                               onClick={() => setStep(1)}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Cancel
                             </button>
                             <button
                               type="button"
-                              onClick={() => setStep(3)}
-                              disabled={!isValid}
-                              className="bg-teal-300 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              onClick={() => setStep(3)}                              
+                              className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50"
                             >
                               Next
                             </button>
-                          </>
+                          </div>
                         )}
                         {step === 3 && (
-                          <>
+                          <div className="px-4 grid grid-cols-2 gap-2">
                             <button
+                              disabled={loading}
                               type="button"
-                              onClick={() => setStep(1)}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              onClick={() => {
+                                setStep(1);
+                                setGas(null);
+                                resetForm();
+                              }}
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Reject
                             </button>
                             <button
                               type="submit"
-                              disabled={!isValid || loading || !gas}
-                              className="bg-teal-300 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              disabled={loading || !isValid || !gasInfo}                              
+                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-10 ${!gasInfo && "disabled:bg-opacity-50"}`}
                             >
-                              Send
+                              {loading && "Sending..."}
+                              {!loading && !gasInfo && "Fetching Gas"}
+                              {!loading && gasInfo && "Send"}
                             </button>
-                          </>
+                          </div>
                         )}
-                        {step === 4 && error && <p className="break-all text-center text-red-500">{error}</p>}
                         {step === 4 && error && (
-                          <>
+                          <p className="break-all text-center text-red-500">
+                            {error}
+                          </p>
+                        )}
+                        {step === 4 && error && (
+                          <div className="px-4 grid grid-cols-1 mt-4">
                             <button
                               type="button"
                               onClick={() => {
-                                setStep(3);                                
+                                setStep(3);
                               }}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Back
                             </button>
-                          </>
+                          </div>
                         )}
                         {step === 4 && !error && (
-                          <>
+                          <div className="px-4 grid grid-cols-1">
                             <button
                               type="button"
-                              onClick={() => {
+                              onClick={async () => {
                                 setStep(1);
-                                clearGas();
+                                setGas(null);
                                 resetForm();
                                 handleNavigation("balance");
+                                await handlePullBalance();
                               }}
-                              className="dark:bg-white bg-black text-white bg-opacity-90 dark:text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Dismiss
                             </button>
-                          </>
+                          </div>
                         )}
                       </nav>
                     </div>
@@ -495,32 +570,3 @@ const Send = () => {
 };
 
 export default Send;
-
-// normal transfer json receipt
-/**
- * {
-    "_type": "TransactionReceipt",
-    "accessList": [],
-    "blockNumber": null,
-    "blockHash": null,
-    "chainId": "31337",
-    "data": "0x",
-    "from": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
-    "gasLimit": "21001",
-    "gasPrice": null,
-    "hash": "0x194ecbb10687e63b70eb105ba6f9cc09a23773d4c150ea7ea4e9d9dc1647da20",
-    "maxFeePerGas": "2750000000",
-    "maxPriorityFeePerGas": "1000000000",
-    "nonce": 1,
-    "signature": {
-        "_type": "signature",
-        "networkV": null,
-        "r": "0x42919c2e0360cda36f948ad2bd01f04ae07cd766ccd171e0afae2c852d322c86",
-        "s": "0x4ae5bfe941f9c4a9a75dee1c1ba87ab6f8ae1d905abe1afe617f01ae565cdedf",
-        "v": 28
-    },
-    "to": "0x95Eea59d1130f0A71afDE7a33d1fe4aFC3b63d9A",
-    "type": 2,
-    "value": "55000000000000000000"
-}
- */

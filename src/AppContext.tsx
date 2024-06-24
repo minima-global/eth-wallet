@@ -6,6 +6,7 @@ import { ContractTransactionResponse } from "ethers";
 import { Asset } from "./types/Asset";
 import { Network, Networks } from "./types/Network";
 import defaultAssetsStored, { _defaults } from "./constants";
+import useSwapWidget from "./hooks/useSwapWidget";
 
 export const appContext = createContext({} as any);
 
@@ -23,6 +24,9 @@ interface IProps {
 }
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
+
+  const swapWidgetProps = useSwapWidget();
+
   const [isWorking, setWorking] = useState(false);
   const [userKeys, setUserKeys] = useState<{
     apiKey: string;
@@ -69,6 +73,9 @@ const AppProvider = ({ children }: IProps) => {
   });
   const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] =
     useState(false);
+
+  // display db locked, ask for unlock
+  const [_promptDatabaseLocked, setPromptDatabaseLocked] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -119,29 +126,39 @@ const AppProvider = ({ children }: IProps) => {
   }, [_provider, loaded]);
 
   useEffect(() => {
+    if (loaded && loaded.current && userKeys !== null && userKeys.apiKey) {
+      // Check if read or write mode
+      (window as any).MDS.cmd(`checkmode`, function (response: any) {
+        if (response.status) {
+          // If in write mode, generate & set key
+          if (response.response.mode === "WRITE") {
+            // Generate key for Eth Wallet
+            (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
+              if (!resp.status) {
+                if (resp.error && resp.error.includes("DB locked!")) {
+                  return setPromptDatabaseLocked(true);
+                }
+              }
+              
+              setGeneratedKey(resp.response.seedrandom);
+            });
+          }
+
+          return setReadMode(response.response.mode === "READ");
+        }
+
+        return setReadMode(false);
+      });
+    }
+  }, [loaded, userKeys]);
+
+  useEffect(() => {
     if (!loaded.current) {
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           loaded.current = true;
           // do something Minim-y
-
-          // Check if read or write mode
-          (window as any).MDS.cmd(`checkmode`, function (response: any) {
-            if (response.status) {
-              // If in write mode, generate & set key
-              if (response.response.mode === "WRITE") {
-                // Generate key for Eth Wallet
-                (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
-                  setGeneratedKey(resp.response.seedrandom);
-                });
-              }
-
-              return setReadMode(response.response.mode === "READ");
-            }
-
-            return setReadMode(false);
-          });
-
+          
           (async () => {
             setWorking(true);
             // Initialize cache-ing table
@@ -300,6 +317,10 @@ const AppProvider = ({ children }: IProps) => {
 
   const promptAllowanceApprovalModal = () => {
     setPromptAllowanceApprovalModal((prevState) => !prevState);
+  };
+
+  const promptDatabaseLocked = () => {
+    setPromptDatabaseLocked((prevState) => !prevState);
   };
 
   const setRPCNetwork = (
@@ -536,6 +557,9 @@ const AppProvider = ({ children }: IProps) => {
         _promptAccountNameUpdate,
         promptAccountNameUpdate,
 
+        _promptDatabaseLocked,
+        promptDatabaseLocked,
+
         _triggerBalanceUpdate,
         setTriggerBalanceUpdate,
 
@@ -544,6 +568,8 @@ const AppProvider = ({ children }: IProps) => {
         setRPCNetwork,
         verifyRPCNetwork,
         _currencyFormat,
+
+        ...swapWidgetProps
       }}
     >
       {children}
