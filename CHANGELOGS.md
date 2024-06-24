@@ -4,7 +4,7 @@
 
 - Initial Skeleton
 
-##### [1.5.0] - 11 Jun 24
+##### [1.5.0] - 11-24 Jun 24
 
 - Add DB Locked Modal
 - Synchornize when the ReadMode appears
@@ -16,3 +16,4 @@
 - Fetch balance after Send success
 - Fix validation on Send Form check balance
 - Re-jig Send
+- Tweaks on SwapWidget
