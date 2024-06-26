@@ -489,6 +489,7 @@ const Send = () => {
                             <button
                               type="button"
                               onClick={() => setStep(3)}                              
+                              disabled={errors && (!!errors.amount || !!errors.address)}
                               className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50"
                             >
                               Next

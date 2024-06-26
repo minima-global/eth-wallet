@@ -17,3 +17,7 @@
 - Fix validation on Send Form check balance
 - Re-jig Send
 - Tweaks on SwapWidget
+
+##### [1.5.0] - 26 Jun 24
+
+- Fix Gas check on mainnet

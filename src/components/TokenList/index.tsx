@@ -63,8 +63,10 @@ const TokenList = () => {
               <div>
                 <h3 className="font-bold">{token.name}</h3>
                 <p className="font-mono text-sm">
-                  {token.balance &&
-                    formatUnits(token.balance, token.name === 'Tether' && _network === 'sepolia' ? 18 : 6).toString()}
+                  {token.address === '0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C' && token.balance && formatUnits(token.balance, 18).toString()}
+                  {token.address !== '0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C' && token.balance &&
+                    formatUnits(token.balance, token.decimals).toString()}
+                  
                 </p>
               </div>
             </div>

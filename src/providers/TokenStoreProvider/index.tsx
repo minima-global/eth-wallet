@@ -47,7 +47,8 @@ type Context = {
   estimateGas: (
     tokenAddress: string,
     recipientAddress: string,
-    amount: string
+    amount: string,
+    decimals: number
   ) => Promise<string>;
 };
 
@@ -125,13 +126,14 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
   const estimateGas = async (
     tokenAddress: string,
     recipientAddress: string,
-    amount: string
+    amount: string,
+    decimals: string
   ) => {
     try {
       const contract = new Contract(tokenAddress, ABI_ERC20, signer);
       const gasUnits = await contract.transfer.estimateGas(
         recipientAddress,
-        parseUnits(amount, 18)
+        parseUnits(amount, decimals)
       );
 
       return gasUnits.toString();

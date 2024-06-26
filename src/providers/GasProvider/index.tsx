@@ -57,10 +57,10 @@ export const GasContextProvider = ({ children }: Props) => {
         const gasUnits = await estimateGasForTransfer(
           getTokenByName(asset.name)!.address,
           address,
-          amount
+          amount,
+          asset.decimals
         );
-  
-  
+
         return gasUnits.toString();
       }
       
