@@ -16,7 +16,6 @@ import { formatEther, getAddress, parseUnits } from "ethers";
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
 import Decimal from "decimal.js";
-// import { useGasContext } from "../../providers/GasProvider";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { _defaults } from "../../constants";
 import TransactionReceiptCard from "../TransactionReceipt";
@@ -62,10 +61,10 @@ const Send = () => {
     });
 
     setTriggerBalanceUpdate(true);
+    getEthereumBalance();
     setTimeout(() => {
-      getEthereumBalance();
       setTriggerBalanceUpdate(false);
-    }, 2000);
+    }, 15000);
   }
 
   const handleClearButton = (setFieldValueRef: any) => {
@@ -170,9 +169,13 @@ const Send = () => {
                           throw new Error("Gas API not available");
                         }
 
+                        if (new Decimal(val).isZero()) {
+                          throw new Error("Enter a valid amount");
+                        }
+
                         if (new Decimal(_balance).isZero()) {
                           throw new Error("Not enough ETH available to pay for gas.");
-                        }
+                        }                        
 
                         return estimateGas(val, parent.address, parent.asset).then(async (gasUnits) => {
                           
@@ -241,11 +244,12 @@ const Send = () => {
                     const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
 
                     if (asset.type === "ether") {
-                      
+
                       const txResponse = await transfer(address, amount, calculateGasPrice);
+
                       setStep(4);
-                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
                       setFieldValue("receipt", txResponse);
+                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
 
                       await handlePullBalance();
                     } else {
@@ -254,10 +258,11 @@ const Send = () => {
                         asset.address,
                         address,
                         amount,
-                        calculateGasPrice
+                        calculateGasPrice,
+                        asset.address === '0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C' ? 18 : asset.decimals
                       );
 
-                      
+
                       setStep(4);
                       setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
                       setFieldValue("receipt", txResponse);

@@ -65,7 +65,7 @@ export const GasContextProvider = ({ children }: Props) => {
       }
       
     } catch (error) {
-      console.error("Error estimating gas:", error);
+      // console.error("Error estimating gas:", error);
       return null;
     } finally {
       setLoading(false);

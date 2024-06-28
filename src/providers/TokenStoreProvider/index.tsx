@@ -42,7 +42,8 @@ type Context = {
     tokenAddress: string,
     recipientAddress: string,
     amount: string,
-    gas: GasFeeCalculated
+    gas: GasFeeCalculated,
+    decimals: number
   ) => Promise<TransactionResponse>;
   estimateGas: (
     tokenAddress: string,
@@ -127,7 +128,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
     tokenAddress: string,
     recipientAddress: string,
     amount: string,
-    decimals: string
+    decimals: number
   ) => {
     try {
       const contract = new Contract(tokenAddress, ABI_ERC20, signer);
@@ -138,7 +139,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
 
       return gasUnits.toString();
     } catch (error) {
-      console.error("Error estimating gas:", error);
+      // console.error("Error estimating gas:", error);
       return "0"; // Default to 0 gasUnits
     }
   };
@@ -147,13 +148,14 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
     tokenAddress: string,
     recipientAddress: string,
     amount: string,
-    gas: GasFeeCalculated
+    gas: GasFeeCalculated,
+    decimals: number
   ) => {
     const _contract = new Contract(tokenAddress, ABI_ERC20, signer);
 
     const tx = await _contract.transfer(
       recipientAddress,
-      parseUnits(amount, "ether"),
+      parseUnits(amount, decimals),
       {
         maxFeePerGas: parseUnits(gas.baseFee, "gwei"),
         maxPriorityFeePerGas: parseUnits(gas.priorityFee, "gwei"),

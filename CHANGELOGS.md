@@ -18,6 +18,11 @@
 - Re-jig Send
 - Tweaks on SwapWidget
 
-##### [1.5.0] - 26 Jun 24
+##### [1.6.0] - 26 Jun 24
 
 - Fix Gas check on mainnet
+- Change Allowance approval step in Swap Widget
+- Fix bug with send
+- Fetch balance periodically on balance page
+- Tweak copies
+- Tweak UX on Swap Widget

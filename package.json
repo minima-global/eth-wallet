@@ -1,7 +1,7 @@
 {
   "name": "ethwallet",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.6.2",
   "type": "module",
   "description": "A Wrapped Minima, ERC-20 compatible Wallet",
   "scripts": {
@@ -24,6 +24,7 @@
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.7",
     "crypto-js": "^4.2.0",
+    "date-fns": "^3.6.0",
     "decimal.js": "^10.4.3",
     "ethers": "^6.10.0",
     "ethers-5": "npm:ethers@^5.7.2",
