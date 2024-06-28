@@ -24,12 +24,13 @@ const SwapWidget = () => {
   useAllowanceChecker();
 
   const { _network } = useWalletContext();
+
   const {
     promptAllowanceApprovalModal,
     setTriggerBalanceUpdate,
     swapDirection,
     _allowanceLock,
-    setPromptAllowance
+    setPromptAllowance,
   } = useContext(appContext);
   const { _wallet, _balance, getEthereumBalance } = useWalletContext();
   const { tokens } = useTokenStoreContext();
@@ -74,23 +75,23 @@ const SwapWidget = () => {
           .matches(/^\d+(\.\d+)?$/, "Invalid amount")
           .test("check for insufficient funds", function (val) {
             const { path, parent, createError } = this;
+
             if (!val || val.length === 0) return false;
-
-            const relTokenBalance =
-              tokens &&
-              tokens.find((tkn) => tkn.address === parent.input!.address)
-                ? tokens.find((tkn) => tkn.address === parent.input!.address)!
-                    .balance
-                : "";
-
-            if (new Decimal(relTokenBalance).isZero()) {
-              return createError({
-                path,
-                message: "Insufficient funds",
-              });
-            }
-
+            
             try {
+              const relevantToken = tokens.find((tkn) => tkn.address === parent.input.address);
+
+              if (!relevantToken) {
+                return;
+              }
+                          
+              if (new Decimal(relevantToken!.balance).isZero()) {
+                return createError({
+                  path,
+                  message: "Insufficient funds",
+                });
+              }
+              
               const decimalVal = createDecimal(val);
               if (decimalVal === null) {
                 throw new Error("Invalid amount`");
@@ -102,12 +103,17 @@ const SwapWidget = () => {
                 throw new Error("You exceeded the max amount");
               }
 
-              if (spendAmount.greaterThan(relTokenBalance)) {
+              if (spendAmount.greaterThan(relevantToken!.balance)) {
                 throw new Error("Insufficient funds");
               }
 
+              if (new Decimal(val).decimalPlaces() > parent.input.decimals) {
+                throw new Error("Too many decimals")
+              }
+
               return true;
-            } catch (error: any) {
+            } catch (error) {
+              
               if (error instanceof Error) {
                 return createError({
                   path,
@@ -126,15 +132,15 @@ const SwapWidget = () => {
 
             if (!val || val.length === 0) return false;
 
-            // We check whether the user has enough funds to pay for gas.
-            if (new Decimal(_balance).isZero()) {
-              return createError({
-                path,
-                message: "Insufficient funds, low on ETH for gas",
-              });
-            }
-
+            
             try {
+              // We check whether the user has enough funds to pay for gas.
+              if (new Decimal(_balance).isZero()) {
+                return createError({
+                  path,
+                  message: "Insufficient funds, low on ETH for gas",
+                });
+              }
               const decimalVal = createDecimal(val);
               if (decimalVal === null) {
                 throw new Error("Invalid gas amount");
@@ -213,14 +219,14 @@ const SwapWidget = () => {
         }
       }}
     >
-      {({ handleSubmit, values, isValid, errors, submitForm }) => (
+      {({ values, isValid, errors, handleSubmit, handleBlur, submitForm }) => (
         <QuoteContextProvider>
-          {/* <AllowanceApproval token={getTokenWrapper(values.input!)} /> */}
           <Allowance />
 
           <form onSubmit={handleSubmit} className="relative">
             <>
               <FieldWrapper
+              handleBlur={handleBlur}
                 disabled={!!values.locked}
                 type="input"
                 balance={
@@ -238,6 +244,7 @@ const SwapWidget = () => {
               />
               <SwapDirection />
               <FieldWrapper
+                handleBlur={handleBlur}
                 disabled={!!values.locked}
                 extraClass="mt-1"
                 type="output"
@@ -271,7 +278,7 @@ const SwapWidget = () => {
                 <button
                   disabled={!isValid}
                   type="submit"
-                  className="py-4 !bg-opacity-30 disabled:text-white dark:disabled:bg-[#1B1B1B] dark:disabled:text-black hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
+                  className="bg-opacity-50 w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
                 >
                   {errors.inputAmount ? errors.inputAmount : "Error"}
                 </button>
@@ -287,7 +294,7 @@ const SwapWidget = () => {
                       disabled={!!errors.inputAmount}
                       onClick={() => setStep(2)}
                       type="button"
-                      className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
+                      className="w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
                     >
                       {errors.inputAmount ? errors.inputAmount : "Review Swap"}
                     </button>

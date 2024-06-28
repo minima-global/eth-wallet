@@ -49,6 +49,13 @@ const TokenList = () => {
         }
       } else {
         callBalance();
+        // Set first time..
+        const now = new Date().getTime();
+        (window as any).MDS.keypair.set(
+          "_lastethbalancecheck",
+          JSON.stringify({ timestamp: now }),
+          () => {}
+        );
       }
     });
   };
@@ -70,7 +77,7 @@ const TokenList = () => {
     <div className="mx-4 md:mx-0">
       <div className="grid grid-cols-[1fr_auto]">
         <h3 className="font-bold mb-2">Your Tokens</h3>
-        <span onClick={handlePullBalance} className={`dark:text-sky-500`}>
+        <span onClick={callBalance} className={`dark:text-sky-500`}>
           <RefreshIcon
             extraClass={`${_triggerBalanceUpdate && "animate-spin"}`}
             fill="currentColor"

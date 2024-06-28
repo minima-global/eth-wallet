@@ -1,11 +1,13 @@
+import Decimal from "decimal.js";
 import { formatUnits } from "ethers";
-import { useFormikContext } from "formik";
+import { FormikContextType, FormikValues, useFormikContext } from "formik";
 import { useState } from "react";
 
 interface Props {
   type: "input" | "output";
   token: JSX.Element;
   disabled: boolean;
+  handleBlur: any;
   balance?: string;
   decimals?: number;
   extraClass?: string;
@@ -14,6 +16,7 @@ interface Props {
   reviewMode?: boolean;
 }
 const FieldWrapper = ({
+  handleBlur,
   reviewMode,
   disabled,
   extraClass,
@@ -25,13 +28,13 @@ const FieldWrapper = ({
   buttonRef,
 }: Props) => {
   const [f, setF] = useState(false);
-  const formik: any = useFormikContext();
+  const formik: FormikContextType<FormikValues> = useFormikContext();
 
   return (
     <div
       className={`${disabled ? "opacity-30" : ""} ${
         extraClass && extraClass
-      }   bg-gray-100 dark:bg-gray-800 rounded pb-0 grid grid-cols-1 md:grid-cols-[1fr_minmax(0,_142.16px)] ${
+      }   bg-gray-100 dark:bg-gray-800 rounded pb-0 grid grid-cols-[1fr_auto] ${
         f ? "border border-teal-300" : ""
       } overflow-hidden`}
     >
@@ -46,7 +49,10 @@ const FieldWrapper = ({
           {...formik.getFieldProps(
             type === "input" ? "inputAmount" : "outputAmount"
           )}
-          onBlur={() => setF(false)}
+          onBlur={(e) => {
+            handleBlur(e);
+            setF(false);
+          }}
           onFocus={() => setF(true)}
           placeholder="0"
           className="text-2xl truncate bg-gray-100 dark:bg-gray-800 font-mono focus:border-none focus:outline-none placeholder:text-teal-300 font-bold"
@@ -58,33 +64,27 @@ const FieldWrapper = ({
         }`}
       >
         <div>{token}</div>
-        <div className="grid grid-cols-[1fr_auto] items-center">
-          {!reviewMode && (
-            <>
-              <p className="text-sm font-bold text-gray-500 pb-4">
-                Balance:{" "}
-                <span className="font-mono text-sm">
-                  {balance && balance.length && formatUnits(balance!, decimals!).toString().substring(0, 9)}
-                </span>
-              </p>
-              {type === "input" && (
-                <button
-                  ref={buttonRef}
-                  type="button"
-                  onClick={() =>
-                    formik.setFieldValue(
-                      "inputAmount",
-                      formatUnits(balance!, decimals!).toString()
-                    )
-                  }
-                  className="p-0 text-sm font-bold text-teal-500 dark:text-teal-300 focus:outline-none hover:font-semibold"
-                >
-                  Max
-                </button>
-              )}
-            </>
-          )}
-        </div>
+        <p className="font-mono tracking-wider font-bold text-gray-500 text-center">
+          {balance &&
+            balance.length ?
+            new Decimal(formatUnits(balance!, decimals!).toString()).toFixed(0):'-'}
+        </p>
+        {type === "output" && <div className="my-1" />}
+        {type === "input" && !reviewMode && (
+          <button
+            ref={buttonRef}
+            type="button"
+            onClick={() =>
+              formik.setFieldValue(
+                "inputAmount",
+                formatUnits(balance!, decimals!).toString()
+              )
+            }
+            className="!outline-none p-0 m-0 tracking-wide hover:text-black dark:text-teal-300 dark:hover:text-teal-500 font-bold"
+          >
+            MAX
+          </button>          
+        )}
       </div>
     </div>
   );

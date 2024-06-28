@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { _defaults } from "../../../constants";
 import { Asset } from "../../../types/Asset";
 
@@ -10,14 +11,11 @@ const getTokenWrapper = (asset: Asset, amount?: string) => {
     const isUSDT = address === _defaults["Tether"].mainnet;
   
     let tokenIconSrc = "";
-    let tokenName = "";
   
     if (isWMINIMA) {
-      tokenIconSrc = "./assets/token.svg";
-      tokenName = "WMINIMA";
+      tokenIconSrc = "./assets/wtoken.svg";
     } else if (isUSDT) {
-      tokenIconSrc = "./assets/tether.svg";
-      tokenName = "USDT";
+      tokenIconSrc = "./assets/tether.svg";      
     }
   
     return (
@@ -26,11 +24,11 @@ const getTokenWrapper = (asset: Asset, amount?: string) => {
           <img
             alt="token-icon"
             src={tokenIconSrc}
-            className="w-[24px] h-[24px] rounded-full"
+            className="w-[36px] h-[36px] rounded-full"
           />
         )}
-        {amount &&  <p className="font-mono">{amount}</p>}
-        {tokenName && <p className="font-bold">{tokenName}</p>}
+        {amount &&  <p className="font-mono">{new Decimal(amount).toFixed(2)}</p>}
+        {/* {tokenName && <p className="font-bold">{tokenName}</p>} */}
       </div>
     );
   };

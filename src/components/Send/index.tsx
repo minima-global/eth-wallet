@@ -11,7 +11,7 @@ import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import { formatEther, getAddress, parseUnits } from "ethers";
+import { formatUnits, getAddress, parseUnits } from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
@@ -183,13 +183,14 @@ const Send = () => {
                           // calculate the transfer price
                           const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
 
+
                           if (parent.asset.type === "ether") {
-                            const total = new Decimal(calculateGasPrice.finalGasFee).plus(val);
+                            const total = new Decimal(calculateGasPrice!.finalGasFee).plus(val);
                             if (new Decimal(total).greaterThan(_balance)) {
                               return createError({path, message: "Not enough ETH available to pay for gas."});
                             }
                           } else {
-                            if (new Decimal(calculateGasPrice.finalGasFee).greaterThan(_balance)) {
+                            if (new Decimal(calculateGasPrice!.finalGasFee).greaterThan(_balance)) {
                               return createError({path, message: "Not enough ETH available to pay for gas."});
                             }
                           }
@@ -245,11 +246,11 @@ const Send = () => {
 
                     if (asset.type === "ether") {
 
-                      const txResponse = await transfer(address, amount, calculateGasPrice);
+                      const txResponse = await transfer(address, amount, calculateGasPrice!);
 
                       setStep(4);
                       setFieldValue("receipt", txResponse);
-                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
+                      setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
 
                       await handlePullBalance();
                     } else {
@@ -258,13 +259,13 @@ const Send = () => {
                         asset.address,
                         address,
                         amount,
-                        calculateGasPrice,
+                        calculateGasPrice!,
                         asset.address === '0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C' ? 18 : asset.decimals
                       );
 
 
                       setStep(4);
-                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
+                      setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
                       setFieldValue("receipt", txResponse);
                     }
 
@@ -378,7 +379,7 @@ const Send = () => {
                                       "amount",
                                       values.asset.type !== "erc20"
                                         ? values.asset.balance
-                                        : formatEther(values.asset.balance)
+                                        : formatUnits(values.asset.balance, values.asset.decimals)
                                     )
                                   }
                                   type="button"

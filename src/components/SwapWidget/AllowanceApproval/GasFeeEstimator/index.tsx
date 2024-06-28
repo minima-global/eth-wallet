@@ -35,7 +35,7 @@ import { NonceManager } from "ethers";
           );
   
           // calculated gas..
-          formik.setFieldValue("gas", _gas.finalGasFee);
+          formik.setFieldValue("gas", _gas!.finalGasFee);
         }        
       })();
     }, [formik.values.amount]);

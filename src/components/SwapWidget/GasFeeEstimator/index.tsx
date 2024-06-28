@@ -6,7 +6,7 @@ import {
   SwapRouter,
   Trade,
 } from "@uniswap/v3-sdk";
-import { useFormikContext } from "formik";
+import { FormikValues, FormikContextType, useFormikContext } from "formik";
 import { useContext, useEffect } from "react";
 import getOutputQuote from "../libs/getOutputQuote";
 import { appContext } from "../../../AppContext";
@@ -23,7 +23,7 @@ import useGasInfo from "../../../hooks/useGasInfo";
 import Decimal from "decimal.js";
 
 const GasFeeEstimator = () => {
-  const formik: any = useFormikContext();
+  const formik: FormikContextType<FormikValues> = useFormikContext();
   const { _provider } = useContext(appContext);
   
   const { gasInfo } = useGasInfo(3, "medium");
@@ -59,6 +59,7 @@ const GasFeeEstimator = () => {
         _provider
       );
 
+
       const uncheckedTrade = Trade.createUncheckedTrade({
         route: swapRoute,
         inputAmount: CurrencyAmount.fromRawAmount(
@@ -93,21 +94,29 @@ const GasFeeEstimator = () => {
         maxFeePerGas: maxFeePerGas,
         maxPriorityFeePerGas: maxPriorityFeePerGas,
       };
-      
-      const gasUnits = await _wallet!.estimateGas(tx);
 
-      if (maxFeePerGas) {
-        const _gas = await utils.calculateGasFee(
-          gasUnits.toString(),
-          maxFeePerGas.toString(),
-          maxPriorityFeePerGas.toString()
-        );
+
+      try {
+        const gasUnits = await _wallet!.estimateGas(tx);
         
-        // calculated gas..
-        formik.setFieldValue("gas", _gas.finalGasFee);
+        if (maxFeePerGas) {
+          const _gas = await utils.calculateGasFee(
+            gasUnits.toString(),
+            maxFeePerGas.toString(),
+            maxPriorityFeePerGas.toString()
+          );
+          
+          // calculated gas..
+          formik.setFieldValue("gas", _gas!.finalGasFee);
+        }
+  
+        formik.setFieldValue("tx", tx);
+      } catch (error) {
+        // console.error(error);
+        formik.setFieldError("gas", "Need more ETH to pay for this swap");
       }
+      
 
-      formik.setFieldValue("tx", tx);
     })();
   }, [_poolContract, locked, inputAmount, gasInfo]);
 

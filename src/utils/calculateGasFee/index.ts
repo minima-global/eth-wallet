@@ -12,19 +12,32 @@ export const calculateGasFee = async (
   _gasUnits: string,
   _baseFee: string,
   _priorityFee: string
-): Promise<GasFeeCalculated> => {
-  const priorityFeeBaseFee = new Decimal(_baseFee).plus(_priorityFee);
-  const toWei = parseUnits(priorityFeeBaseFee.toString(), "gwei");
-  const gasFee = new Decimal(formatEther(toWei.toString())).times(
-    _gasUnits
-  );
+): Promise<GasFeeCalculated | null> => {
 
-  return {
-    finalGasFee: gasFee.toString(),
-    baseFee: _baseFee,
-    priorityFee: _priorityFee, 
-    gasUnits: _gasUnits
-  };
+  try {
+    const priorityFeeBaseFee = new Decimal(_baseFee).plus(_priorityFee);
+    const toWei = parseUnits(priorityFeeBaseFee.toString(), "gwei");
+    const gasFee = new Decimal(formatEther(toWei.toString())).times(
+      _gasUnits
+    );
+  
+    return {
+      finalGasFee: gasFee.toString(),
+      baseFee: _baseFee,
+      priorityFee: _priorityFee, 
+      gasUnits: _gasUnits
+    };
+    
+  } catch (error) {
+    
+    return {
+      finalGasFee: "0",
+      baseFee: _baseFee,
+      priorityFee: _priorityFee, 
+      gasUnits: _gasUnits
+    }
+  }
+
 };
 
 export default calculateGasFee;
