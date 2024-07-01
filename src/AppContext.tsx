@@ -71,6 +71,11 @@ const AppProvider = ({ children }: IProps) => {
     decimal: ".",
     thousands: ",",
   });
+
+  const [_promptAllowance, setPromptAllowance] = useState(false);
+    const [_approving, setApproving] = useState(false);
+  const [_allowanceLock, setAllowanceLock] = useState(false);
+
   const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] =
     useState(false);
 
@@ -551,6 +556,13 @@ const AppProvider = ({ children }: IProps) => {
         _promptAddressBookAdd,
         promptAddressBookAdd,
 
+        _approving,
+        setApproving,
+        _promptAllowance,
+        setPromptAllowance,
+        _allowanceLock,
+        setAllowanceLock,
+        
         _promptAllowanceApprovalModal,
         promptAllowanceApprovalModal,
 

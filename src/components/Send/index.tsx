@@ -11,12 +11,11 @@ import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import { formatEther, getAddress, parseUnits } from "ethers";
+import { formatUnits, getAddress, parseUnits } from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
 import Decimal from "decimal.js";
-// import { useGasContext } from "../../providers/GasProvider";
 import { useTokenStoreContext } from "../../providers/TokenStoreProvider";
 import { _defaults } from "../../constants";
 import TransactionReceiptCard from "../TransactionReceipt";
@@ -52,7 +51,7 @@ const Send = () => {
       _currentNavigation === "send"
         ? "translateY(0%) scale(1)"
         : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config.stiff,
   });
 
   const handlePullBalance = async () => {
@@ -62,10 +61,10 @@ const Send = () => {
     });
 
     setTriggerBalanceUpdate(true);
+    getEthereumBalance();
     setTimeout(() => {
-      getEthereumBalance();
       setTriggerBalanceUpdate(false);
-    }, 2000);
+    }, 15000);
   }
 
   const handleClearButton = (setFieldValueRef: any) => {
@@ -170,9 +169,13 @@ const Send = () => {
                           throw new Error("Gas API not available");
                         }
 
+                        if (new Decimal(val).isZero()) {
+                          throw new Error("Enter a valid amount");
+                        }
+
                         if (new Decimal(_balance).isZero()) {
                           throw new Error("Not enough ETH available to pay for gas.");
-                        }
+                        }                        
 
                         return estimateGas(val, parent.address, parent.asset).then(async (gasUnits) => {
                           
@@ -180,13 +183,14 @@ const Send = () => {
                           // calculate the transfer price
                           const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
 
+
                           if (parent.asset.type === "ether") {
-                            const total = new Decimal(calculateGasPrice.finalGasFee).plus(val);
+                            const total = new Decimal(calculateGasPrice!.finalGasFee).plus(val);
                             if (new Decimal(total).greaterThan(_balance)) {
                               return createError({path, message: "Not enough ETH available to pay for gas."});
                             }
                           } else {
-                            if (new Decimal(calculateGasPrice.finalGasFee).greaterThan(_balance)) {
+                            if (new Decimal(calculateGasPrice!.finalGasFee).greaterThan(_balance)) {
                               return createError({path, message: "Not enough ETH available to pay for gas."});
                             }
                           }
@@ -241,11 +245,12 @@ const Send = () => {
                     const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
 
                     if (asset.type === "ether") {
-                      
-                      const txResponse = await transfer(address, amount, calculateGasPrice);
+
+                      const txResponse = await transfer(address, amount, calculateGasPrice!);
+
                       setStep(4);
-                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
                       setFieldValue("receipt", txResponse);
+                      setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
 
                       await handlePullBalance();
                     } else {
@@ -254,12 +259,13 @@ const Send = () => {
                         asset.address,
                         address,
                         amount,
-                        calculateGasPrice
+                        calculateGasPrice!,
+                        asset.address === '0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C' ? 18 : asset.decimals
                       );
 
-                      
+
                       setStep(4);
-                      setFieldValue("gasPaid", calculateGasPrice.finalGasFee);
+                      setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
                       setFieldValue("receipt", txResponse);
                     }
 
@@ -302,7 +308,7 @@ const Send = () => {
                             name="address"
                             type="text"
                             onBlur={handleBlur}
-                            placeholder="Recipient public (0x) Address or ENS name"
+                            placeholder="Recipient public (0x) Address"
                             className={`w-full bg-gray-100 bg-opacity-30 p-4 dark:bg-[#1B1B1B] mb-2 ${
                               dirty && errors.address
                                 ? "outline !outline-red-500"
@@ -338,8 +344,8 @@ const Send = () => {
                               {...getFieldProps("address")}
                               type="text"
                               readOnly
-                              placeholder="Recipient public (0x) Address or ENS name"
-                              className={`w-full bg-transparent !outline-none dark:bg-[#1B1B1B]`}
+                              placeholder="Recipient public (0x) Address"
+                              className={`w-full pr-3 max-w truncate bg-transparent !outline-none dark:bg-[#1B1B1B]`}
                             />
                             <Cross
                               dismiss={() => handleClearButton(setFieldValue)}
@@ -373,7 +379,7 @@ const Send = () => {
                                       "amount",
                                       values.asset.type !== "erc20"
                                         ? values.asset.balance
-                                        : formatEther(values.asset.balance)
+                                        : formatUnits(values.asset.balance, values.asset.decimals)
                                     )
                                   }
                                   type="button"
@@ -390,36 +396,38 @@ const Send = () => {
                     )}
                     {step === 3 && (
                       <div className="pb-4">
-                        <div className="mt-4 mb-4 bg-teal-500 px-4 flex items-center justify-between">
+                        <div className="mt-4 mb-4 bg-teal-500 dark:bg-[#1B1B1B] bg-opacity-10 px-2 flex justify-between items-center gap-1">
                           <AddressBookContact address={_address!} />
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="34"
-                            height="34"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="#7f5345"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path
-                              d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
-                              strokeWidth="0"
-                              fill="currentColor"
-                            />
-                            <path
-                              d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                              strokeWidth="0"
-                              fill="currentColor"
-                            />
-                            <path
-                              d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                              strokeWidth="0"
-                              fill="currentColor"
-                            />
-                          </svg>
+                          <span className="text-white">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                              <path
+                                d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
+                                strokeWidth="0"
+                                fill="currentColor"
+                              />
+                              <path
+                                d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                                strokeWidth="0"
+                                fill="currentColor"
+                              />
+                              <path
+                                d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                                strokeWidth="0"
+                                fill="currentColor"
+                              />
+                            </svg>
+                          </span>
                           <AddressBookContact
                             contact
                             address={values.address}
@@ -489,7 +497,8 @@ const Send = () => {
                             <button
                               type="button"
                               onClick={() => setStep(3)}                              
-                              className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50"
+                              disabled={errors && (!!errors.amount || !!errors.address)}
+                              className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50 dark:disabled:bg-opacity-50"
                             >
                               Next
                             </button>
@@ -512,7 +521,7 @@ const Send = () => {
                             <button
                               type="submit"
                               disabled={loading || !isValid || !gasInfo}                              
-                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-10 ${!gasInfo && "disabled:bg-opacity-50"}`}
+                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-10 ${!gasInfo && "disabled:bg-opacity-50"} dark:disabled:bg-opacity-50`}
                             >
                               {loading && "Sending..."}
                               {!loading && !gasInfo && "Fetching Gas"}

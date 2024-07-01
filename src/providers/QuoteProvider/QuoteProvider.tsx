@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect } from "react";
 import { formatUnits } from "ethers";
-import { useFormikContext } from "formik";
+import { FormikContextType, FormikValues, useFormikContext } from "formik";
 import getOutputQuote from "../../components/SwapWidget/libs/getOutputQuote";
 import { appContext } from "../../AppContext";
 import { FeeAmount, Pool, Route } from "@uniswap/v3-sdk";
@@ -25,14 +25,13 @@ export const QuoteContextProvider = ({ children }: Props) => {
 
   const { _poolContract } = useWalletContext();
 
-  const formik: any = useFormikContext();
-  const { tokenA, tokenB } = formik.values;
-
-  const { values, setFieldValue, isSubmitting }: any = useFormikContext();
+  const formik: FormikContextType<FormikValues> = useFormikContext();
+  const { values, setFieldValue, isSubmitting } = formik;
+  const { tokenA, tokenB, inputAmount } = values;
 
   const widgetNotReady =
-    createDecimal(values.inputAmount) === null ||
-    new Decimal(values.inputAmount).lte(0) ||
+    createDecimal(inputAmount) === null ||
+    new Decimal(inputAmount).lte(0) ||
     !_poolContract;
 
   useEffect(() => {

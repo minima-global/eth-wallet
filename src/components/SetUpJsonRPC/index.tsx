@@ -216,6 +216,7 @@ const SetUpJsonRPC = () => {
                   }}
                   target="_blank"
                   href="https://app.infura.io/register"
+                  className="pl-2"
                 >
                   Infura
                 </a>{" "}

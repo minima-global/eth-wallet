@@ -57,15 +57,15 @@ export const GasContextProvider = ({ children }: Props) => {
         const gasUnits = await estimateGasForTransfer(
           getTokenByName(asset.name)!.address,
           address,
-          amount
+          amount,
+          asset.decimals
         );
-  
-  
+
         return gasUnits.toString();
       }
       
     } catch (error) {
-      console.error("Error estimating gas:", error);
+      // console.error("Error estimating gas:", error);
       return null;
     } finally {
       setLoading(false);

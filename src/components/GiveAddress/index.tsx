@@ -14,7 +14,7 @@ const GiveAddress = () => {
     transform: !_wallet
       ? "translateY(0%) scale(1)"
       : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config.stiff,
   });
 
 

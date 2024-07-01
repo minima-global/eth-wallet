@@ -1,4 +1,4 @@
-import { useFormikContext } from "formik";
+import { FormikContextType, FormikValues, useFormikContext } from "formik";
 import AnimatedDialog from "../../UI/AnimatedDialog";
 import Cross from "../../UI/Cross";
 import FieldWrapper from "../FieldWrapper";
@@ -6,9 +6,9 @@ import getTokenWrapper from "../libs/getTokenWrapper";
 import GasFeeEstimator from "../GasFeeEstimator";
 
 const ReviewSwap = ({ step, setStep, submitForm, error }) => {
-  const formik: any = useFormikContext();
+  const formik: FormikContextType<FormikValues> = useFormikContext();
 
-  const { resetForm, errors } = formik;
+  const { handleBlur, resetForm, errors } = formik;
   const { inputAmount, outputAmount, input, output, receipt } = formik.values;
 
   return (
@@ -31,6 +31,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
 
           <div className="px-8 my-4">
             <FieldWrapper
+              handleBlur={handleBlur}
               extraClass="mb-1"
               disabled={false}
               reviewMode={true}
@@ -40,6 +41,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
               token={<>{input ? getTokenWrapper(input) : null}</>}
             />
             <FieldWrapper
+              handleBlur={handleBlur}
               disabled={false}
               reviewMode={true}
               type="output"
@@ -56,7 +58,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
               <button
                 onClick={() => submitForm()}
                 type="button"
-                className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-black text-lg w-full font-bold my-2"
+                className="w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
               >
                 Confirm Swap
               </button>
@@ -65,10 +67,10 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
             {errors.gas && (
               <button
                 disabled={true}
-                type="submit"
-                className="py-4 disabled:bg-gray-100 disabled:text-white dark:disabled:bg-gray-800 dark:disabled:text-gray-600 hover:bg-opacity-90 bg-teal-300 text-white dark:text-black text-lg w-full font-bold my-2"
+                type="button"
+                className="bg-opacity-50 w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
               >
-                {errors.gas ? errors.gas : "Error gas"}
+                {errors.gas ? errors.gas as string : "Error gas"}
               </button>
             )}
           </div>
@@ -76,7 +78,8 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
       )}
       {step === 3 && (
         <>
-          <div className="px-4 grid grid-cols-[1fr_auto]">
+          <div className="px-4 grid grid-cols-[1fr_auto_1fr]">
+            <div />
             <div className="flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -103,88 +106,66 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
           </div>
 
           <div className="px-8 my-4">
-            <p className="text-center animate-pulse font-bold text-violet-300">
-              Swapping...
-            </p>
-            <div className="grid md:grid-cols-[1fr_auto_1fr] items-center my-4">
-              <div className="flex items-center justify-center">
-                {getTokenWrapper(input, inputAmount)}
+          <h1 className="text-lg font-bold tracking-wider text-center animate-pulse">Swapping...</h1>
+            <div className="grid grid-cols-[1fr_auto_1fr]">
+              <div />
+
+              <div className="flex items-center my-4">
+                <div className="flex items-center justify-center">
+                  {getTokenWrapper(input, inputAmount)}
+                </div>
+                <div className="px-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path
+                      d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
+                      strokeWidth="0"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                      strokeWidth="0"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
+                      strokeWidth="0"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+                <div className="flex items-center justify-center">
+                  {getTokenWrapper(output, outputAmount)}
+                </div>
               </div>
-              <div className="flex justify-center mr-2 my-2 md:my-0 transform rotate-90 md:rotate-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path
-                    d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
-                    strokeWidth="0"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    strokeWidth="0"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                    strokeWidth="0"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
-              <div className="flex items-center justify-center">
-                {getTokenWrapper(output, outputAmount)}
-              </div>
+              <div />
             </div>
           </div>
         </>
       )}
       {step === 4 && (
-        <>
-          <div className="px-4 grid grid-cols-[1fr_auto]">
-            <div className="flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className=""
-                width="60"
-                height="60"
-                viewBox="0 0 24 24"
-                strokeWidth="2.5"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M20.925 13.163a8.998 8.998 0 0 0 -8.925 -10.163a9 9 0 0 0 0 18" />
-                <path d="M9 10h.01" />
-                <path d="M15 10h.01" />
-                <path d="M9.5 15c.658 .64 1.56 1 2.5 1s1.842 -.36 2.5 -1" />
-                <path d="M15 19l2 2l4 -4" />
-              </svg>
-            </div>
-            <div />
-          </div>
-
+        <>          
           <div className="px-8 my-4">
-            <p className="text-center font-bold">Swap Successful</p>
+            <h1 className="text-lg font-bold tracking-wider text-center">Swap Successful</h1>
 
             <div className="grid grid-cols-[1fr_auto_1fr]">
               <div />
 
-              <div className="grid md:grid-cols-[1fr_auto_1fr] items-center my-4">
+              <div className="flex items-center my-4">
                 <div className="flex items-center justify-center">
                   {getTokenWrapper(input, inputAmount)}
                 </div>
-                <div className="flex justify-center mr-2 my-2 md:my-0 transform rotate-90 md:rotate-0">
+                <div className="px-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -228,7 +209,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                 <a
                   href={`https://etherscan.io/tx/${receipt.hash}`}
                   target="_blank"
-                  className="text-purple-400 cursor-pointer"
+                  className="cursor-pointer text-violet-300 hover:!text-violet-400"
                 >
                   View on etherscan
                 </a>
@@ -240,7 +221,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                 setStep(1);              
               }}
               type="button"
-              className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-blue-500  dark:text-black dark:bg-blue-100 text-white text-lg w-full font-bold my-2"
+              className="p-4 w-full font-bold tracking-wider text-white bg-[#1B1B1B] dark:bg-opacity-10 hover:bg-opacity-90 dark:hover:bg-opacity-50"
             >
               Done
             </button>
@@ -249,42 +230,16 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
       )}
       {step === 5 && (
         <>
-          <div className="px-4 grid grid-cols-[1fr_auto]">
-            <div className="flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className=""
-                width="60"
-                height="60"
-                viewBox="0 0 24 24"
-                strokeWidth="2.5"
-                stroke="#ef4444"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-                <path d="M9 13h.01" />
-                <path d="M15 13h.01" />
-                <path d="M11 17h2" />
-              </svg>
-            </div>
-            <div />
-          </div>
-
           <div className="px-8 my-4">
             <div>
-              <p className="text-center font-bold text-red-500">
-                Something went wrong
-              </p>
+            <h1 className="text-lg font-bold tracking-wider text-center">Something went wrong</h1>
             </div>
 
             <div className="grid grid-cols-[1fr_auto_1fr]">
               <div />
 
-              <div className="flex gap-2 items-center my-4">
-                <p>{error ? error : "Let's go back and try again."}</p>
+              <div className="flex gap-2 items-center my-4 break-all">
+                <p>{error && error.includes("insufficient") ? "Insufficient funds!" : error ? error : "Let's go back and try again..."}</p>
               </div>
               <div />
             </div>
@@ -308,7 +263,7 @@ const ReviewSwap = ({ step, setStep, submitForm, error }) => {
                 setStep(1);
               }}
               type="button"
-              className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-red-500 text-white text-lg w-full font-bold my-2"
+              className="p-4 w-full font-bold tracking-wider text-white bg-[#1B1B1B] dark:bg-opacity-10 hover:bg-opacity-90 dark:hover:bg-opacity-50"
             >
               Okay
             </button>

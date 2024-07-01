@@ -17,11 +17,11 @@ const useGasInfo = (step: number, level: "low" | "medium" | "high") => {
 
   useEffect(() => {
     const fetchGasInfo = async () => {
-        try {
-          const currentNetwork = await _provider.getNetwork();
-          if (currentNetwork.name.includes("unknown")) {
-            const gasFee = await _provider.getFeeData();
-            /**
+      try {
+        const currentNetwork = await _provider.getNetwork();
+        if (currentNetwork.name.includes("unknown")) {
+          const gasFee = await _provider.getFeeData();
+          /**
                 * {
                     "suggestedMaxPriorityFeePerGas": "0.88529281",
                     "suggestedMaxFeePerGas": "4.30958664",
@@ -29,22 +29,22 @@ const useGasInfo = (step: number, level: "low" | "medium" | "high") => {
                     "maxWaitTimeEstimate": 45000
                 }
              */
-    
-            return { ...gasFee };
-          } else {
-            const preAuth = btoa(userKeys.apiKey + ":" + userKeys.apiKeySecret);
-            const gasApi = `https://gas.api.infura.io/networks/${currentNetwork.chainId}/suggestedGasFees`;
-    
-            const gasData = (await new Promise((resolve) => {
-              (window as any).MDS.net.GETAUTH(gasApi, preAuth, (resp) => {
-                const data = JSON.parse(resp.response);
-                // Full Data
-                setGasCard(data);
-                // Current Level set
-                resolve(data[level]);
-              });
-            })) as GasInfo;
-            /**
+
+          return { ...gasFee };
+        } else {
+          const preAuth = btoa(userKeys.apiKey + ":" + userKeys.apiKeySecret);
+          const gasApi = `https://gas.api.infura.io/networks/${currentNetwork.chainId}/suggestedGasFees`;
+
+          const gasData = (await new Promise((resolve) => {
+            (window as any).MDS.net.GETAUTH(gasApi, preAuth, (resp) => {
+              const data = JSON.parse(resp.response);
+              // Full Data
+              setGasCard(data);
+              // Current Level set
+              resolve(data[level]);
+            });
+          })) as GasInfo;
+          /**
                  * {
                     "suggestedMaxPriorityFeePerGas": "1.5",
                     "suggestedMaxFeePerGas": "1.500977238",
@@ -52,12 +52,12 @@ const useGasInfo = (step: number, level: "low" | "medium" | "high") => {
                     "maxWaitTimeEstimate": 45000
                 }
             */
-            return { ...gasData };
-          }
-        } catch (error) {
-          console.error(error);
-          return null;
+          return { ...gasData };
         }
+      } catch (error) {
+        console.error(error);
+        return null;
+      }
     };
 
     // Reset gas info
@@ -85,8 +85,6 @@ const useGasInfo = (step: number, level: "low" | "medium" | "high") => {
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, [_provider, step, level, userKeys]);
-
-
 
   return { gasInfo, setGas, gasCardData: gasCard, level };
 };

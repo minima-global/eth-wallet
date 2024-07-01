@@ -31,7 +31,7 @@ const AddressBookAdd = ({ address }) => {
     transform: _promptAddressBookAdd
       ? "translateY(0%) scale(1)"
       : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config.stiff,
   });
 
   if (!_promptAddressBookAdd) {

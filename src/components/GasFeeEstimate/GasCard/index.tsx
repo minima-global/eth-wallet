@@ -22,7 +22,7 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
         card.suggestedMaxFeePerGas,
         card.suggestedMaxPriorityFeePerGas
       );
-      setMaxFee(gasFee.finalGasFee);
+      setMaxFee(gasFee!.finalGasFee);
     })();
   }, [card, gasUnit]);
 
