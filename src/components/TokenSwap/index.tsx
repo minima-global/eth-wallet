@@ -17,7 +17,7 @@ const TokenSwap = () => {
       _currentNavigation === "uniswap"
         ? "translateY(0%) scale(1)"
         : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config.stiff,
   });
 
   if (_currentNavigation !== "uniswap") {
@@ -28,9 +28,9 @@ const TokenSwap = () => {
     _currentNavigation === "uniswap" &&
     createPortal(
       <Dialog>
-        <div className="h-[100vh_-_64px] grid items-start mt-[80px]">
+        <div className="h-[100vh_-_64px] grid items-start mt-[80px] mx-3 sm:mx-0">
           <animated.div style={springProps}>
-            <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
+            <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black p-4 px-0 rounded">
               <div className="grid grid-cols-[1fr_auto] pr-4">
                 <div>
                   <h3 className="px-4 text-base font-bold text-center">

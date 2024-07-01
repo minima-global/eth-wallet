@@ -24,7 +24,7 @@ const getTokenWrapper = (asset: Asset, amount?: string) => {
           <img
             alt="token-icon"
             src={tokenIconSrc}
-            className="w-[36px] h-[36px] rounded-full"
+            className="w-[36px] h-[36px] min-h-[36px] min-w-[36px] rounded-full"
           />
         )}
         {amount &&  <p className="font-mono">{new Decimal(amount).toFixed(2)}</p>}

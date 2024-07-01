@@ -18,6 +18,7 @@ import ReviewSwap from "./ReviewSwap";
 import getTokenWrapper from "./libs/getTokenWrapper";
 import useAllowanceChecker from "../../hooks/useAllowanceChecker";
 import Allowance from "./Allowance";
+import RefreshIcon from "../UI/Icons/RefreshIcon";
 
 const SwapWidget = () => {
   // Check if we have enough allowance to then show the appropriate button..
@@ -76,13 +77,15 @@ const SwapWidget = () => {
           .test("check for insufficient funds", function (val) {
             const { path, parent, createError } = this;
 
-            if (!val || val.length === 0) return false;
+            if (!val || val.length === 0) return createError({path, message: "Enter an amount"});
             
             try {
               const relevantToken = tokens.find((tkn) => tkn.address === parent.input.address);
 
               if (!relevantToken) {
-                return;
+                handlePullBalance();
+
+                return createError({path, message: "Refreshing your experience..."});
               }
                           
               if (new Decimal(relevantToken!.balance).isZero()) {
@@ -220,108 +223,123 @@ const SwapWidget = () => {
       }}
     >
       {({ values, isValid, errors, handleSubmit, handleBlur, submitForm }) => (
-        <QuoteContextProvider>
-          <Allowance />
+        
+        <>
+          
+        {values.input && values.output ? 
+        
+          <QuoteContextProvider>
+            <Allowance />
 
-          <form onSubmit={handleSubmit} className="relative">
-            <>
-              <FieldWrapper
-              handleBlur={handleBlur}
-                disabled={!!values.locked}
-                type="input"
-                balance={
-                  tokens &&
-                  tokens.find((tkn) => tkn.address === values.input!.address)
-                    ? tokens.find(
-                        (tkn) => tkn.address === values.input!.address
-                      )!.balance
-                    : ""
-                }
-                decimals={values.input?.decimals}
-                token={
-                  <>{values.input ? getTokenWrapper(values.input) : null}</>
-                }
-              />
-              <SwapDirection />
-              <FieldWrapper
-                handleBlur={handleBlur}
-                disabled={!!values.locked}
-                extraClass="mt-1"
-                type="output"
-                balance={
-                  tokens &&
-                  tokens.find((tkn) => tkn.address === values.output!.address)
-                    ? tokens.find(
-                        (tkn) => tkn.address === values.output!.address
-                      )!.balance
-                    : ""
-                }
-                decimals={values.output?.decimals}
-                token={
-                  <>{values.output ? getTokenWrapper(values.output) : null}</>
-                }
-              />
-              {/* If widget is locked then we need to approve.. */}
-              {values.locked !== null && values.locked && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    promptAllowanceApprovalModal();
-                  }}
-                  className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-purple-300 text-black text-lg w-full font-bold my-2"
-                >
-                  Approve {values.input!.symbol}
-                </button>
-              )}
-              {/* If widget is not locked and there is an error then show error.. */}
-              {!values.locked && errors.inputAmount && (
-                <button
-                  disabled={!isValid}
-                  type="submit"
-                  className="bg-opacity-50 w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
-                >
-                  {errors.inputAmount ? errors.inputAmount : "Error"}
-                </button>
-              )}
+            <form onSubmit={handleSubmit} className="relative">
+              <>
+                <FieldWrapper
+                  handleBlur={handleBlur}
+                  disabled={!!values.locked}
+                  type="input"
+                  balance={
+                    tokens &&
+                    tokens.find((tkn) => tkn.address === values.input!.address)
+                      ? tokens.find(
+                          (tkn) => tkn.address === values.input!.address
+                        )!.balance
+                      : ""
+                  }
+                  decimals={values.input?.decimals}
+                  token={
+                    <>{values.input ? getTokenWrapper(values.input) : null}</>
+                  }
+                />
 
-              {/* If widget is not locked && there are no errors.. then show review button! */}
-              {!errors.inputAmount &&
-                createDecimal(values.inputAmount) !== null &&
-                !new Decimal(values.inputAmount).isZero() &&
-                !_allowanceLock && (
-                  <>
-                    <button
-                      disabled={!!errors.inputAmount}
-                      onClick={() => setStep(2)}
-                      type="button"
-                      className="w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
-                    >
-                      {errors.inputAmount ? errors.inputAmount : "Review Swap"}
-                    </button>
+                <SwapDirection />
+                <FieldWrapper
+                  handleBlur={handleBlur}
+                  disabled={!!values.locked}
+                  extraClass="mt-1"
+                  type="output"
+                  balance={
+                    tokens &&
+                    tokens.find((tkn) => tkn.address === values.output!.address)
+                      ? tokens.find(
+                          (tkn) => tkn.address === values.output!.address
+                        )!.balance
+                      : ""
+                  }
+                  decimals={values.output?.decimals}
+                  token={
+                    <>{values.output ? getTokenWrapper(values.output) : null}</>
+                  }
+                />
 
-                    <GasFeeEstimator />
-                  </>
+                {values.locked !== null && values.locked && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      promptAllowanceApprovalModal();
+                    }}
+                    className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-purple-300 text-black text-lg w-full font-bold my-2"
+                  >
+                    Approve {values.input!.symbol}
+                  </button>
                 )}
 
-              {_allowanceLock && (
-                <button
-                  onClick={() => setPromptAllowance(true)}
-                  type="button"
-                  className="mt-4 w-full bg-violet-500 p-3 font-bold text-white dark:text-black trailing-wider"
-                >
-                  Approve allowances
-                </button>
-              )}
-            </>
+                {!values.locked && errors.inputAmount && (
+                  <button
+                    disabled={!isValid}
+                    type="submit"
+                    className="bg-opacity-50 w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
+                  >
+                    {errors.inputAmount ? errors.inputAmount : "Error"}
+                  </button>
+                )}
 
-            <ReviewSwap
-              error={error}
-              step={step}
-              setStep={setStep}
-              submitForm={submitForm}
-            />
-          </form>
-        </QuoteContextProvider>
+                {!errors.inputAmount &&
+                  createDecimal(values.inputAmount) !== null &&
+                  !new Decimal(values.inputAmount).isZero() &&
+                  !_allowanceLock && (
+                    <>
+                      <button
+                        disabled={!!errors.inputAmount}
+                        onClick={() => setStep(2)}
+                        type="button"
+                        className="w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
+                      >
+                        {errors.inputAmount ? errors.inputAmount : "Review Swap"}
+                      </button>
+
+                      <GasFeeEstimator />
+                    </>
+                  )}
+
+                {_allowanceLock && (
+                  <button
+                    onClick={() => setPromptAllowance(true)}
+                    type="button"
+                    className="mt-4 w-full bg-violet-500 p-3 font-bold text-white dark:text-black trailing-wider"
+                  >
+                    Approve allowances
+                  </button>
+                )}
+              </>
+
+              <ReviewSwap
+                error={error}
+                step={step}
+                setStep={setStep}
+                submitForm={submitForm}
+              />
+            </form>
+          </QuoteContextProvider>
+
+          : <div className="">
+            <p className="text-xs text-center">Please wait while we program your experience...</p>
+            <p className="text-xs text-center opacity-80">Infura API may be busy, please wait and re-fresh this page...</p>
+            <RefreshIcon fill="currentColor" extraClass="animate-spin mx-auto my-4" /></div>
+      }  
+          
+        </>
+        
+        
       )}
     </Formik>
   );

@@ -28,3 +28,14 @@
 - Tweak UX on Swap Widget
 - Better handler for estimateGas error with SwapWidget
 - Bug Fixes
+
+##### [1.6.4] - 30 Jun 24
+
+- Tweak design for Mobile on SwapWidget & SendForm
+- Tweak Footer
+
+##### [1.6.5] - 1 July 24
+
+- Dark/Light mode toggle
+- Design tweaks
+- Bug fixes

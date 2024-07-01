@@ -55,7 +55,7 @@ const FieldWrapper = ({
           }}
           onFocus={() => setF(true)}
           placeholder="0"
-          className="text-2xl truncate bg-gray-100 dark:bg-gray-800 font-mono focus:border-none focus:outline-none placeholder:text-teal-300 font-bold"
+          className="w-full max-w text-2xl truncate bg-gray-100 dark:bg-gray-800 font-mono focus:border-none focus:outline-none placeholder:text-teal-300 font-bold"
         />
       </div>
       <div

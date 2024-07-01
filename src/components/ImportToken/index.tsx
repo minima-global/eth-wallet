@@ -31,7 +31,7 @@ const ImportToken = () => {
     transform: _promptTokenImport
       ? "translateY(0%) scale(1)"
       : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config.stiff,
   });
 
   return (
@@ -214,10 +214,10 @@ const ImportToken = () => {
                             </label>
 
                             {errors.address && (
-                              <div className="my-2 bg-red-500 text-white rounded px-4 py-1">
+                              <div className="my-2 bg-red-600 text-white font-bold rounded p-2">
                                 {errors.address}
                               </div>
-                            )}
+                            )}                            
 
                             {(values.decimals > 0 ||
                               values.symbol.length > 0) && (
@@ -259,7 +259,7 @@ const ImportToken = () => {
                               disabled={!dirty || !isValid}
                               type="button"
                               onClick={() => setStep(1)}
-                              className="w-full mt-4 bg-teal-500 bg-opacity-90 text-black disabled:bg-opacity-10 disabled:text-slate-500 font-bold"
+                              className="bg-violet-500 text-white py-4 mt-3 font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50 dark:disabled:bg-opacity-50 w-full"
                             >
                               Next
                             </button>

@@ -90,7 +90,7 @@ const UserAccount = () => {
       >
         {_address && (
           <div className="h-full flex items-center justify-center">
-            <Bear extraClass=" !h-full w-[34px]" input={_address} />
+            <Bear extraClass=" !h-full w-[34px] min-w-[34px]" input={_address} />
           </div>
         )}
         <h3 className="truncate font-bold max-w-[128px] dark:text-black">
@@ -342,7 +342,7 @@ const BiggerQrCode = ({ data, active, dismiss }: QrProps) => {
     transform: active
       ? "translateY(0%) scale(1)"
       : "translateY(-50%) scale(0.8)",
-    config: config.wobbly,
+    config: config.stiff,
   });
   if (!active) {
     return null;
