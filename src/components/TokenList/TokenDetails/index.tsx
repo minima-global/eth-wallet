@@ -93,6 +93,7 @@ const TokenDetails = () => {
 
 export default TokenDetails;
 
+
 interface BearProps {
   input: string;
   extraClass?: string;

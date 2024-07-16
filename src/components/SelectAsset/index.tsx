@@ -7,6 +7,8 @@ import { Asset } from "../../types/Asset";
 import { formatUnits } from "ethers";
 import defaultAssetsStored, { _defaults } from "../../constants";
 import { appContext } from "../../AppContext";
+import { rings } from "@dicebear/collection";
+import { createAvatar } from "@dicebear/core";
 
 const SelectAsset = () => {
   const formik: any = useFormikContext();
@@ -92,7 +94,9 @@ const SelectAsset = () => {
             />
           ) : (
             <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
-              {formik.values.asset.name.substring(0, 1).toUpperCase()}
+              
+              <Bear extraClass="w-[48px]" input={formik.values.asset.address} />
+
             </div>
           ))}
         <div className="flex flex-col text-left">
@@ -100,8 +104,15 @@ const SelectAsset = () => {
             {formik.values.asset.name}
           </h6>
           <p className="m-0 p-0 text-sm font-mono text-black dark:text-white">
-          {formik.values.asset.type === 'erc20' && formatUnits(formik.values.asset.balance, formik.values.asset.name === 'Tether' && _network === 'sepolia' ? 18 : formik.values.asset.decimals)}
-          {formik.values.asset.type !== 'erc20' && formik.values.asset.balance}
+            {formik.values.asset.type === "erc20" &&
+              formatUnits(
+                formik.values.asset.balance,
+                formik.values.asset.name === "Tether" && _network === "sepolia"
+                  ? 18
+                  : formik.values.asset.decimals
+              )}
+            {formik.values.asset.type !== "erc20" &&
+              formik.values.asset.balance}
           </p>
         </div>
         <svg
@@ -127,7 +138,7 @@ const SelectAsset = () => {
       {active && (
         <animated.div
           style={springProps}
-          className="origin-top-right z-[50] w-full absolute right-0 mt-2 rounded-md shadow-lg bg-black dark:bg-white"
+          className="origin-top-right z-[50] w-full absolute right-0 mt-2 rounded-md shadow-lg bg-black dark:bg-white max-h-[250px] overflow-y-auto"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="options-menu"
@@ -153,7 +164,7 @@ const SelectAsset = () => {
                   />
                 ) : (
                   <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
-                    {token.name.substring(0, 1).toUpperCase()}
+                    <Bear extraClass="w-[48px]" input={token.address} />
                   </div>
                 )}
                 <div>
@@ -161,13 +172,25 @@ const SelectAsset = () => {
                     {token.name}
                   </h6>
                   <p className="m-0 p-0 text-sm opacity-80 font-mono text-white dark:text-black">
-                    {formatUnits(token.balance, token.name === 'Tether' && _network === 'sepolia' ? 18 : token.decimals)}
+                    {formatUnits(
+                      token.balance,
+                      token.name === "Tether" && _network === "sepolia"
+                        ? 18
+                        : token.decimals
+                    )}
                   </p>
                 </div>
               </li>
             ))}
             <li
-              onClick={() => handleSelect({ ...Ethereum, balance: _balance, name: _defaultNetworks[_currentNetwork].name, symbol: _defaultNetworks[_currentNetwork].symbol })}
+              onClick={() =>
+                handleSelect({
+                  ...Ethereum,
+                  balance: _balance,
+                  name: _defaultNetworks[_currentNetwork].name,
+                  symbol: _defaultNetworks[_currentNetwork].symbol,
+                })
+              }
               className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white  hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
             >
               <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
@@ -211,3 +234,23 @@ const SelectAsset = () => {
 };
 
 export default SelectAsset;
+
+interface BearProps {
+  input: string;
+  extraClass?: string;
+}
+
+const Bear = ({ input, extraClass }: BearProps) => {
+  const avatar = createAvatar(rings, {
+    seed: input,
+    // ... other options
+  });
+
+  const svg = avatar.toDataUriSync();
+
+  return (
+    <div className="rounded-full bg-teal-300">
+      <img className={`${extraClass && extraClass}`} src={svg} />
+    </div>
+  );
+};
