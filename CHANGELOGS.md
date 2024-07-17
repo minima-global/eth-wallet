@@ -39,3 +39,9 @@
 - Dark/Light mode toggle
 - Design tweaks
 - Bug fixes
+
+##### [1.7.0] - 16 July 24
+
+- Fix Import Token bug
+- Update erc-20 token images
+- Other design tweaks

@@ -9,6 +9,8 @@ import { Contract, getAddress } from "ethers";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import { rings } from "@dicebear/collection";
+import { createAvatar } from "@dicebear/core";
 
 const ImportToken = () => {
   const [step, setStep] = useState(0);
@@ -97,6 +99,7 @@ const ImportToken = () => {
                       symbol: "",
                       name: "",
                     }}
+                    validateOnChange={true}
                     onSubmit={async ({ address, decimals, symbol, name, }, {resetForm}) => {
                       try {
                         const newToken = {
@@ -129,12 +132,14 @@ const ImportToken = () => {
                           try {
                             getAddress(val);
                             const c = new Contract(val, ERC20ABI, _provider);
-                            await c.deployed();
+
+
+                            await c.name();
                             return true;  
                           } catch (error) {
                             return createError({
                               path,
-                              message: "Invalid ERC20 Contract",
+                              message: "Invalid ERC-20 Contract",
                             });
                           }
                         })                    
@@ -149,17 +154,17 @@ const ImportToken = () => {
                                 message: "You have already imported this token.",
                               });
                             }
-
                             return true;
                           } catch (error) {
+
                             return createError({
                               path,
                               message: "Invalid ERC20 Contract",
                             });
                           }
                         }),                        
-                      symbol: yup.string().required(),
-                      decimals: yup.number().required(),
+                      symbol: yup.string(),
+                      decimals: yup.number(),
                     })}
                   >
                     {({
@@ -254,7 +259,6 @@ const ImportToken = () => {
                                 </label>
                               </>
                             )}
-
                             <button
                               disabled={!dirty || !isValid}
                               type="button"
@@ -333,7 +337,7 @@ const DisplayToken = ({ name, address, symbol }: IProps) => {
     <>
       <div className="rounded bg-white bg-opacity-10 px-4 py-1 gap-2 flex">
         <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
-          {name.substring(0, 1).toUpperCase()}
+          <Bear extraClass="w-[48px]" input={address} />
         </div>
 
         <div className="flex flex-col">
@@ -344,5 +348,24 @@ const DisplayToken = ({ name, address, symbol }: IProps) => {
         </div>
       </div>
     </>
+  );
+};
+
+interface BearProps {
+  input: string;
+  extraClass?: string;
+}
+const Bear = ({ input, extraClass }: BearProps) => {
+  const avatar = createAvatar(rings, {
+    seed: input,
+    // ... other options
+  });
+
+  const svg = avatar.toDataUriSync();
+
+  return (
+    <div className="rounded-full bg-teal-300">
+      <img className={`${extraClass && extraClass}`} src={svg} />
+    </div>
   );
 };
