@@ -165,8 +165,8 @@ const SwapWidget = () => {
       initialValues={{
         inputAmount: "",
         outputAmount: "",
-        input: tokens.find((t) => t.address === _defaults["wMinima"].mainnet),
-        output: tokens.find((t) => t.address === _defaults["Tether"].mainnet),
+        input: tokens.find((t) => t.address.toUpperCase() === _defaults["wMinima"].mainnet.toUpperCase()),
+        output: tokens.find((t) => t.address.toUpperCase() === _defaults["Tether"].mainnet.toUpperCase()),
         tx: null,
         receipt: null,
         gas: null,
