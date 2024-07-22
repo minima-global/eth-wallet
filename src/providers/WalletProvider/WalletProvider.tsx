@@ -28,12 +28,15 @@ type Context = {
   setStep: Dispatch<SetStateAction<number>>;
   transfer: (address: string, amount: string, gas: GasFeeCalculated) => Promise<TransactionResponse>;
   getEthereumBalance: () => void;
+  callBalanceForApp: () => void;
 };
 
 const WalletContext = createContext<Context | null>(null);
 
 export const WalletContextProvider = ({ children }: Props) => {
-  const { _provider, _generatedKey } = useContext(appContext);
+  const { _provider, _generatedKey,
+    _triggerBalanceUpdate,
+    setTriggerBalanceUpdate, } = useContext(appContext);
   const [_network, setNetwork] = useState("");
   const [_chainId, setChainId] = useState<string | null>(null);
   const [_wallet, setWallet] = useState<Signer | null>(null);
@@ -63,6 +66,23 @@ export const WalletContextProvider = ({ children }: Props) => {
     setChainId(network.chainId);
 
   }, [_provider, _generatedKey]);
+
+  const callBalanceForApp = async () => {
+    // If there is already an on-going balance call.. stop
+
+    if (_triggerBalanceUpdate) return;
+
+    // Trigger balance update for ERC-20s...
+    setTriggerBalanceUpdate(true);
+
+    // Getting Ethereum Balance
+    getEthereumBalance();
+
+    // Trigger Ethereum Balance update...
+    setTimeout(() => {
+      setTriggerBalanceUpdate(false);
+    }, 2000);
+  };
 
   /**
    * 
@@ -112,7 +132,8 @@ export const WalletContextProvider = ({ children }: Props) => {
         step,
         setStep,
       
-        getEthereumBalance
+        getEthereumBalance,
+        callBalanceForApp
       }}
     >
       {children}

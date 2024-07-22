@@ -28,34 +28,19 @@ const SwapWidget = () => {
 
   const {
     promptAllowanceApprovalModal,
-    setTriggerBalanceUpdate,
     swapDirection,
     _allowanceLock,
     setPromptAllowance,
   } = useContext(appContext);
-  const { _wallet, _balance, getEthereumBalance } = useWalletContext();
+  const { _wallet, _balance, callBalanceForApp } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState<false | string>(false);
 
-  const handlePullBalance = async () => {
-    // wait 3s before pulling balance for erc20 & eth
-    await new Promise((resolve) => {
-      setTimeout(resolve, 3000);
-    });
-
-    setTriggerBalanceUpdate(true);
-    getEthereumBalance();
-
-    setTimeout(() => {
-      setTriggerBalanceUpdate(false);
-    }, 2000);
-  };
-
   useEffect(() => {
     (async () => {
-      await handlePullBalance();
+      await callBalanceForApp();
     })();
   }, [_network, step, swapDirection]);
 
@@ -77,24 +62,30 @@ const SwapWidget = () => {
           .test("check for insufficient funds", function (val) {
             const { path, parent, createError } = this;
 
-            if (!val || val.length === 0) return createError({path, message: "Enter an amount"});
-            
+            if (!val || val.length === 0)
+              return createError({ path, message: "Enter an amount" });
+
             try {
-              const relevantToken = tokens.find((tkn) => tkn.address === parent.input.address);
+              const relevantToken = tokens.find(
+                (tkn) => tkn.address === parent.input.address
+              );
 
               if (!relevantToken) {
-                handlePullBalance();
+                callBalanceForApp();
 
-                return createError({path, message: "Refreshing your experience..."});
+                return createError({
+                  path,
+                  message: "Refreshing your experience...",
+                });
               }
-                          
+
               if (new Decimal(relevantToken!.balance).isZero()) {
                 return createError({
                   path,
                   message: "Insufficient funds",
                 });
               }
-              
+
               const decimalVal = createDecimal(val);
               if (decimalVal === null) {
                 throw new Error("Invalid amount`");
@@ -111,12 +102,11 @@ const SwapWidget = () => {
               }
 
               if (new Decimal(val).decimalPlaces() > parent.input.decimals) {
-                throw new Error("Too many decimals")
+                throw new Error("Too many decimals");
               }
 
               return true;
             } catch (error) {
-              
               if (error instanceof Error) {
                 return createError({
                   path,
@@ -135,7 +125,6 @@ const SwapWidget = () => {
 
             if (!val || val.length === 0) return false;
 
-            
             try {
               // We check whether the user has enough funds to pay for gas.
               if (new Decimal(_balance).isZero()) {
@@ -210,7 +199,7 @@ const SwapWidget = () => {
           setFieldValue("receipt", receipt);
 
           setStep(4);
-          await handlePullBalance();
+          await callBalanceForApp();
         } catch (error) {
           console.error(error);
           setStep(5);
@@ -223,123 +212,133 @@ const SwapWidget = () => {
       }}
     >
       {({ values, isValid, errors, handleSubmit, handleBlur, submitForm }) => (
-        
         <>
-          
-        {values.input && values.output ? 
-        
-          <QuoteContextProvider>
-            <Allowance />
+          {values.input && values.output ? (
+            <QuoteContextProvider>
+              <Allowance />
 
-            <form onSubmit={handleSubmit} className="relative">
-              <>
-                <FieldWrapper
-                  handleBlur={handleBlur}
-                  disabled={!!values.locked}
-                  type="input"
-                  balance={
-                    tokens &&
-                    tokens.find((tkn) => tkn.address === values.input!.address)
-                      ? tokens.find(
-                          (tkn) => tkn.address === values.input!.address
-                        )!.balance
-                      : ""
-                  }
-                  decimals={values.input?.decimals}
-                  token={
-                    <>{values.input ? getTokenWrapper(values.input) : null}</>
-                  }
-                />
+              <form onSubmit={handleSubmit} className="relative">
+                <>
+                  <FieldWrapper
+                    handleBlur={handleBlur}
+                    disabled={!!values.locked}
+                    type="input"
+                    balance={
+                      tokens &&
+                      tokens.find(
+                        (tkn) => tkn.address === values.input!.address
+                      )
+                        ? tokens.find(
+                            (tkn) => tkn.address === values.input!.address
+                          )!.balance
+                        : ""
+                    }
+                    decimals={values.input?.decimals}
+                    token={
+                      <>{values.input ? getTokenWrapper(values.input) : null}</>
+                    }
+                  />
 
-                <SwapDirection />
-                <FieldWrapper
-                  handleBlur={handleBlur}
-                  disabled={!!values.locked}
-                  extraClass="mt-1"
-                  type="output"
-                  balance={
-                    tokens &&
-                    tokens.find((tkn) => tkn.address === values.output!.address)
-                      ? tokens.find(
-                          (tkn) => tkn.address === values.output!.address
-                        )!.balance
-                      : ""
-                  }
-                  decimals={values.output?.decimals}
-                  token={
-                    <>{values.output ? getTokenWrapper(values.output) : null}</>
-                  }
-                />
+                  <SwapDirection />
+                  <FieldWrapper
+                    handleBlur={handleBlur}
+                    disabled={!!values.locked}
+                    extraClass="mt-1"
+                    type="output"
+                    balance={
+                      tokens &&
+                      tokens.find(
+                        (tkn) => tkn.address === values.output!.address
+                      )
+                        ? tokens.find(
+                            (tkn) => tkn.address === values.output!.address
+                          )!.balance
+                        : ""
+                    }
+                    decimals={values.output?.decimals}
+                    token={
+                      <>
+                        {values.output ? getTokenWrapper(values.output) : null}
+                      </>
+                    }
+                  />
 
-                {values.locked !== null && values.locked && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      promptAllowanceApprovalModal();
-                    }}
-                    className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-purple-300 text-black text-lg w-full font-bold my-2"
-                  >
-                    Approve {values.input!.symbol}
-                  </button>
-                )}
-
-                {!values.locked && errors.inputAmount && (
-                  <button
-                    disabled={!isValid}
-                    type="submit"
-                    className="bg-opacity-50 w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
-                  >
-                    {errors.inputAmount ? errors.inputAmount : "Error"}
-                  </button>
-                )}
-
-                {!errors.inputAmount &&
-                  createDecimal(values.inputAmount) !== null &&
-                  !new Decimal(values.inputAmount).isZero() &&
-                  !_allowanceLock && (
-                    <>
-                      <button
-                        disabled={!!errors.inputAmount}
-                        onClick={() => setStep(2)}
-                        type="button"
-                        className="w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
-                      >
-                        {errors.inputAmount ? errors.inputAmount : "Review Swap"}
-                      </button>
-
-                      <GasFeeEstimator />
-                    </>
+                  {values.locked !== null && values.locked && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        promptAllowanceApprovalModal();
+                      }}
+                      className="py-4 disabled:bg-gray-800 disabled:text-gray-600 hover:bg-opacity-90 bg-purple-300 text-black text-lg w-full font-bold my-2"
+                    >
+                      Approve {values.input!.symbol}
+                    </button>
                   )}
 
-                {_allowanceLock && (
-                  <button
-                    onClick={() => setPromptAllowance(true)}
-                    type="button"
-                    className="mt-4 w-full bg-violet-500 p-3 font-bold text-white dark:text-black trailing-wider"
-                  >
-                    Approve allowances
-                  </button>
-                )}
-              </>
+                  {!values.locked && errors.inputAmount && (
+                    <button
+                      disabled={!isValid}
+                      type="submit"
+                      className="bg-opacity-50 w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
+                    >
+                      {errors.inputAmount ? errors.inputAmount : "Error"}
+                    </button>
+                  )}
 
-              <ReviewSwap
-                error={error}
-                step={step}
-                setStep={setStep}
-                submitForm={submitForm}
+                  {!errors.inputAmount &&
+                    createDecimal(values.inputAmount) !== null &&
+                    !new Decimal(values.inputAmount).isZero() &&
+                    !_allowanceLock && (
+                      <>
+                        <button
+                          disabled={!!errors.inputAmount}
+                          onClick={() => setStep(2)}
+                          type="button"
+                          className="w-full tracking-wider font-bold p-4 bg-teal-500 dark:bg-teal-300 text-white mt-4 dark:text-black"
+                        >
+                          {errors.inputAmount
+                            ? errors.inputAmount
+                            : "Review Swap"}
+                        </button>
+
+                        <GasFeeEstimator />
+                      </>
+                    )}
+
+                  {_allowanceLock && (
+                    <button
+                      onClick={() => setPromptAllowance(true)}
+                      type="button"
+                      className="mt-4 w-full bg-violet-500 p-3 font-bold text-white dark:text-black trailing-wider"
+                    >
+                      Approve allowances
+                    </button>
+                  )}
+                </>
+
+                <ReviewSwap
+                  error={error}
+                  step={step}
+                  setStep={setStep}
+                  submitForm={submitForm}
+                />
+              </form>
+            </QuoteContextProvider>
+          ) : (
+            <div className="">
+              <p className="text-xs text-center">
+                Please wait while we program your experience...
+              </p>
+              <p className="text-xs text-center opacity-80">
+                Infura API may be busy, please wait and re-fresh this page...
+              </p>
+              <RefreshIcon
+                fill="currentColor"
+                extraClass="animate-spin mx-auto my-4"
               />
-            </form>
-          </QuoteContextProvider>
-
-          : <div className="">
-            <p className="text-xs text-center">Please wait while we program your experience...</p>
-            <p className="text-xs text-center opacity-80">Infura API may be busy, please wait and re-fresh this page...</p>
-            <RefreshIcon fill="currentColor" extraClass="animate-spin mx-auto my-4" /></div>
-      }  
-          
+            </div>
+          )}
         </>
-        
-        
       )}
     </Formik>
   );

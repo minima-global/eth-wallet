@@ -32,10 +32,9 @@ const Send = () => {
     handleNavigation,
     _defaultNetworks,
     _currentNetwork,
-    setTriggerBalanceUpdate
   } = useContext(appContext);
   const { tokens, transferToken } = useTokenStoreContext();
-  const { _address, _balance, _network, getEthereumBalance, transfer } = useWalletContext();
+  const { _address, _balance, _network, callBalanceForApp, transfer } = useWalletContext();
   const { level } = useGasContext();
 
   const [step, setStep] = useState(1);
@@ -54,18 +53,6 @@ const Send = () => {
     config: config.stiff,
   });
 
-  const handlePullBalance = async () => {
-    // wait 3s before pulling balance for erc20 & eth
-    await new Promise(resolve => {
-      setTimeout(resolve, 3000);
-    });
-
-    setTriggerBalanceUpdate(true);
-    getEthereumBalance();
-    setTimeout(() => {
-      setTriggerBalanceUpdate(false);
-    }, 15000);
-  }
 
   const handleClearButton = (setFieldValueRef: any) => {
     setFieldValueRef("address", "");
@@ -252,7 +239,7 @@ const Send = () => {
                       setFieldValue("receipt", txResponse);
                       setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
 
-                      await handlePullBalance();
+                      await callBalanceForApp();
                     } else {
                       // handle ERC 20 transfers
                       const txResponse = await transferToken(
@@ -269,7 +256,7 @@ const Send = () => {
                       setFieldValue("receipt", txResponse);
                     }
 
-                    await handlePullBalance();
+                    await callBalanceForApp();
                   } catch (error: any) {
                     console.error(error);
                     // display error message
@@ -556,7 +543,7 @@ const Send = () => {
                                 setGas(null);
                                 resetForm();
                                 handleNavigation("balance");
-                                await handlePullBalance();
+                                await callBalanceForApp();
                               }}
                               className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
