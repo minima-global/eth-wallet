@@ -89,7 +89,7 @@ export const _defaults = {
     sepolia: "0x2Bf712b19a52772bF54A545E4f108e9683fA4E2F",
   },
   Tether: {
-    mainnet: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    mainnet: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     sepolia: "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C",
   }
 };

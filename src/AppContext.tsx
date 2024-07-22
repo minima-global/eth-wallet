@@ -204,7 +204,7 @@ const AppProvider = ({ children }: IProps) => {
               } else {
                 // initialize it..
                 const initializeFirstNetwork = {
-                  default: "sepolia",
+                  default: "mainnet",
                 };
                 await sql(
                   `INSERT INTO cache (name, data) VALUES ('CURRENT_NETWORK', '${JSON.stringify(
@@ -368,12 +368,39 @@ const AppProvider = ({ children }: IProps) => {
   const updateDefaultAssets = async (asset: Asset, chainId: string) => {
     const updatedData = [..._defaultAssets.assets, asset];
     const nested = { assets: updatedData };
-    setDefaultAssets(nested);
+    setDefaultAssets(nested);  
 
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
     );
 
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${chainId}', '${JSON.stringify(
+          nested
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          nested
+        )}' WHERE name = 'DEFAULTASSETS_${chainId}'`
+      );
+    }
+  };
+
+  const deleteAsset = async (assetToRemove: string, chainId: string) => {
+    // Step 1: Update the local state
+    const updatedAssets = _defaultAssets.assets.filter(asset => asset.address !== assetToRemove);
+    const nested = { assets: updatedAssets };
+    console.log('new assets', nested);
+    setDefaultAssets(nested);
+  
+    // Step 2: Update the database
+    const rows = await sql(
+      `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
+    );
+    console.log('found old', rows);
     if (!rows) {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${chainId}', '${JSON.stringify(
@@ -542,6 +569,7 @@ const AppProvider = ({ children }: IProps) => {
         _defaultAssets,
         setDefaultAssets,
         updateDefaultAssets,
+        deleteAsset,
 
         _currentNetwork,
         _defaultNetworks,

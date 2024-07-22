@@ -45,3 +45,11 @@
 - Fix Import Token bug
 - Update erc-20 token images
 - Other design tweaks
+
+##### [1.8.1] - 22 July 24
+
+- Delete a token asset
+- Sync auto balance pulls
+- Tweak address book design
+- Other minor design tweaks
+- Default to mainnet

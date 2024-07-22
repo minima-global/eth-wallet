@@ -66,7 +66,7 @@ const TokenList = () => {
   if (_currentNavigation !== "balance") {
     return null;
   }
-
+  console.log('tokens', tokens);
   return (
     <div className="mx-4 md:mx-0">
       <div className="grid grid-cols-[1fr_auto]">
