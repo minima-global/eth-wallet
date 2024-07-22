@@ -16,19 +16,11 @@ const TokenList = () => {
     loaded,
     _currentNavigation,
     promptTokenDetails,
-    setTriggerBalanceUpdate,
-    _triggerBalanceUpdate,
+    _triggerBalanceUpdate
   } = useContext(appContext);
-  const { _balance, _network, getEthereumBalance } = useWalletContext();
+  const { _balance, _network, callBalanceForApp } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
-  const callBalance = () => {
-    setTriggerBalanceUpdate(true);
-    setTimeout(() => {
-      getEthereumBalance();
-      setTriggerBalanceUpdate(false);
-    }, 2000);
-  };
   const handlePullBalance = () => {
     (window as any).MDS.keypair.get("_lastethbalancecheck", (resp) => {
       if (resp.status) {
@@ -47,10 +39,10 @@ const TokenList = () => {
             () => {}
           );
 
-          callBalance();
+          callBalanceForApp();
         }
       } else {
-        callBalance();
+        callBalanceForApp();
         // Set first time..
         const now = new Date().getTime();
         (window as any).MDS.keypair.set(
@@ -79,7 +71,7 @@ const TokenList = () => {
     <div className="mx-4 md:mx-0">
       <div className="grid grid-cols-[1fr_auto]">
         <h3 className="font-bold mb-2">Your Tokens</h3>
-        <span onClick={callBalance} className={`dark:text-sky-500`}>
+        <span onClick={callBalanceForApp} className={`dark:text-sky-500 ${_triggerBalanceUpdate && "!text-neutral-300"}`}>
           <RefreshIcon
             extraClass={`${_triggerBalanceUpdate && "animate-spin"}`}
             fill="currentColor"

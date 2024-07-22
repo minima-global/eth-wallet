@@ -28,34 +28,19 @@ const SwapWidget = () => {
 
   const {
     promptAllowanceApprovalModal,
-    setTriggerBalanceUpdate,
     swapDirection,
     _allowanceLock,
     setPromptAllowance,
   } = useContext(appContext);
-  const { _wallet, _balance, getEthereumBalance } = useWalletContext();
+  const { _wallet, _balance, callBalanceForApp } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState<false | string>(false);
 
-  const handlePullBalance = async () => {
-    // wait 3s before pulling balance for erc20 & eth
-    await new Promise((resolve) => {
-      setTimeout(resolve, 3000);
-    });
-
-    setTriggerBalanceUpdate(true);
-    getEthereumBalance();
-
-    setTimeout(() => {
-      setTriggerBalanceUpdate(false);
-    }, 2000);
-  };
-
   useEffect(() => {
     (async () => {
-      await handlePullBalance();
+      await callBalanceForApp();
     })();
   }, [_network, step, swapDirection]);
 
@@ -83,7 +68,7 @@ const SwapWidget = () => {
               const relevantToken = tokens.find((tkn) => tkn.address === parent.input.address);
 
               if (!relevantToken) {
-                handlePullBalance();
+                callBalanceForApp();
 
                 return createError({path, message: "Refreshing your experience..."});
               }
@@ -210,7 +195,7 @@ const SwapWidget = () => {
           setFieldValue("receipt", receipt);
 
           setStep(4);
-          await handlePullBalance();
+          await callBalanceForApp();
         } catch (error) {
           console.error(error);
           setStep(5);
