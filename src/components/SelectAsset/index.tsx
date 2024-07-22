@@ -80,13 +80,13 @@ const SelectAsset = () => {
           </svg>
         )}
         {formik.values.asset.type === "erc20" &&
-          (_defaults["wMinima"][_network] === formik.values.asset.address ? (
+          (_defaults["wMinima"][_network].toUpperCase() === formik.values.asset.address.toUpperCase() ? (
             <img
               alt="token-icon"
               src="./assets/token.svg"
               className="w-[36px] h-[36px] rounded-full"
             />
-          ) : _defaults["Tether"][_network] === formik.values.asset.address ? (
+          ) : _defaults["Tether"][_network].toUpperCase() === formik.values.asset.address.toUpperCase() ? (
             <img
               alt="token-icon"
               src="./assets/tether.svg"

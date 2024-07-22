@@ -66,7 +66,6 @@ const TokenList = () => {
   if (_currentNavigation !== "balance") {
     return null;
   }
-  console.log('tokens', tokens);
   return (
     <div className="mx-4 md:mx-0">
       <div className="grid grid-cols-[1fr_auto]">
@@ -92,13 +91,13 @@ const TokenList = () => {
               key={token.address}
               className="shadow-sm dark:shadow-none grid grid-cols-[auto_1fr] bg-white items-center rounded-md bg-opacity-30 dark:bg-[#1B1B1B] p-2 hover:bg-opacity-80 dark:hover:bg-opacity-30 mb-2"
             >
-              {_defaults["wMinima"][_network] === token.address ? (
+              {_defaults["wMinima"][_network].toUpperCase() === token.address.toUpperCase() ? (
                 <img
                   alt="token-icon"
                   src="./assets/wtoken.svg"
                   className="w-[36px] h-[36px] rounded-full"
                 />
-              ) : _defaults["Tether"][_network] === token.address ? (
+              ) : _defaults["Tether"][_network].toUpperCase() === token.address.toUpperCase() ? (
                 <img
                   alt="token-icon"
                   src="./assets/tether.svg"
@@ -114,12 +113,12 @@ const TokenList = () => {
                 <div>
                   <h3 className="font-bold">{token.name}</h3>
                   <p className="font-mono text-sm">
-                    {token.address ===
-                      "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C" &&
+                    {token.address.toUpperCase() ===
+                      "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C".toUpperCase() &&
                       token.balance &&
                       formatUnits(token.balance, 18).toString()}
-                    {token.address !==
-                      "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C" &&
+                    {token.address.toUpperCase() !==
+                      "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C".toUpperCase() &&
                       token.balance &&
                       formatUnits(token.balance, token.decimals).toString()}
                   </p>

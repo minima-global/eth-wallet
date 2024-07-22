@@ -64,7 +64,7 @@ const Send = () => {
   }
 
   const initialTokenShouldBeMinimaIfExists = tokens.find(
-    (token) => token.address === _defaults["wMinima"][_network]
+    (token) => token.address.toUpperCase() === _defaults["wMinima"][_network].toUpperCase()
   );
   return (
     _currentNavigation === "send" &&
@@ -114,7 +114,7 @@ const Send = () => {
                         }
         
                         const assetBalance = parent.asset.balance;
-                        const decimals = parent.asset.name === "Tether" && _network !== 'sepolia' ? 6 : 18;
+                        const decimals = (parent.asset.name === "Tether" || parent.asset.name === "Tether USD") && _network !== 'sepolia' ? 6 : 18;
                         if (
                           parent.asset.type === "erc20" &&
                           (new Decimal(parseUnits(val, decimals).toString()).gt(
@@ -122,7 +122,7 @@ const Send = () => {
                           ) ||
                             new Decimal(assetBalance).isZero())
                         ) {
-                          throw new Error("Insufficient funds 2");
+                          throw new Error("Insufficient funds");
                         }
 
                         return true;
