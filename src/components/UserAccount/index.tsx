@@ -10,10 +10,8 @@ import { appContext } from "../../AppContext";
 import QRCode from "react-qr-code";
 import WalletAddress from "../WalletAddress";
 import PrivateKey from "../PrivateKey";
-
-import { createAvatar } from "@dicebear/core";
-import { notionists } from "@dicebear/collection";
 import Cross from "../UI/Cross";
+import Profile from "../UI/Profile";
 
 const UserAccount = () => {
   const [promptUserAccountDetails, setPromptUserAccountDetails] =
@@ -90,7 +88,7 @@ const UserAccount = () => {
       >
         {_address && (
           <div className="h-full flex items-center justify-center">
-            <Bear extraClass=" !h-full w-[34px] min-w-[34px]" input={_address} />
+            <Profile extraClass=" !h-full w-[34px] min-w-[34px]" input={_address} />
           </div>
         )}
         <h3 className="truncate font-bold max-w-[128px] dark:text-black">
@@ -188,7 +186,7 @@ const UserAccount = () => {
                     className="flex items-center justify-center"
                   >
                     {_address && (
-                      <Bear
+                      <Profile
                         extraClass=" w-[160px] md:w-[220px]"
                         input={_address}
                       />
@@ -310,26 +308,6 @@ const UserAccount = () => {
 };
 
 export default UserAccount;
-
-interface BearProps {
-  input: string;
-  extraClass?: string;
-}
-
-const Bear = ({ input, extraClass }: BearProps) => {
-  const avatar = createAvatar(notionists, {
-    seed: input,
-    // ... other options
-  });
-
-  const svg = avatar.toDataUriSync();
-
-  return (
-    <div className="rounded-full bg-teal-300">
-      <img className={`${extraClass && extraClass}`} src={svg} />
-    </div>
-  );
-};
 
 interface QrProps {
   active: boolean;

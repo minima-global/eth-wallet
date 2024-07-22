@@ -82,6 +82,7 @@ const AppProvider = ({ children }: IProps) => {
   // display db locked, ask for unlock
   const [_promptDatabaseLocked, setPromptDatabaseLocked] = useState(false);
 
+
   useEffect(() => {
     (async () => {
       // if MDS inited then we can run our init SQL/re-sql on network change
