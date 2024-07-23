@@ -226,10 +226,10 @@ const SwapWidget = () => {
                     balance={
                       tokens &&
                       tokens.find(
-                        (tkn) => tkn.address === values.input!.address
+                        (tkn) => tkn.address.toUpperCase() === values.input!.address.toUpperCase()
                       )
                         ? tokens.find(
-                            (tkn) => tkn.address === values.input!.address
+                            (tkn) => tkn.address.toUpperCase() === values.input!.address.toUpperCase()
                           )!.balance
                         : ""
                     }
@@ -248,10 +248,10 @@ const SwapWidget = () => {
                     balance={
                       tokens &&
                       tokens.find(
-                        (tkn) => tkn.address === values.output!.address
+                        (tkn) => tkn.address.toUpperCase() === values.output!.address.toUpperCase()
                       )
                         ? tokens.find(
-                            (tkn) => tkn.address === values.output!.address
+                            (tkn) => tkn.address.toUpperCase() === values.output!.address.toUpperCase()
                           )!.balance
                         : ""
                     }

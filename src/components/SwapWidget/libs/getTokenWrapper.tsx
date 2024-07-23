@@ -7,8 +7,8 @@ const getTokenWrapper = (asset: Asset, amount?: string) => {
   
     const { address } = asset;
   
-    const isWMINIMA = address === _defaults["wMinima"].mainnet;
-    const isUSDT = address === _defaults["Tether"].mainnet;
+    const isWMINIMA = address.toUpperCase() === _defaults["wMinima"].mainnet.toUpperCase();
+    const isUSDT = address.toUpperCase() === _defaults["Tether"].mainnet.toUpperCase();
   
     let tokenIconSrc = "";
   

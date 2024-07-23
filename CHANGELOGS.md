@@ -53,3 +53,7 @@
 - Tweak address book design
 - Other minor design tweaks
 - Default to mainnet
+
+##### [1.8.7] - 23 July 24
+
+- Design tweaks

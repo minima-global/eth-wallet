@@ -212,14 +212,14 @@ const ImportToken = () => {
                                 placeholder="Token contract address"
                                 className={`mb-2 ${
                                   errors.address
-                                    ? "!border-4 !border-red-500"
+                                    ? "!border-4 !border-violet-500"
                                     : ""
                                 }`}
                               />
                             </label>
 
                             {errors.address && (
-                              <div className="my-2 bg-red-600 text-white font-bold rounded p-2">
+                              <div className="my-2 dark:text-neutral-300 text-sm font-bold">
                                 {errors.address}
                               </div>
                             )}                            
@@ -236,7 +236,7 @@ const ImportToken = () => {
                                     placeholder="Token symbol"
                                     className={`mb-2 ${
                                       errors.symbol
-                                        ? "!border-4 !border-red-500"
+                                        ? "!border-4 !border-violet-500"
                                         : ""
                                     }`}
                                   />
@@ -252,7 +252,7 @@ const ImportToken = () => {
                                     placeholder="Token decimals"
                                     className={`mb-2 ${
                                       errors.decimals
-                                        ? "!border-4 !border-red-500"
+                                        ? "!border-4 !border-violet-500"
                                         : ""
                                     }`}
                                   />

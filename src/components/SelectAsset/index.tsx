@@ -34,6 +34,7 @@ const SelectAsset = () => {
 
   const handleSelect = (asset: Asset) => {
     formik.setFieldValue("asset", asset);
+    formik.setFieldValue("amount", 0);
     setActive(false);
   };
 
@@ -59,7 +60,7 @@ const SelectAsset = () => {
         aria-haspopup="true"
         aria-expanded="true"
         onClick={handleButtonClick}
-        className="mt-4 border-2 border-[#464C4F] items-center grid gap-2 grid-cols-[auto_1fr_auto] break-all p-4 rounded-full hover:!border-teal-500 hover:border-4 w-full hover:outline-none"
+        className="focus:outline-none mt-4 border-4 border-[#1B1B1B] items-center grid gap-2 grid-cols-[auto_1fr_auto] break-all p-4 rounded-full w-full"
       >
         {formik.values.asset.type === "ether" && (
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
@@ -138,7 +139,7 @@ const SelectAsset = () => {
       {active && (
         <animated.div
           style={springProps}
-          className="origin-top-right z-[50] w-full absolute right-0 mt-2 rounded-md shadow-lg bg-black dark:bg-white max-h-[250px] overflow-y-auto"
+          className="origin-top-right z-[50] w-full absolute right-0 mt-2 rounded-md shadow-lg bg-black dark:bg-[#1B1B1B] max-h-[250px] overflow-y-auto"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="options-menu"
@@ -148,15 +149,15 @@ const SelectAsset = () => {
               <li
                 key={token.address}
                 onClick={() => handleSelect(token)}
-                className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
+                className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white hover:bg-opacity-10 dark:hover:bg-opacity-10"
               >
-                {_defaults["wMinima"][_network] === token.address ? (
+                {_defaults["wMinima"][_network].toUpperCase() === token.address.toUpperCase() ? (
                   <img
                     alt="token-icon"
                     src="./assets/token.svg"
                     className="w-[36px] h-[36px] rounded-full"
                   />
-                ) : _defaults["Tether"][_network] === token.address ? (
+                ) : _defaults["Tether"][_network].toUpperCase() === token.address.toUpperCase() ? (
                   <img
                     alt="token-icon"
                     src="./assets/tether.svg"
@@ -168,10 +169,10 @@ const SelectAsset = () => {
                   </div>
                 )}
                 <div>
-                  <h6 className="m-0 p-0 font-bold text-white dark:text-black">
+                  <h6 className="m-0 p-0 font-bold text-white ">
                     {token.name}
                   </h6>
-                  <p className="m-0 p-0 text-sm opacity-80 font-mono text-white dark:text-black">
+                  <p className="m-0 p-0 text-sm opacity-80 font-mono text-white">
                     {formatUnits(
                       token.balance,
                       token.name === "Tether" && _network === "sepolia"
@@ -191,7 +192,7 @@ const SelectAsset = () => {
                   symbol: _defaultNetworks[_currentNetwork].symbol,
                 })
               }
-              className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white  hover:bg-opacity-10 dark:hover:bg-opacity-10 dark:hover:bg-teal-300"
+              className="p-4 grid grid-cols-[auto_1fr] gap-2 items-center break-all hover:bg-white  hover:bg-opacity-10 dark:hover:bg-opacity-10"
             >
               <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
@@ -218,10 +219,10 @@ const SelectAsset = () => {
                 </svg>
               </div>
               <div>
-                <h6 className="m-0 p-0 font-bold text-white dark:text-black">
+                <h6 className="m-0 p-0 font-bold text-white ">
                   {_defaultNetworks[_currentNetwork].name}
                 </h6>
-                <p className="m-0 p-0 text-sm opacity-80 font-mono text-white dark:text-black">
+                <p className="m-0 p-0 text-sm opacity-80 font-mono text-white">
                   {_balance}
                 </p>
               </div>
