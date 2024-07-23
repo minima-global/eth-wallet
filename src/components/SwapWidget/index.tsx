@@ -165,8 +165,8 @@ const SwapWidget = () => {
       initialValues={{
         inputAmount: "",
         outputAmount: "",
-        input: tokens.find((t) => t.address === _defaults["wMinima"].mainnet),
-        output: tokens.find((t) => t.address === _defaults["Tether"].mainnet),
+        input: tokens.find((t) => t.address.toUpperCase() === _defaults["wMinima"].mainnet.toUpperCase()),
+        output: tokens.find((t) => t.address.toUpperCase() === _defaults["Tether"].mainnet.toUpperCase()),
         tx: null,
         receipt: null,
         gas: null,
@@ -226,10 +226,10 @@ const SwapWidget = () => {
                     balance={
                       tokens &&
                       tokens.find(
-                        (tkn) => tkn.address === values.input!.address
+                        (tkn) => tkn.address.toUpperCase() === values.input!.address.toUpperCase()
                       )
                         ? tokens.find(
-                            (tkn) => tkn.address === values.input!.address
+                            (tkn) => tkn.address.toUpperCase() === values.input!.address.toUpperCase()
                           )!.balance
                         : ""
                     }
@@ -248,10 +248,10 @@ const SwapWidget = () => {
                     balance={
                       tokens &&
                       tokens.find(
-                        (tkn) => tkn.address === values.output!.address
+                        (tkn) => tkn.address.toUpperCase() === values.output!.address.toUpperCase()
                       )
                         ? tokens.find(
-                            (tkn) => tkn.address === values.output!.address
+                            (tkn) => tkn.address.toUpperCase() === values.output!.address.toUpperCase()
                           )!.balance
                         : ""
                     }

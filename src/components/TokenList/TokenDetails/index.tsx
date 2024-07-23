@@ -84,13 +84,13 @@ const TokenDetails = () => {
                   </div>
                   <div className="break-all">
                     <div className="flex flex-col items-center justify-center">
-                      {_defaults["wMinima"][_network] === address ? (
+                      {_defaults["wMinima"][_network].toUpperCase() === address.toUpperCase() ? (
                         <img
                           alt="token-icon"
                           src="./assets/wtoken.svg"
                           className="w-[48px] h-[48px] rounded-full"
                         />
-                      ) : _defaults["Tether"][_network] === address ? (
+                      ) : _defaults["Tether"][_network].toUpperCase() === address.toUpperCase() ? (
                         <img
                           alt="token-icon"
                           src="./assets/tether.svg"

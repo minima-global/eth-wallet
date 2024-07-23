@@ -34,14 +34,15 @@ const Send = () => {
     _currentNetwork,
   } = useContext(appContext);
   const { tokens, transferToken } = useTokenStoreContext();
-  const { _address, _balance, _network, callBalanceForApp, transfer } = useWalletContext();
+  const { _address, _balance, _network, callBalanceForApp, transfer } =
+    useWalletContext();
   const { level } = useGasContext();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | false>(false);
-  
-  const {gasInfo, setGas} = useGasInfo(step, level);
+
+  const { gasInfo, setGas } = useGasInfo(step, level);
   const { estimateGas } = useGasContext();
 
   const springProps = useSpring({
@@ -53,7 +54,6 @@ const Send = () => {
     config: config.stiff,
   });
 
-
   const handleClearButton = (setFieldValueRef: any) => {
     setFieldValueRef("address", "");
     setStep(1);
@@ -64,7 +64,9 @@ const Send = () => {
   }
 
   const initialTokenShouldBeMinimaIfExists = tokens.find(
-    (token) => token.address === _defaults["wMinima"][_network]
+    (token) =>
+      token.address.toUpperCase() ===
+      _defaults["wMinima"][_network].toUpperCase()
   );
   return (
     _currentNavigation === "send" &&
@@ -108,13 +110,19 @@ const Send = () => {
                       try {
                         if (
                           parent.asset.type === "ether" &&
-                          (new Decimal(val).gt(_balance) || new Decimal(val).isZero())
+                          (new Decimal(val).gt(_balance) ||
+                            new Decimal(val).isZero())
                         ) {
                           throw new Error("Insufficient funds");
                         }
-        
+
                         const assetBalance = parent.asset.balance;
-                        const decimals = parent.asset.name === "Tether" && _network !== 'sepolia' ? 6 : 18;
+                        const decimals =
+                          (parent.asset.name === "Tether" ||
+                            parent.asset.name === "Tether USD") &&
+                          _network !== "sepolia"
+                            ? 6
+                            : 18;
                         if (
                           parent.asset.type === "erc20" &&
                           (new Decimal(parseUnits(val, decimals).toString()).gt(
@@ -122,7 +130,7 @@ const Send = () => {
                           ) ||
                             new Decimal(assetBalance).isZero())
                         ) {
-                          throw new Error("Insufficient funds 2");
+                          throw new Error("Insufficient funds");
                         }
 
                         return true;
@@ -143,11 +151,11 @@ const Send = () => {
                     .test("has no gas", function (val) {
                       const { path, parent, createError } = this;
 
-                      try {       
+                      try {
                         if (step < 2) {
                           return true;
-                        }        
-                        
+                        }
+
                         if (isNaN(parseInt(val))) {
                           throw new Error("Enter a valid number");
                         }
@@ -161,41 +169,66 @@ const Send = () => {
                         }
 
                         if (new Decimal(_balance).isZero()) {
-                          throw new Error("Not enough ETH available to pay for gas.");
-                        }                        
+                          throw new Error(
+                            "Not enough ETH available to pay for gas."
+                          );
+                        }
 
-                        return estimateGas(val, parent.address, parent.asset).then(async (gasUnits) => {
-                          
-                          const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } = gasInfo;
+                        return estimateGas(
+                          val,
+                          parent.address,
+                          parent.asset
+                        ).then(async (gasUnits) => {
+                          const {
+                            suggestedMaxFeePerGas,
+                            suggestedMaxPriorityFeePerGas,
+                          } = gasInfo;
                           // calculate the transfer price
-                          const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
-
+                          const calculateGasPrice = await utils.calculateGasFee(
+                            gasUnits!,
+                            suggestedMaxFeePerGas,
+                            suggestedMaxPriorityFeePerGas
+                          );
 
                           if (parent.asset.type === "ether") {
-                            const total = new Decimal(calculateGasPrice!.finalGasFee).plus(val);
+                            const total = new Decimal(
+                              calculateGasPrice!.finalGasFee
+                            ).plus(val);
                             if (new Decimal(total).greaterThan(_balance)) {
-                              return createError({path, message: "Not enough ETH available to pay for gas."});
+                              return createError({
+                                path,
+                                message:
+                                  "Not enough ETH available to pay for gas.",
+                              });
                             }
                           } else {
-                            if (new Decimal(calculateGasPrice!.finalGasFee).greaterThan(_balance)) {
-                              return createError({path, message: "Not enough ETH available to pay for gas."});
+                            if (
+                              new Decimal(
+                                calculateGasPrice!.finalGasFee
+                              ).greaterThan(_balance)
+                            ) {
+                              return createError({
+                                path,
+                                message:
+                                  "Not enough ETH available to pay for gas.",
+                              });
                             }
                           }
 
                           return true;
-                        });                      
+                        });
                       } catch (error) {
                         if (error instanceof Error) {
                           return createError({
                             path,
-                            message:
-                              error.message,
+                            message: error.message,
                           });
                         }
 
                         createError({
-                          path, message: "Something went wrong"
-                        })
+                          path,
+                          message: "Something went wrong",
+                        });
                       }
                     }),
                 })}
@@ -227,13 +260,23 @@ const Send = () => {
                       throw new Error("Gas API not available");
                     }
 
-                    const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } = gasInfo;
+                    const {
+                      suggestedMaxFeePerGas,
+                      suggestedMaxPriorityFeePerGas,
+                    } = gasInfo;
                     const gasUnits = await estimateGas(amount, address, asset);
-                    const calculateGasPrice = await utils.calculateGasFee(gasUnits!, suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas);
+                    const calculateGasPrice = await utils.calculateGasFee(
+                      gasUnits!,
+                      suggestedMaxFeePerGas,
+                      suggestedMaxPriorityFeePerGas
+                    );
 
                     if (asset.type === "ether") {
-
-                      const txResponse = await transfer(address, amount, calculateGasPrice!);
+                      const txResponse = await transfer(
+                        address,
+                        amount,
+                        calculateGasPrice!
+                      );
 
                       setStep(4);
                       setFieldValue("receipt", txResponse);
@@ -247,9 +290,11 @@ const Send = () => {
                         address,
                         amount,
                         calculateGasPrice!,
-                        asset.address === '0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C' ? 18 : asset.decimals
+                        asset.address ===
+                          "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C"
+                          ? 18
+                          : asset.decimals
                       );
-
 
                       setStep(4);
                       setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
@@ -296,9 +341,9 @@ const Send = () => {
                             type="text"
                             onBlur={handleBlur}
                             placeholder="Recipient public (0x) Address"
-                            className={`w-full bg-gray-100 bg-opacity-30 p-4 dark:bg-[#1B1B1B] mb-2 ${
+                            className={`w-full bg-gray-100 bg-opacity-30 focus:outline-none p-4 dark:bg-[#1B1B1B] mb-2 ${
                               dirty && errors.address
-                                ? "outline !outline-red-500"
+                                ? "outline !outline-violet-500"
                                 : "focus:outline-violet-300"
                             }`}
                             onChange={(e) => {
@@ -313,7 +358,7 @@ const Send = () => {
                           />
 
                           {dirty && errors.address && (
-                            <div className="my-2 bg-red-600 text-white font-bold rounded p-2">
+                            <div className="my-2 dark:text-neutral-300 text-sm font-bold rounded">
                               {errors.address}
                             </div>
                           )}
@@ -324,7 +369,7 @@ const Send = () => {
                     {step === 2 && (
                       <div>
                         <div className="px-4">
-                          <div className="rounded grid grid-cols-[1fr_auto] items-center bg-gray-100 bg-opacity-30 p-4 outline outline-violet-300">
+                          <div className="rounded grid grid-cols-[1fr_auto] items-center bg-neutral-100 dark:bg-[#1B1B1B] bg-opacity-30 p-4 outline outline-violet-300">
                             <input
                               disabled={isSubmitting}
                               required
@@ -332,7 +377,7 @@ const Send = () => {
                               type="text"
                               readOnly
                               placeholder="Recipient public (0x) Address"
-                              className={`w-full pr-3 max-w truncate bg-transparent !outline-none dark:bg-[#1B1B1B]`}
+                              className={`w-full pr-3 max-w truncate bg-transparent font-bold tracking-wide focus:outline-none`}
                             />
                             <Cross
                               dismiss={() => handleClearButton(setFieldValue)}
@@ -345,9 +390,7 @@ const Send = () => {
                         <div className="px-4 py-3">
                           <InputWrapper
                             errors={
-                              errors &&
-                              errors.amount ?
-                              errors.amount : false
+                              errors && errors.amount ? errors.amount : false
                             }
                             wrapperStyle="mt-2"
                             inputProps={{
@@ -357,27 +400,50 @@ const Send = () => {
                             label="Amount"
                             action={
                               <div className="flex items-center justify-center flex-col">
-                                <p className="font-bold text-xs">
+                                <p
+                                  className={`font-bold transition-all text-xs tracking-widest ${
+                                    (values.asset.type === "ether" &&
+                                      values.asset.balance === values.amount) ||
+                                    (values.asset.type === "erc20" &&
+                                      formatUnits(
+                                        values.asset.balance,
+                                        values.asset.decimals
+                                      ) === values.amount)
+                                      ? "!text-lg"
+                                      : ""
+                                  }`}
+                                >
                                   {values.asset.symbol}
                                 </p>
-                                <button
-                                  onClick={() =>
-                                    setFieldValue(
-                                      "amount",
-                                      values.asset.type !== "erc20"
-                                        ? values.asset.balance
-                                        : formatUnits(values.asset.balance, values.asset.decimals)
-                                    )
-                                  }
-                                  type="button"
-                                  className="!outline-none p-0 m-0 tracking-wide hover:text-black dark:text-teal-300 dark:hover:text-teal-500 font-bold"
-                                >
-                                  MAX
-                                </button>
+
+                                {((values.asset.type === "ether" &&
+                                  values.asset.balance !== values.amount) ||
+                                  (values.asset.type === "erc20" &&
+                                    formatUnits(
+                                      values.asset.balance,
+                                      values.asset.decimals
+                                    ) !== values.amount)) && (
+                                  <button
+                                    onClick={() =>
+                                      setFieldValue(
+                                        "amount",
+                                        values.asset.type !== "erc20"
+                                          ? values.asset.balance
+                                          : formatUnits(
+                                              values.asset.balance,
+                                              values.asset.decimals
+                                            )
+                                      )
+                                    }
+                                    type="button"
+                                    className="!outline-none p-0 m-0 tracking-wide transition-all hover:text-black dark:text-neutral-400 dark:hover:text-teal-500 font-bold"
+                                  >
+                                    MAX
+                                  </button>
+                                )}
                               </div>
                             }
                           />
-
                         </div>
                       </div>
                     )}
@@ -397,7 +463,11 @@ const Send = () => {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                             >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                              <path
+                                stroke="none"
+                                d="M0 0h24v24H0z"
+                                fill="none"
+                              />
                               <path
                                 d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
                                 strokeWidth="0"
@@ -440,9 +510,8 @@ const Send = () => {
 
                           <GasEstimation />
 
-
                           {errors.amount && (
-                            <p className="mt-4 mx-3 bg-red-600 text-white font-bold rounded p-2">
+                            <p className="my-2 dark:text-neutral-300 text-sm font-bold rounded">
                               {errors.amount}
                             </p>
                           )}
@@ -483,8 +552,10 @@ const Send = () => {
                             </button>
                             <button
                               type="button"
-                              onClick={() => setStep(3)}                              
-                              disabled={errors && (!!errors.amount || !!errors.address)}
+                              onClick={() => setStep(3)}
+                              disabled={
+                                errors && (!!errors.amount || !!errors.address)
+                              }
                               className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50 dark:disabled:bg-opacity-50"
                             >
                               Next
@@ -507,8 +578,10 @@ const Send = () => {
                             </button>
                             <button
                               type="submit"
-                              disabled={loading || !isValid || !gasInfo}                              
-                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-10 ${!gasInfo && "disabled:bg-opacity-50"} dark:disabled:bg-opacity-50`}
+                              disabled={loading || !isValid || !gasInfo}
+                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-10 ${
+                                !gasInfo && "disabled:bg-opacity-50"
+                              } dark:disabled:bg-opacity-50`}
                             >
                               {loading && "Sending..."}
                               {!loading && !gasInfo && "Fetching Gas"}
@@ -517,7 +590,7 @@ const Send = () => {
                           </div>
                         )}
                         {step === 4 && error && (
-                          <p className="break-all text-center text-red-500">
+                          <p className="my-2 dark:text-neutral-300 text-sm font-bold rounded">
                             {error}
                           </p>
                         )}

@@ -59,21 +59,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    /* color: #213547; */
-    /* background-color: #f7f7f7; */
-  }
-  a:hover {
-    /* color: #747bff; */
-  }
-  button {
-    /* color: rgb(148 163 184); */
-  }
-
-}
-
-
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -85,3 +70,18 @@ select {
   animation-iteration-count: 2;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #F9FAFB inset !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active{
+      -webkit-box-shadow: 0 0 0 30px #1C1C1C inset !important;
+  } 
+}

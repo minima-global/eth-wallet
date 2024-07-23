@@ -393,14 +393,13 @@ const AppProvider = ({ children }: IProps) => {
     // Step 1: Update the local state
     const updatedAssets = _defaultAssets.assets.filter(asset => asset.address !== assetToRemove);
     const nested = { assets: updatedAssets };
-    console.log('new assets', nested);
     setDefaultAssets(nested);
   
     // Step 2: Update the database
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
     );
-    console.log('found old', rows);
+    
     if (!rows) {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${chainId}', '${JSON.stringify(

@@ -80,7 +80,7 @@ const FieldWrapper = ({
                 formatUnits(balance!, decimals!).toString()
               )
             }
-            className="!outline-none p-0 m-0 tracking-wide hover:text-black dark:text-teal-300 dark:hover:text-teal-500 font-bold"
+            className="!outline-none p-0 m-0 tracking-wide transition-all hover:text-black dark:text-neutral-400 dark:hover:text-teal-500 font-bold"
           >
             MAX
           </button>          
