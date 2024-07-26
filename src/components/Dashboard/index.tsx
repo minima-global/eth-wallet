@@ -21,6 +21,7 @@ import HistoryIcon from "../UI/Icons/HistoryIcon";
 import SendIcon from "../UI/Icons/SendIcon";
 import SwapIcon from "../UI/Icons/SwapIcon";
 import AppThemeSwitch from "../AppThemeSwitch";
+import useLedger from "../../hooks/useLedger";
 
 const Dashboard = () => {
   const { _network, _address } = useWalletContext();
@@ -30,6 +31,7 @@ const Dashboard = () => {
     promptSettings,
   } = useContext(appContext);
 
+  useLedger();
 
   return (
     <>
