@@ -1,9 +1,11 @@
 
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import { listen } from "@ledgerhq/logs";
-import AppBtc from "@ledgerhq/hw-app-btc";
-const useLedger = () => {
 
+import Eth from "@ledgerhq/hw-app-eth";
+
+
+const useLedger = () => {
 
     const init = async () => {
         try {
@@ -19,17 +21,15 @@ const useLedger = () => {
             listen(log => console.log(log))
          
             //When the Ledger device connected it is trying to display the bitcoin address
-            const appBtc = new AppBtc({ transport, currency: "bitcoin" });
-            const { bitcoinAddress } = await appBtc.getWalletPublicKey(
-              "44'/0'/0'/0/0",
-              { verify: false, format: "legacy"}
+            const appEth = new Eth(transport);
+            const { address } = await appEth.getAddress(
+              "44'/60'/0'/0/0"              
             );
          
 
-            console.log('your btc address', bitcoinAddress);
+            console.log('your eth address', address);
          
-            //Display the address on the Ledger device and ask to verify the address
-            await appBtc.getWalletPublicKey("44'/0'/0'/0/0", {format:"legacy", verify: true});
+            
 
           } catch (e) {
             // log e

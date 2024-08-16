@@ -12,10 +12,25 @@ import WalletAddress from "../WalletAddress";
 import PrivateKey from "../PrivateKey";
 import Cross from "../UI/Cross";
 import Profile from "../UI/Profile";
+import AnimatedDialog from "../UI/AnimatedDialog";
+import Account from "./Account";
+import { Formik } from "formik";
+import BackIcon from "../UI/Icons/BackIcon";
+import { Wallet } from "ethers";
+import { UserAccount } from "../../types/Accounts";
 
 const UserAccount = () => {
   const [promptUserAccountDetails, setPromptUserAccountDetails] =
     useState(false);
+  const [promptAccounts, setPromptAccounts] = useState(false);
+  const [promptAddAccount, setPromptAddAccount] = useState(false);
+
+  const [error, setError] = useState<{ import?: string; ledger?: string } | false>(false);
+  const [viewPrivateKey, setViewPrivateKey] = useState(false);
+  const [importType, setImportType] = useState<"account" | "ledger" | null>(
+    null
+  );
+
   const [nickname, setNickname] = useState("");
   const { _address } = useWalletContext();
   const {
@@ -23,6 +38,8 @@ const UserAccount = () => {
     promptAccountNameUpdate,
     _addressBook,
     updateAddressBook,
+    _userAccounts,
+    addUserAccount
   } = useContext(appContext);
 
   const [_promptQrCode, setPromptQrCode] = useState(false);
@@ -62,12 +79,7 @@ const UserAccount = () => {
   };
 
   useEffect(() => {
-    if (
-      _addressBook &&
-      _address &&
-      _address &&
-      _addressBook[_address]
-    ) {
+    if (_addressBook && _address && _address && _addressBook[_address]) {
       setNickname(_addressBook[_address]);
     }
   }, [_addressBook, _address]);
@@ -88,13 +100,14 @@ const UserAccount = () => {
       >
         {_address && (
           <div className="h-full flex items-center justify-center">
-            <Profile extraClass=" !h-full w-[34px] min-w-[34px]" input={_address} />
+            <Profile
+              extraClass=" !h-full w-[34px] min-w-[34px]"
+              input={_address}
+            />
           </div>
         )}
         <h3 className="truncate font-bold max-w-[128px] dark:text-black">
-          {_address &&
-          _addressBook[_address] &&
-          _addressBook[_address].length
+          {_address && _addressBook[_address] && _addressBook[_address].length
             ? _addressBook[_address]
             : "Account"}
         </h3>
@@ -296,6 +309,18 @@ const UserAccount = () => {
                         </button>
                       </div>
                     )}
+
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setPromptAccounts(true)}
+                        type="button"
+                        className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold"
+                      >
+                        {!!_userAccounts.length &&
+                          _userAccounts.find((account) => account.current) && _userAccounts.find((account) => account.current).nickname
+                          }
+                      </button>
+                    </div>
                   </div>
                 </div>
               </animated.div>
@@ -303,6 +328,177 @@ const UserAccount = () => {
           </Dialog>,
           document.body
         )}
+
+      <AnimatedDialog
+        display={promptAccounts}
+        dismiss={() => setPromptAccounts(false)}
+      >
+        <div>
+          <div className="max-w-lg mx-4 sm:mx-auto">
+            <div className="w-full rounded-lg bg-white dark:bg-[#1B1B1B] shadow-md dark:shadow-none py-8 text-left">
+              <div className="flex justify-between items-center px-6">
+                {!promptAddAccount && (
+                  <h2 className="text-xl font-bold dark:text-neutral-400">
+                    User Accounts
+                  </h2>
+                )}
+                {promptAddAccount && (
+                  <div className="flex items-center gap-2">
+                    <span
+                      className=" dark:text-neutral-600"
+                      onClick={() => {
+                        if (importType) {
+                          return setImportType(null);
+                        }
+
+                        setPromptAddAccount(false);
+                      }}
+                    >
+                      <BackIcon fill="currentColor" />
+                    </span>
+
+                    <h2 className="text-xl font-bold dark:text-neutral-400">
+                      Manage Accounts
+                    </h2>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setPromptAccounts(false)}
+                  className="text-purple-500 hover:text-purple-700"
+                >
+                  Close
+                </button>
+              </div>
+              {promptAddAccount ? (
+                <div className="mt-8 mb-24">
+                  {!importType && (
+                    <div className="grid sm:grid-cols-2 gap-4 mx-8">
+                      <button
+                        onClick={() => setImportType("account")}
+                        type="button"
+                        className="sm:max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                      >
+                        Import Account
+                      </button>
+                      <button
+                        onClick={() => setImportType("ledger")}
+                        type="button"
+                        className="sm:max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                      >
+                        Import Ledger Wallet
+                      </button>
+                    </div>
+                  )}
+
+                  {importType === "account" && (
+                    <Formik
+                      initialValues={{ nickname: "", privatekey: "" }}
+                      onSubmit={async ({nickname, privatekey}) => {
+                        try {
+                          // Set up the a/c
+
+                          const accountAddress = new Wallet(privatekey);
+                          
+                          await addUserAccount({nickname, address: accountAddress.address, privatekey, current: false});                        
+                          console.log('ADDED!');
+                        } catch (err) {
+                          if (err instanceof Error) {
+                            setError((prevState) => prevState ? ({
+                              ...prevState,
+                              import: err.message,
+                            }) : {import: err.message});
+                          } else {
+                            setError((prevState) => prevState ? ({
+                              ...prevState,
+                              import: "Invalid Account",
+                            }) : {import: "Invalid Account"});
+                          }
+                        }
+                      }}
+                    >
+                      {({ handleSubmit, getFieldProps }) => (
+                        <form onSubmit={handleSubmit}>
+                          <p className="mx-6 text-black dark:text-neutral-500 font-bold">
+                            Import Private Key
+                          </p>
+
+                          <div className="space-y-4 pt-4">
+                            <div className="flex flex-col px-6">
+                              <label
+                                htmlFor="nickname"
+                                className="px-4 text-sm pb-1 dark:text-neutral-500"
+                              >
+                                Account Name
+                              </label>
+                              <input
+                                type="text"
+                                id="nickname"
+                                {...getFieldProps("nickname")}
+                                placeholder="Account Name"
+                                className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800"
+                              />
+                            </div>
+                            <div className="flex flex-col px-6">
+                              <label
+                                htmlFor="privatekey"
+                                className="px-4 text-sm pb-1 dark:text-neutral-500"
+                              >
+                                Private Key
+                              </label>
+                              <input
+                                type={viewPrivateKey ? "text" : "password"}
+                                id="privatekey"
+                                {...getFieldProps("privatekey")}
+                                placeholder="Private Key"
+                                className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mx-6 mt-8">
+                            <button
+                              type="submit"
+                              className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                            >
+                              Import Account
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </Formik>
+                  )}
+                  {importType === "ledger" && <div></div>}
+                </div>
+              ) : (
+                <div className="mt-8 mb-36">
+                  {_address ? (
+                    <>
+                      <ul className="space-y-2">
+                        {_userAccounts.length && ( _userAccounts.map((account) => <Account key={account.address} account={account} />)
+                        )}
+                      </ul>
+                    </>
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                </div>
+              )}
+              <div className="flex justify-center">
+                {!promptAddAccount && (
+                  <button
+                    onClick={() => setPromptAddAccount(true)}
+                    type="button"
+                    className="max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                  >
+                    Import Account or Ledger Wallet
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </AnimatedDialog>
     </>
   );
 };

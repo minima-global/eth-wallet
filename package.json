@@ -18,6 +18,7 @@
     "@dicebear/core": "^8.0.0",
     "@ethereumjs/tx": "^5.2.1",
     "@ledgerhq/hw-app-btc": "^10.4.1",
+    "@ledgerhq/hw-app-eth": "^6.38.0",
     "@ledgerhq/hw-transport-webusb": "^6.29.2",
     "@ledgerhq/logs": "^6.12.0",
     "@uniswap/sdk-core": "^4.2.0",

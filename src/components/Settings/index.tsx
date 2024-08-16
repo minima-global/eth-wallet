@@ -4,6 +4,7 @@ import Dialog from "../UI/Dialog";
 import { createPortal } from "react-dom";
 import { useSpring, animated, config } from "react-spring";
 import SelectNetwork from "../SelectNetwork";
+import AppThemeSwitch from "../AppThemeSwitch";
 
 const Settings = () => {
   const { _promptSettings, promptSettings, promptJsonRpcSetup } =
@@ -74,6 +75,10 @@ const Settings = () => {
                     </span>
                     <p className="font-bold pl-2">Setup API Keys</p>
                   </div>                  
+                  
+                  <div className="flex justify-center my-3">
+                    <AppThemeSwitch />
+                  </div>
                 </div>
               </animated.div>
             </div>

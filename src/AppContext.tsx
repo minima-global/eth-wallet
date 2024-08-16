@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from "ethers";
+import { JsonRpcProvider, Wallet } from "ethers";
 import { createContext, useRef, useEffect, useState } from "react";
 import { sql } from "./utils/SQL";
 import { TransactionResponse } from "ethers";
@@ -7,6 +7,7 @@ import { Asset } from "./types/Asset";
 import { Network, Networks } from "./types/Network";
 import defaultAssetsStored, { _defaults } from "./constants";
 import useSwapWidget from "./hooks/useSwapWidget";
+import { UserAccount } from "./types/Accounts";
 
 export const appContext = createContext({} as any);
 
@@ -41,6 +42,7 @@ const AppProvider = ({ children }: IProps) => {
     null
   );
   const [_addressBook, setAddressBook] = useState([]);
+  const [_userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
   const [_activities, setActivities] = useState<
     (TransactionResponse | ContractTransactionResponse)[]
   >([]);
@@ -73,7 +75,7 @@ const AppProvider = ({ children }: IProps) => {
   });
 
   const [_promptAllowance, setPromptAllowance] = useState(false);
-    const [_approving, setApproving] = useState(false);
+  const [_approving, setApproving] = useState(false);
   const [_allowanceLock, setAllowanceLock] = useState(false);
 
   const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] =
@@ -81,7 +83,6 @@ const AppProvider = ({ children }: IProps) => {
 
   // display db locked, ask for unlock
   const [_promptDatabaseLocked, setPromptDatabaseLocked] = useState(false);
-
 
   useEffect(() => {
     (async () => {
@@ -145,8 +146,31 @@ const AppProvider = ({ children }: IProps) => {
                   return setPromptDatabaseLocked(true);
                 }
               }
-              
-              setGeneratedKey(resp.response.seedrandom);
+
+              (async () => {
+                // Get all user's saved accounts
+                const userAccounts: any = await sql(
+                  `SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`
+                );
+
+                // if they exist init
+                if (userAccounts) {
+                  console.log("ua", JSON.parse(userAccounts.DATA));
+                  setUserAccounts(JSON.parse(userAccounts.DATA));
+                  // if not exist, create first account of node
+                } else {
+                  const account = new Wallet(resp.response.seedrandom);
+
+                  await addUserAccount({
+                    nickname: "Minimalist",
+                    privatekey: resp.response.seedrandom,
+                    address: account.address,
+                    current: true,
+                  });
+                }
+              })();
+              // init app with this key
+              createKey(resp.response.seedrandom);
             });
           }
 
@@ -164,7 +188,7 @@ const AppProvider = ({ children }: IProps) => {
         if (msg.event === "inited") {
           loaded.current = true;
           // do something Minim-y
-          
+
           (async () => {
             setWorking(true);
             // Initialize cache-ing table
@@ -188,7 +212,7 @@ const AppProvider = ({ children }: IProps) => {
             const cachedApiKeys: any = await sql(
               `SELECT * FROM cache WHERE name = 'API_KEYS'`
             );
-            
+
             // USER PREFERENCES
             if (cachedApiKeys) {
               setUserKeys(JSON.parse(cachedApiKeys.DATA));
@@ -230,7 +254,6 @@ const AppProvider = ({ children }: IProps) => {
               // set all networks saved
               setDefaultNetworks(JSON.parse(defaultNetworks.DATA));
             } else {
-
               // Initialize networks
               await sql(
                 `INSERT INTO cache (name, data) VALUES ('DEFAULTNETWORKS', '${JSON.stringify(
@@ -265,21 +288,6 @@ const AppProvider = ({ children }: IProps) => {
                 },
               });
             }
-
-            /**
-             * We now require the User to set up his default networks in the start of the App
-             * else {
-              // initialize
-              await sql(
-                `INSERT INTO cache (name, data) VALUES ('CURRENT_NETWORK', '${JSON.stringify(
-                  { default: "sepolia" }
-                )}')`
-              );
-
-              setRPCNetwork("sepolia", networks);
-            }
-             * 
-             */
 
             setWorking(false);
           })();
@@ -334,7 +342,6 @@ const AppProvider = ({ children }: IProps) => {
     networks: Networks,
     cachedApiKeys: any
   ) => {
-
     let rpcUrl = networks && networks[network] ? networks[network].rpc : null;
 
     if (rpcUrl) {
@@ -365,10 +372,115 @@ const AppProvider = ({ children }: IProps) => {
     }
   };
 
+  const addUserAccount = async (account: UserAccount) => {
+    const updatedData = [..._userAccounts, account];
+
+    setUserAccounts(updatedData);
+
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+  };
+
+  const setCurrentUserAccount = async (account: UserAccount) => {
+    // Update the `current` property for each account
+    const updatedData = _userAccounts.map((userAccount) => ({
+      ...userAccount,
+      current: userAccount.address === account.address, // Set `current` to true for the selected account
+    }));
+
+    // Update the state with the modified accounts
+    setUserAccounts(updatedData);
+
+    // If the selected account has a private key, use it; otherwise, generate a new key
+    if (account.privatekey.length) {
+      createKey(account.privatekey);
+    } else {
+      (window as any).MDS.cmd(`checkmode`, function (response: any) {
+        if (response.status) {
+          // If in write mode, generate & set key
+          if (response.response.mode === "WRITE") {
+            // Generate key for Eth Wallet
+            (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
+              if (!resp.status) {
+                if (resp.error && resp.error.includes("DB locked!")) {
+                  return setPromptDatabaseLocked(true);
+                }
+              }
+
+              createKey(resp.response.seedrandom);
+            });
+          }
+
+          return setReadMode(response.response.mode === "READ");
+        }
+
+        return setReadMode(false);
+      });
+    }
+
+    // Retrieve the existing rows from the cache
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
+
+    // If the row doesn't exist, insert a new one; otherwise, update the existing row
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+  };
+
+  const deleteUserAccount = async (acc: UserAccount) => {
+    // set all the current accounts to false, set the passed account to current true
+    const updatedData = [
+      ..._userAccounts.filter(
+        (account) => account.privatekey !== acc.privatekey
+      ),
+    ];
+
+    setUserAccounts(updatedData);
+
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        )}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        )}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+  };
+
   const updateDefaultAssets = async (asset: Asset, chainId: string) => {
     const updatedData = [..._defaultAssets.assets, asset];
     const nested = { assets: updatedData };
-    setDefaultAssets(nested);  
+    setDefaultAssets(nested);
 
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
@@ -391,15 +503,17 @@ const AppProvider = ({ children }: IProps) => {
 
   const deleteAsset = async (assetToRemove: string, chainId: string) => {
     // Step 1: Update the local state
-    const updatedAssets = _defaultAssets.assets.filter(asset => asset.address !== assetToRemove);
+    const updatedAssets = _defaultAssets.assets.filter(
+      (asset) => asset.address !== assetToRemove
+    );
     const nested = { assets: updatedAssets };
     setDefaultAssets(nested);
-  
+
     // Step 2: Update the database
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
     );
-    
+
     if (!rows) {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${chainId}', '${JSON.stringify(
@@ -536,6 +650,11 @@ const AppProvider = ({ children }: IProps) => {
         loaded,
         isWorking,
 
+        _userAccounts,
+        addUserAccount,
+        setCurrentUserAccount,
+        deleteUserAccount,
+
         userKeys,
         updateApiKeys,
 
@@ -590,7 +709,7 @@ const AppProvider = ({ children }: IProps) => {
         setPromptAllowance,
         _allowanceLock,
         setAllowanceLock,
-        
+
         _promptAllowanceApprovalModal,
         promptAllowanceApprovalModal,
 
@@ -609,7 +728,7 @@ const AppProvider = ({ children }: IProps) => {
         verifyRPCNetwork,
         _currencyFormat,
 
-        ...swapWidgetProps
+        ...swapWidgetProps,
       }}
     >
       {children}

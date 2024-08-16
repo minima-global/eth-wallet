@@ -119,9 +119,7 @@ const Dashboard = () => {
             <div className="flex md:hidden">
               <UserAccount />
             </div>
-            <div className="flex items-center">
-              <AppThemeSwitch />
-              
+            <div className="flex items-center">                            
               <div
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center"

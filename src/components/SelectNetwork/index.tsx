@@ -11,8 +11,8 @@ import Dialog from "../UI/Dialog";
 import EthereumNetwork from "../UI/EthereumNetwork";
 import SepoliaNetwork from "../UI/SepoliaNetwork";
 import CustomNetwork from "../UI/CustomNetwork";
-import BackButton from "../UI/BackButton";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
+import BackIcon from "../UI/Icons/BackIcon";
 
 const SelectNetwork = () => {
   const {
@@ -209,7 +209,9 @@ const SelectNetwork = () => {
                   {step === 2 && (
                     <animated.div style={addCustomNetworkSpringProps}>
                       <div className="flex items-center mb-4">
-                        <BackButton handleBack={() => setStep(1)} />
+                        <span className=" dark:text-neutral-600" onClick={() => setStep(1)}>
+                          <BackIcon fill="currentColor" />
+                        </span>
                         <h1 className="text-lg md:text-xl px-4">
                           Add a custom network
                         </h1>
