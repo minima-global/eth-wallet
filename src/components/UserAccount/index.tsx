@@ -495,7 +495,7 @@ const UserAccount = () => {
                     </Formik>
                   )}
                   {importType === "ledger" && <Formik
-                      initialValues={{ selectedAccounts: [] }}
+                      initialValues={{ selectedAccounts: [] as any[] }}
                       onSubmit={async ({selectedAccounts}) => {
                         try {
                           // Set up the a/c
@@ -575,29 +575,32 @@ const UserAccount = () => {
                             <h3 className="font-bold px-6">Select an Ethereum Account:</h3>
                             <ul className="space-y-2">
                               {accounts.length === 0 && <p className="px-6">Loading accounts...</p>}
-                              {accounts.length > 0 && accounts.map((acc, index) => (
-                                <li
-                                  key={index}
-                                  onClick={() => {
-                                    const selected = values.selectedAccounts;
-                                    const isSelected = selected.find((a: any) => a.address === acc.address);
-                                    if (isSelected) {
-                                      setFieldValue(
-                                        "selectedAccounts",
-                                        selected.filter((a: any) => a.address !== acc.address)
-                                      );
-                                    } else {
-                                      setFieldValue(
-                                        "selectedAccounts",
-                                        [...selected, acc]
-                                      );
-                                    }
-                                  }}
-                                  className={`px-6 tracking-wide text-sm cursor-pointer ${selectedAccounts.includes(acc) ? 'bg-blue-500 text-white' : ''}`}
-                                >
-                                  {acc.address}
-                                </li>
-                              ))}
+                              {accounts.length > 0 && accounts.map((acc, index) => {
+                                    const isSelected = values.selectedAccounts.some(a => a.address === acc.address);
+                                    
+                                    return (
+                                      <li
+                                        key={index}
+                                        onClick={() => {
+                                          const selected = values.selectedAccounts;
+                                          if (isSelected) {
+                                            setFieldValue(
+                                              "selectedAccounts",
+                                              selected.filter((a: any) => a.address !== acc.address)
+                                            );
+                                          } else {
+                                            setFieldValue(
+                                              "selectedAccounts",
+                                              [...selected, acc]
+                                            );
+                                          }
+                                        }}
+                                        className={`px-6 tracking-wide text-sm cursor-pointer ${isSelected ? 'bg-blue-500 text-white dark:bg-neutral-800 dark:text-neutral-500' : ''}`}
+                                      >
+                                        {acc.address}
+                                      </li>
+                                    );
+                                  })}
                             </ul>
 
                             {values.selectedAccounts.length === 0 && <p className="px-6 dark:text-neutral-500">No account(s) selected</p>}
