@@ -18,12 +18,38 @@ import { Formik } from "formik";
 import BackIcon from "../UI/Icons/BackIcon";
 import { Wallet } from "ethers";
 import { UserAccount } from "../../types/Accounts";
+import useLedger from "../../hooks/useLedger";
 
 const UserAccount = () => {
   const [promptUserAccountDetails, setPromptUserAccountDetails] =
     useState(false);
   const [promptAccounts, setPromptAccounts] = useState(false);
   const [promptAddAccount, setPromptAddAccount] = useState(false);
+
+  // ledger
+  const {connectLedgerAndGetAccounts, chooseAccount, addSelectedAccount, disconnectLedger, connected} = useLedger();
+
+  const [accounts, setAccounts] = useState<any>([]);
+  const [selectedAccounts, setSelectedAccounts] = useState<any>([]);
+
+  const handleConnectLedger = async () => {
+    const fetchedAccounts = await connectLedgerAndGetAccounts();
+    if (fetchedAccounts) {
+      setAccounts(fetchedAccounts);
+    }
+  };
+
+  const handleAccountSelection = (account) => {
+    setSelectedAccounts(prevSelectedAccounts => {
+      if (prevSelectedAccounts.includes(account)) {
+        // Remove the account if it's already selected (deselect)
+        return prevSelectedAccounts.filter(acc => acc !== account);
+      } else {
+        // Add the account to the selected list
+        return [...prevSelectedAccounts, account];
+      }
+    });
+  };
 
   const [error, setError] = useState<{ import?: string; ledger?: string } | false>(false);
   const [viewPrivateKey, setViewPrivateKey] = useState(false);
@@ -468,7 +494,141 @@ const UserAccount = () => {
                       )}
                     </Formik>
                   )}
-                  {importType === "ledger" && <div></div>}
+                  {importType === "ledger" && <Formik
+                      initialValues={{ selectedAccounts: [] }}
+                      onSubmit={async ({selectedAccounts}) => {
+                        try {
+                          // Set up the a/c
+
+                          // const accountAddress = new Wallet(privatekey);
+                          
+                          // await addUserAccount({nickname, address: accountAddress.address, privatekey, current: false});                        
+                          console.log('ADDED!');
+                        } catch (err) {
+                          if (err instanceof Error) {
+                            setError((prevState) => prevState ? ({
+                              ...prevState,
+                              ledger: err.message,
+                            }) : {ledger: err.message});
+                          } else {
+                            setError((prevState) => prevState ? ({
+                              ...prevState,
+                              ledger: "Invalid Account",
+                            }) : {ledger: "Invalid Account"});
+                          }
+                        }
+                      }}
+                    >
+                      {({ values, handleSubmit, resetForm, setFieldValue }) => (
+                        <form onSubmit={handleSubmit}>
+                          <p className="mx-6 text-black dark:text-neutral-500 font-bold">
+                            Import Ledger Account(s)
+                          </p>
+
+                          <div className="space-y-4 pt-4">
+                            {/* <div className="flex flex-col px-6">
+                              <label
+                                htmlFor="nickname"
+                                className="px-4 text-sm pb-1 dark:text-neutral-500"
+                              >
+                                Account Name
+                              </label>
+                              <input
+                                type="text"
+                                id="nickname"
+                                {...getFieldProps("nickname")}
+                                placeholder="Account Name"
+                                className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800"
+                              />
+                            </div>
+                            <div className="flex flex-col px-6">
+                              <label
+                                htmlFor="privatekey"
+                                className="px-4 text-sm pb-1 dark:text-neutral-500"
+                              >
+                                Private Key
+                              </label>
+                              <input
+                                type={viewPrivateKey ? "text" : "password"}
+                                id="privatekey"
+                                {...getFieldProps("privatekey")}
+                                placeholder="Private Key"
+                                className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800"
+                              />
+                            </div> */}
+                            
+                            <div className="space-y-4">
+                            <div className="px-6 space-y-3">
+                              <p>Make sure your ledger is connected via USB and you have unlocked it and opened the Ethereum Application.</p>
+                              <button type="button" onClick={!connected ? handleConnectLedger : () => {
+                                disconnectLedger();
+                                if (values.selectedAccounts.length) {
+                                  resetForm();
+                                }
+                              }} className="full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold">{connected ? "Disconnect Ledger" : "Connect Ledger"}</button>
+                            </div>
+                            
+                            {connected === null && <p className="px-6 text-sm text-neutral-600 dark:text-neutral-500">Ready to connect</p>}
+                            {connected === false && <p className="px-6 text-sm text-neutral-600 dark:text-neutral-500">Failed to connect, make sure you followed the instructions above and re-try connection.</p>}
+
+                            {!!connected && <>
+                            <h3 className="font-bold px-6">Select an Ethereum Account:</h3>
+                            <ul className="space-y-2">
+                              {accounts.length === 0 && <p className="px-6">Loading accounts...</p>}
+                              {accounts.length > 0 && accounts.map((acc, index) => (
+                                <li
+                                  key={index}
+                                  onClick={() => {
+                                    const selected = values.selectedAccounts;
+                                    const isSelected = selected.find((a: any) => a.address === acc.address);
+                                    if (isSelected) {
+                                      setFieldValue(
+                                        "selectedAccounts",
+                                        selected.filter((a: any) => a.address !== acc.address)
+                                      );
+                                    } else {
+                                      setFieldValue(
+                                        "selectedAccounts",
+                                        [...selected, acc]
+                                      );
+                                    }
+                                  }}
+                                  className={`px-6 tracking-wide text-sm cursor-pointer ${selectedAccounts.includes(acc) ? 'bg-blue-500 text-white' : ''}`}
+                                >
+                                  {acc.address}
+                                </li>
+                              ))}
+                            </ul>
+
+                            {values.selectedAccounts.length === 0 && <p className="px-6 dark:text-neutral-500">No account(s) selected</p>}
+                            {values.selectedAccounts.length > 0 && (
+                              <div>
+                                <h3 className="px-6 font-bold">Selected Accounts:</h3>
+                                <ul>
+                                  {values.selectedAccounts.map((acc, index) => (
+                                    <li key={index} className="px-6 tracking-wide text-sm">
+                                      {((acc as any).address)}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                              <div className="mx-6 mt-8">
+                                <button
+                                  type="submit"
+                                  className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                                >
+                                  Import Account(s)
+                                </button>
+                            </div>
+                            </>}
+                            </div>
+                          </div>
+
+                          
+                        </form>
+                      )}
+                    </Formik>}
                 </div>
               ) : (
                 <div className="mt-8 mb-36">

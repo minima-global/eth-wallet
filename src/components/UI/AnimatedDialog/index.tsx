@@ -23,7 +23,7 @@ const AnimatedDialog = ({
     useEffect(() => {
         if (display) {
             setShow(true);
-            document.body.classList.add('overflow-hidden');
+            // document.body.classList.add('overflow-hidden');
         } else if (!noRest) {
             // Wait for animation to finish before hiding
             const timeout = setTimeout(() => setShow(false), 300); // 300ms matches the animation duration
@@ -33,7 +33,7 @@ const AnimatedDialog = ({
         }
 
         return () => {
-            document.body.classList.remove('overflow-hidden');
+            // document.body.classList.remove('overflow-hidden');
         };
     }, [display, noRest]);
 
