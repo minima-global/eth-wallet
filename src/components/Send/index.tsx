@@ -11,7 +11,7 @@ import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import { formatUnits, getAddress, parseUnits } from "ethers";
+import { formatUnits, getAddress, Interface, parseEther, parseUnits, toQuantity, Transaction } from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
@@ -26,12 +26,19 @@ import { useGasContext } from "../../providers/GasProvider";
 
 import * as utils from "../../utils";
 
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
+import Eth, {ledgerService} from "@ledgerhq/hw-app-eth";
+
+import { serializeTransaction } from "ethers-5/lib/utils";
+
 const Send = () => {
   const {
     _currentNavigation,
     handleNavigation,
     _defaultNetworks,
     _currentNetwork,
+    _userAccounts,
+    _provider
   } = useContext(appContext);
   const { tokens, transferToken } = useTokenStoreContext();
   const { _address, _balance, _network, callBalanceForApp, transfer } =
@@ -255,11 +262,13 @@ const Send = () => {
                 ) => {
                   setError(false);
                   setLoading(true);
+                  const current = _userAccounts.find(a => a.current);
+                
                   try {
                     if (!gasInfo) {
                       throw new Error("Gas API not available");
                     }
-
+                
                     const {
                       suggestedMaxFeePerGas,
                       suggestedMaxPriorityFeePerGas,
@@ -271,46 +280,95 @@ const Send = () => {
                       suggestedMaxPriorityFeePerGas
                     );
 
-                    if (asset.type === "ether") {
-                      const txResponse = await transfer(
-                        address,
-                        amount,
-                        calculateGasPrice!
-                      );
 
+                    if (current.type === 'ledger') {
+                      const transport = await TransportWebUSB.create();
+                      const ethApp = new Eth(transport);
+                
+
+                      if (!gasUnits || !calculateGasPrice) {
+                        throw new Error("Gas API not available");
+                      }
+
+
+                      const unsignedTx: any = {
+                        to: asset.type === "ether" ? address : asset.address, // Address of recipient for Ether, or ERC-20 contract address
+                        value: asset.type === "ether" ? toQuantity(parseEther(amount)) : "0x0", // Ether amount for Ether transfer, 0 for ERC-20
+                        gasLimit: toQuantity(parseUnits(gasUnits)), // must convert decimals to wei then use hex converter...
+                        maxFeePerGas: toQuantity(parseUnits(calculateGasPrice.baseFee)), // must convert decimals to wei then use hex converter...
+                        maxPriorityFeePerGas: toQuantity(parseUnits(calculateGasPrice.priorityFee)), // must convert decimals to wei then use hex converter...
+                        chainId: 1, // Mainnet ID; use appropriate chain ID for testnet or other networks
+                        nonce: await _provider.getTransactionCount(current.address), // Method to get nonce
+                        data: asset.type === 'erc20' 
+                          ? new Interface([
+                              "function transfer(address to, uint256 value)"
+                            ]).encodeFunctionData("transfer", [address, parseUnits(amount, asset.decimals)])
+                          : "0x" // No data for Ether transfer
+                      };
+                      
+                      console.log('unsignedTx', unsignedTx);
+                
+                      ethApp.getAddress("44'/60'/0'/1/0").then(address => console.log(address));
+                      return;
+                      const serializedTx = Transaction.from(unsignedTx).unsignedSerialized;
+                      console.log('serializedTx', serializedTx);
+                      const resolution = await ledgerService.resolveTransaction(serializedTx.slice(2), ethApp.loadConfig, {erc20: true, externalPlugins: true});
+                      console.log('res', resolution);                      
+                      const signature = await ethApp.signTransaction("44'/60'/0'/0/0", serializedTx.slice(2), resolution);
+                      console.log('signature', signature);
+                      const signedTx = Transaction.from(unsignedTx).serialized;
+
+                      console.log('signedTx', signedTx);
+                
+                      // const txResponse = await _provider.sendTransaction(signedTx);
+                      return;
                       setStep(4);
-                      setFieldValue("receipt", txResponse);
+                      // setFieldValue("receipt", txResponse);
                       setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
-
+                
                       await callBalanceForApp();
                     } else {
-                      // handle ERC 20 transfers
-                      const txResponse = await transferToken(
-                        asset.address,
-                        address,
-                        amount,
-                        calculateGasPrice!,
-                        asset.address ===
-                          "0xb3BEe194535aBF4E8e2C0f0eE54a3eF3b176703C"
-                          ? 18
-                          : asset.decimals
-                      );
-
-                      setStep(4);
-                      setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
-                      setFieldValue("receipt", txResponse);
+                      // Non-Ledger accounts
+                      if (asset.type === "ether") {
+                        const txResponse = await transfer(
+                          address,
+                          amount,
+                          calculateGasPrice!
+                        );
+                
+                        setStep(4);
+                        setFieldValue("receipt", txResponse);
+                        setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
+                
+                        await callBalanceForApp();
+                      } else {
+                        // Handle ERC 20 transfers
+                        const txResponse = await transferToken(
+                          asset.address,
+                          address,
+                          amount,
+                          calculateGasPrice!,
+                          asset.decimals
+                        );
+                
+                        setStep(4);
+                        setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
+                        setFieldValue("receipt", txResponse);
+                      }
+                
+                      await callBalanceForApp();
                     }
-
-                    await callBalanceForApp();
-                  } catch (error: any) {
+                
+                  } catch (error) {
                     console.error(error);
-                    // display error message
+                    // Display error message
                     setStep(4);
-                    setError(
-                      error && error.shortMessage
-                        ? error.shortMessage
-                        : "Transaction failed, please try again."
-                    );
+                
+                    if (error instanceof Error) {
+                      return setError(error && error.message);
+                    }
+                
+                    setError("Transaction failed. Please try again.");
                   } finally {
                     setLoading(false);
                   }
@@ -590,9 +648,11 @@ const Send = () => {
                           </div>
                         )}
                         {step === 4 && error && (
-                          <p className="my-2 dark:text-neutral-300 text-sm font-bold rounded">
-                            {error}
-                          </p>
+                          <div className="px-4 my-16">
+                            <p className="my-2 dark:text-neutral-300 text-sm font-bold rounded text-center text-neutral-600 dark:text-neutral-400">
+                              {error}
+                            </p>
+                          </div>
                         )}
                         {step === 4 && error && (
                           <div className="px-4 grid grid-cols-1 mt-4">

@@ -62,9 +62,6 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
 
   const fetchTokenBalance = useCallback(
     async (tokenAddress: string) => {
-      if (!signer) {
-        throw new Error("Signer not available");
-      }
       try {
         // Call balanceOf function
         const contract = new Contract(tokenAddress, ABI_ERC20, _provider);
@@ -76,7 +73,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
         // );
       }
     },
-    [_provider, signer, _address]
+    [_provider, _address]
   );
 
   useEffect(() => {
@@ -139,7 +136,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
 
       return gasUnits.toString();
     } catch (error) {
-      // console.error("Error estimating gas:", error);
+      console.error("Error estimating gas:", error);
       return "0"; // Default to 0 gasUnits
     }
   };

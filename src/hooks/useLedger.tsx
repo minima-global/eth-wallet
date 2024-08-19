@@ -1,35 +1,13 @@
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
-import { listen } from "@ledgerhq/logs";
+
 import Eth from "@ledgerhq/hw-app-eth";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { appContext } from "../AppContext";
 
 const useLedger = () => {
+    const { addUserAccount } = useContext(appContext);
     const [connected, setConnected] = useState<boolean | null>(null);
-    const [ledgerTransport, setLedgerTransport] = useState<TransportWebUSB | null>(null);
-
-    const init = async () => {
-        try {
-            console.log("Initializing Ledger...");
-
-            // Establish a connection with the Ledger device using WebUSB
-            const transport = await TransportWebUSB.create();
-            setLedgerTransport(transport);
-
-            // Listen to the events for debugging purposes
-            listen(log => console.log(log));
-
-            // Create an instance of the Ethereum app
-            const appEth = new Eth(transport);
-            const { address } = await appEth.getAddress("44'/60'/0'/0/0");
-
-            console.log('Your ETH address:', address);
-            setConnected(true);
-
-        } catch (error) {
-            console.error("Failed to initialize Ledger:", error);
-            setConnected(false);
-        }
-    };
+    const [ledgerTransport, setLedgerTransport] = useState<any | null>(null);
 
     const connectLedgerAndGetAccounts = async () => {
         setConnected(null);
@@ -77,10 +55,18 @@ const useLedger = () => {
         }
     };
 
-    const addSelectedAccount = (selectedAccount: { index: number; address: string }) => {
+    const addSelectedAccount = async (account: { index: number; address: string }) => {
         // Add the selected account to your application's state or database
-        console.log("Adding account to app:", selectedAccount);
+        console.log("Adding account to app:", account);
         // For example, you could store the selected account in state or local storage
+        await addUserAccount({
+            nickname: `Ledger Account ${account.index + 1}`, // Use nickname or a default name
+            address: account.address,
+            privatekey: undefined, // Ledger accounts won't have a private key stored
+            current: false,
+            type: 'ledger',
+            bip44Path: `44'/60'/${account.index}'/0/0`
+          });
     };
 
     const disconnectLedger = async () => {
@@ -99,7 +85,6 @@ const useLedger = () => {
     };
 
     return {
-        init,
         connected,
         connectLedgerAndGetAccounts,
         chooseAccount,

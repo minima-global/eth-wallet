@@ -46,7 +46,9 @@ const AppProvider = ({ children }: IProps) => {
   const [_activities, setActivities] = useState<
     (TransactionResponse | ContractTransactionResponse)[]
   >([]);
+
   const [_generatedKey, setGeneratedKey] = useState("");
+  
   // mainnet, sepolia, hardhat, etc...
   const [_provider, setProvider] = useState<JsonRpcProvider | null>(null); //  new JsonRpcProvider(networks["sepolia"].rpc)
   const [_promptReadMode, setReadMode] = useState<null | boolean>(null);
@@ -166,11 +168,10 @@ const AppProvider = ({ children }: IProps) => {
                     privatekey: resp.response.seedrandom,
                     address: account.address,
                     current: true,
+                    type: 'normal'
                   });
                 }
               })();
-              // init app with this key
-              createKey(resp.response.seedrandom);
             });
           }
 
@@ -404,32 +405,32 @@ const AppProvider = ({ children }: IProps) => {
     // Update the state with the modified accounts
     setUserAccounts(updatedData);
 
-    // If the selected account has a private key, use it; otherwise, generate a new key
-    if (account.privatekey.length) {
-      createKey(account.privatekey);
-    } else {
-      (window as any).MDS.cmd(`checkmode`, function (response: any) {
-        if (response.status) {
-          // If in write mode, generate & set key
-          if (response.response.mode === "WRITE") {
-            // Generate key for Eth Wallet
-            (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
-              if (!resp.status) {
-                if (resp.error && resp.error.includes("DB locked!")) {
-                  return setPromptDatabaseLocked(true);
-                }
-              }
+    // // If the selected account has a private key, use it; otherwise, generate a new key
+    // if (account.privatekey.length) {
+    //   createKey(account.privatekey);
+    // } else {
+    //   (window as any).MDS.cmd(`checkmode`, function (response: any) {
+    //     if (response.status) {
+    //       // If in write mode, generate & set key
+    //       if (response.response.mode === "WRITE") {
+    //         // Generate key for Eth Wallet
+    //         (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
+    //           if (!resp.status) {
+    //             if (resp.error && resp.error.includes("DB locked!")) {
+    //               return setPromptDatabaseLocked(true);
+    //             }
+    //           }
 
-              createKey(resp.response.seedrandom);
-            });
-          }
+    //           createKey(resp.response.seedrandom);
+    //         });
+    //       }
 
-          return setReadMode(response.response.mode === "READ");
-        }
+    //       return setReadMode(response.response.mode === "READ");
+    //     }
 
-        return setReadMode(false);
-      });
-    }
+    //     return setReadMode(false);
+    //   });
+    // }
 
     // Retrieve the existing rows from the cache
     const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);

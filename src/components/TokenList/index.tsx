@@ -10,7 +10,6 @@ import RefreshIcon from "../UI/Icons/RefreshIcon";
 import { differenceInSeconds } from "date-fns";
 import { rings } from "@dicebear/collection";
 import { createAvatar } from "@dicebear/core";
-import useLedger from "../../hooks/useLedger";
 
 const TokenList = () => {
   const {
@@ -19,7 +18,6 @@ const TokenList = () => {
     promptTokenDetails,
     _triggerBalanceUpdate
   } = useContext(appContext);
-  const { init } = useLedger();
   const { _balance, _network, callBalanceForApp } = useWalletContext();
   const { tokens } = useTokenStoreContext();
 
@@ -87,7 +85,7 @@ const TokenList = () => {
       )}
       {!_triggerBalanceUpdate && (
         <ul>
-          {tokens.map((token) => (
+          {!!tokens.length && _network && tokens.map((token) => (
             <li
               onClick={() => promptTokenDetails(token)}
               key={token.address}
@@ -162,10 +160,6 @@ const TokenList = () => {
       {!_triggerBalanceUpdate && (
         <div>
           <ImportToken />
-
-          <div className="w-full grid">
-            <button className="text-sm bg-white text-black mx-auto" onClick={init}>Connect Ledger</button>
-          </div>
         </div>
       )}
     </div>

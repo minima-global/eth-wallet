@@ -17,7 +17,6 @@ import Account from "./Account";
 import { Formik } from "formik";
 import BackIcon from "../UI/Icons/BackIcon";
 import { Wallet } from "ethers";
-import { UserAccount } from "../../types/Accounts";
 import useLedger from "../../hooks/useLedger";
 
 const UserAccount = () => {
@@ -426,7 +425,7 @@ const UserAccount = () => {
 
                           const accountAddress = new Wallet(privatekey);
                           
-                          await addUserAccount({nickname, address: accountAddress.address, privatekey, current: false});                        
+                          await addUserAccount({nickname, address: accountAddress.address, privatekey, current: false, type: 'normal'});                        
                           console.log('ADDED!');
                         } catch (err) {
                           if (err instanceof Error) {
@@ -497,24 +496,40 @@ const UserAccount = () => {
                   {importType === "ledger" && <Formik
                       initialValues={{ selectedAccounts: [] as any[] }}
                       onSubmit={async ({selectedAccounts}) => {
+                        console.log(selectedAccounts);
                         try {
-                          // Set up the a/c
-
-                          // const accountAddress = new Wallet(privatekey);
-                          
-                          // await addUserAccount({nickname, address: accountAddress.address, privatekey, current: false});                        
-                          console.log('ADDED!');
+                          return;
+                          // Iterate over each selected account and add it with the type 'ledger'
+                          for (const account of selectedAccounts) {
+                            await addUserAccount({
+                              nickname: account.nickname || `Ledger Account ${account.index + 1}`, // Use nickname or a default name
+                              address: account.address,
+                              privatekey: undefined, // Ledger accounts won't have a private key stored
+                              current: false,
+                              type: 'ledger'
+                              
+                            });
+                          }
+                          console.log('All accounts added!');
                         } catch (err) {
                           if (err instanceof Error) {
-                            setError((prevState) => prevState ? ({
-                              ...prevState,
-                              ledger: err.message,
-                            }) : {ledger: err.message});
+                            setError((prevState) =>
+                              prevState
+                                ? {
+                                    ...prevState,
+                                    ledger: err.message,
+                                  }
+                                : { ledger: err.message }
+                            );
                           } else {
-                            setError((prevState) => prevState ? ({
-                              ...prevState,
-                              ledger: "Invalid Account",
-                            }) : {ledger: "Invalid Account"});
+                            setError((prevState) =>
+                              prevState
+                                ? {
+                                    ...prevState,
+                                    ledger: "Invalid Account",
+                                  }
+                                : { ledger: "Invalid Account" }
+                            );
                           }
                         }
                       }}
