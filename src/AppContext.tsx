@@ -48,7 +48,7 @@ const AppProvider = ({ children }: IProps) => {
   >([]);
 
   const [_generatedKey, setGeneratedKey] = useState("");
-  
+
   // mainnet, sepolia, hardhat, etc...
   const [_provider, setProvider] = useState<JsonRpcProvider | null>(null); //  new JsonRpcProvider(networks["sepolia"].rpc)
   const [_promptReadMode, setReadMode] = useState<null | boolean>(null);
@@ -157,8 +157,8 @@ const AppProvider = ({ children }: IProps) => {
 
                 // if they exist init
                 if (userAccounts) {
-                  console.log("ua", JSON.parse(userAccounts.DATA));
-                  setUserAccounts(JSON.parse(userAccounts.DATA));
+                  console.log("ua", JSON.parse(userAccounts.DATA.replace(/%27/g, "'")));
+                  setUserAccounts(JSON.parse(userAccounts.DATA.replace(/%27/g, "'")));
                   // if not exist, create first account of node
                 } else {
                   const account = new Wallet(resp.response.seedrandom);
@@ -168,7 +168,7 @@ const AppProvider = ({ children }: IProps) => {
                     privatekey: resp.response.seedrandom,
                     address: account.address,
                     current: true,
-                    type: 'normal'
+                    type: "normal",
                   });
                 }
               })();
@@ -373,8 +373,10 @@ const AppProvider = ({ children }: IProps) => {
     }
   };
 
-  const addUserAccount = async (account: UserAccount) => {
-    const updatedData = [..._userAccounts, account];
+  const addUserAccount = async (newAccounts: UserAccount[] | UserAccount) => {
+    const updatedData = Array.isArray(newAccounts)
+      ? [..._userAccounts, ...newAccounts]
+      : [..._userAccounts, newAccounts];
 
     setUserAccounts(updatedData);
 
@@ -440,13 +442,13 @@ const AppProvider = ({ children }: IProps) => {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
           updatedData
-        )}')`
+        ).replace(/'/g, '%27')}')`
       );
     } else {
       await sql(
         `UPDATE cache SET data = '${JSON.stringify(
           updatedData
-        )}' WHERE name = 'USER_ACCOUNTS'`
+        ).replace(/'/g, '%27')}' WHERE name = 'USER_ACCOUNTS'`
       );
     }
   };
@@ -651,6 +653,7 @@ const AppProvider = ({ children }: IProps) => {
         loaded,
         isWorking,
 
+        _currentAccount: _userAccounts.find(a => a.current),
         _userAccounts,
         addUserAccount,
         setCurrentUserAccount,

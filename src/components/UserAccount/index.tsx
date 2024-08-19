@@ -13,11 +13,11 @@ import PrivateKey from "../PrivateKey";
 import Cross from "../UI/Cross";
 import Profile from "../UI/Profile";
 import AnimatedDialog from "../UI/AnimatedDialog";
-import Account from "./Account";
 import { Formik } from "formik";
 import BackIcon from "../UI/Icons/BackIcon";
 import { Wallet } from "ethers";
 import useLedger from "../../hooks/useLedger";
+import Account from "./Account";
 
 const UserAccount = () => {
   const [promptUserAccountDetails, setPromptUserAccountDetails] =
@@ -26,29 +26,12 @@ const UserAccount = () => {
   const [promptAddAccount, setPromptAddAccount] = useState(false);
 
   // ledger
-  const {connectLedgerAndGetAccounts, chooseAccount, addSelectedAccount, disconnectLedger, connected} = useLedger();
-
-  const [accounts, setAccounts] = useState<any>([]);
-  const [selectedAccounts, setSelectedAccounts] = useState<any>([]);
+  const {accounts, loadingMore, connected, accountOffset, loadMoreAccounts, addSelectedAccount, disconnectLedger, loadPreviousAccounts, connectLedgerAndGetAccounts} = useLedger();
 
   const handleConnectLedger = async () => {
-    const fetchedAccounts = await connectLedgerAndGetAccounts();
-    if (fetchedAccounts) {
-      setAccounts(fetchedAccounts);
-    }
+    await connectLedgerAndGetAccounts();    
   };
 
-  const handleAccountSelection = (account) => {
-    setSelectedAccounts(prevSelectedAccounts => {
-      if (prevSelectedAccounts.includes(account)) {
-        // Remove the account if it's already selected (deselect)
-        return prevSelectedAccounts.filter(acc => acc !== account);
-      } else {
-        // Add the account to the selected list
-        return [...prevSelectedAccounts, account];
-      }
-    });
-  };
 
   const [error, setError] = useState<{ import?: string; ledger?: string } | false>(false);
   const [viewPrivateKey, setViewPrivateKey] = useState(false);
@@ -116,6 +99,8 @@ const UserAccount = () => {
       : "translateY(-50%) scale(0.8)",
     config: config.gentle,
   });
+
+  console.log('ua', _userAccounts);
 
   return (
     <>
@@ -357,10 +342,9 @@ const UserAccount = () => {
       <AnimatedDialog
         display={promptAccounts}
         dismiss={() => setPromptAccounts(false)}
-      >
-        <div>
+      >        
           <div className="max-w-lg mx-4 sm:mx-auto">
-            <div className="w-full rounded-lg bg-white dark:bg-[#1B1B1B] shadow-md dark:shadow-none py-8 text-left">
+            <div className="w-full rounded-lg bg-white dark:bg-[#1B1B1B] shadow-md dark:shadow-none py-8 text-left max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between items-center px-6">
                 {!promptAddAccount && (
                   <h2 className="text-xl font-bold dark:text-neutral-400">
@@ -411,7 +395,7 @@ const UserAccount = () => {
                         type="button"
                         className="sm:max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
                       >
-                        Import Ledger Wallet
+                        Import Ledger Account(s)
                       </button>
                     </div>
                   )}
@@ -498,18 +482,9 @@ const UserAccount = () => {
                       onSubmit={async ({selectedAccounts}) => {
                         console.log(selectedAccounts);
                         try {
-                          return;
-                          // Iterate over each selected account and add it with the type 'ledger'
-                          for (const account of selectedAccounts) {
-                            await addUserAccount({
-                              nickname: account.nickname || `Ledger Account ${account.index + 1}`, // Use nickname or a default name
-                              address: account.address,
-                              privatekey: undefined, // Ledger accounts won't have a private key stored
-                              current: false,
-                              type: 'ledger'
-                              
-                            });
-                          }
+                          // add all selectedAccounts                          
+                          await addSelectedAccount(selectedAccounts);
+                          
                           console.log('All accounts added!');
                         } catch (err) {
                           if (err instanceof Error) {
@@ -590,13 +565,17 @@ const UserAccount = () => {
                             <h3 className="font-bold px-6">Select an Ethereum Account:</h3>
                             <ul className="space-y-2">
                               {accounts.length === 0 && <p className="px-6">Loading accounts...</p>}
-                              {accounts.length > 0 && accounts.map((acc, index) => {
+                              {loadingMore && <p className="text-sm text-center text-neutral-600 dark:text-neutral-500 animate-pulse">Loading...</p>}
+                              {accounts.length > 0 && <>
+                              {accounts.map((acc, index) => {
                                     const isSelected = values.selectedAccounts.some(a => a.address === acc.address);
-                                    
+                                    const isImported = _userAccounts.some(imported => imported.address === acc.address);
+
                                     return (
                                       <li
-                                        key={index}
-                                        onClick={() => {
+                                      key={index}
+                                      onClick={() => {
+                                        if (!isImported) { // Only allow click if the account is not imported
                                           const selected = values.selectedAccounts;
                                           if (isSelected) {
                                             setFieldValue(
@@ -609,14 +588,25 @@ const UserAccount = () => {
                                               [...selected, acc]
                                             );
                                           }
-                                        }}
-                                        className={`px-6 tracking-wide text-sm cursor-pointer ${isSelected ? 'bg-blue-500 text-white dark:bg-neutral-800 dark:text-neutral-500' : ''}`}
-                                      >
-                                        {acc.address}
-                                      </li>
+                                        }
+                                      }}
+                                      className={`px-6 tracking-wide text-sm cursor-pointer ${
+                                        isSelected ? 'bg-blue-500 text-white dark:bg-neutral-800 dark:text-neutral-500' : ''
+                                      } ${isImported ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    >
+                                      {acc.address}
+                                      {isImported && <span className="text-xs ml-2">(Imported)</span>}
+                                    </li>
                                     );
                                   })}
+
+                              
+                              </>}
                             </ul>
+                            {accounts.length > 0 &&<div className="grid grid-cols-2 gap-2 mx-4 mt-8">
+                              <button className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30" disabled={loadingMore || accountOffset === 0} type='button' onClick={loadPreviousAccounts}>Prev ({accountOffset})</button>
+                              <button className="w-full full-rounded bg-black !text-white dark:text-neutral-100 font-bold disabled:opacity-30" type='button' onClick={loadMoreAccounts} disabled={loadingMore}>Next</button>
+                            </div>}
 
                             {values.selectedAccounts.length === 0 && <p className="px-6 dark:text-neutral-500">No account(s) selected</p>}
                             {values.selectedAccounts.length > 0 && (
@@ -633,8 +623,9 @@ const UserAccount = () => {
                             )}
                               <div className="mx-6 mt-8">
                                 <button
+                                  disabled={values.selectedAccounts.length === 0}
                                   type="submit"
-                                  className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                                  className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
                                 >
                                   Import Account(s)
                                 </button>
@@ -649,10 +640,10 @@ const UserAccount = () => {
                     </Formik>}
                 </div>
               ) : (
-                <div className="mt-8 mb-36">
+                <div className="mt-8 mb-16 relative">
                   {_address ? (
                     <>
-                      <ul className="space-y-2">
+                      <ul className="space-y-2 h-[250px] overflow-y-scroll">
                         {_userAccounts.length && ( _userAccounts.map((account) => <Account key={account.address} account={account} />)
                         )}
                       </ul>
@@ -667,7 +658,7 @@ const UserAccount = () => {
                   <button
                     onClick={() => setPromptAddAccount(true)}
                     type="button"
-                    className="max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                    className="mx-4 text-sm sm:text-base sm:mx-0 max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
                   >
                     Import Account or Ledger Wallet
                   </button>
@@ -675,7 +666,6 @@ const UserAccount = () => {
               </div>
             </div>
           </div>
-        </div>
       </AnimatedDialog>
     </>
   );

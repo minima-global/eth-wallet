@@ -29,8 +29,6 @@ import * as utils from "../../utils";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import Eth, {ledgerService} from "@ledgerhq/hw-app-eth";
 
-import { serializeTransaction } from "ethers-5/lib/utils";
-
 const Send = () => {
   const {
     _currentNavigation,
@@ -307,8 +305,8 @@ const Send = () => {
                       };
                       
                       console.log('unsignedTx', unsignedTx);
-                
-                      ethApp.getAddress("44'/60'/0'/1/0").then(address => console.log(address));
+                      console.log('current', current);
+                      ethApp.getAddress(current.bip44Path).then(address => console.log(address));
                       return;
                       const serializedTx = Transaction.from(unsignedTx).unsignedSerialized;
                       console.log('serializedTx', serializedTx);

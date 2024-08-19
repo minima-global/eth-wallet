@@ -1,6 +1,7 @@
 export function sql(query: string, singleResult = true) {
     return new Promise((resolve, reject) => {
         (window as any).MDS.sql(query, function (response: any) {
+            console.log('resp', response);
             if (response.status) {
                 if (response.rows && singleResult) {
                     return resolve(response.rows[0]);

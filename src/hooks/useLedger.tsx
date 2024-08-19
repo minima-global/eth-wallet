@@ -1,96 +1,133 @@
+import { useContext, useState, useEffect, useCallback } from "react";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
-
 import Eth from "@ledgerhq/hw-app-eth";
-import { useContext, useState } from "react";
 import { appContext } from "../AppContext";
 
 const useLedger = () => {
-    const { addUserAccount } = useContext(appContext);
-    const [connected, setConnected] = useState<boolean | null>(null);
-    const [ledgerTransport, setLedgerTransport] = useState<any | null>(null);
+  const { addUserAccount } = useContext(appContext);
+  const [connected, setConnected] = useState<boolean | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [ledgerTransport, setLedgerTransport] = useState<any | null>(null);
+  const [accounts, setAccounts] = useState<any[]>([]); // State to store fetched accounts
+  const [accountIndex, setAccountIndex] = useState(5);
+  const [accountOffset, setAccountOffset] = useState(0);
 
-    const connectLedgerAndGetAccounts = async () => {
-        setConnected(null);
+  // Function to connect to Ledger and fetch accounts
+  const connectLedgerAndGetAccounts = useCallback(
+    async () => {
+      setLoadingMore(true);
+      
+      try {
+        const transport = await TransportWebUSB.create();
+        setLedgerTransport(transport);
 
-        try {
-            // Establish a connection with the Ledger device using WebUSB
-            const transport = await TransportWebUSB.create();
-            setLedgerTransport(transport);
+        const ethApp = new Eth(transport);
+        const derivationPath = (index: number) => `44'/60'/${index}'/0/0`;
 
-            // Create an instance of the Ethereum app
-            const ethApp = new Eth(transport);
-
-            // Path format for Ethereum accounts according to BIP44: m/44'/60'/account'/change/address_index
-            const derivationPath = (index: number) => `44'/60'/${index}'/0/0`;
-
-            // Ask for accounts and their addresses
-            const accounts: any = [];
-            for (let i = 0; i < 5; i++) {  // Example: fetching first 5 accounts
-                const { address } = await ethApp.getAddress(derivationPath(i));
-                accounts.push({ index: i, address });
-            }
-
-            // Set connected status to true and return the list of accounts
-            setConnected(true);
-            return accounts;
-
-        } catch (error) {
-            console.error("Failed to connect to Ledger:", error);
-            setConnected(false);
-            return null;
+        const newAccounts: any = [];
+        for (let i = accountOffset; i < accountOffset + accountIndex; i++) {
+          const { address } = await ethApp.getAddress(derivationPath(i));
+          newAccounts.push({ index: i, address });
         }
-    };
 
-    const chooseAccount = async () => {
-        const accounts = await connectLedgerAndGetAccounts();
+        setConnected(true);
+        setAccounts(newAccounts); // Append new accounts to the existing list
+        return newAccounts;
+      } catch (error) {
+        console.error("Failed to connect to Ledger:", error);
+        setConnected(false);
+        return null;
+      } finally {
+        setLoadingMore(false);
+      }
+    },
+    [accountIndex, accountOffset]
+  );
 
-        if (accounts) {
-            // Display the accounts and let the user choose one
-            console.log("Available accounts:", accounts);
-            const selectedAccount = accounts[0]; // For simplicity, selecting the first account
-            console.log("Selected account:", selectedAccount);
+  // Auto-call connectLedgerAndGetAccounts when accountIndex or accountOffset changes
+  useEffect(() => {
+    connectLedgerAndGetAccounts();
+  }, [connectLedgerAndGetAccounts]);
 
-            // Proceed to add the selected account to your app
-            addSelectedAccount(selectedAccount);
-        }
-    };
+  // Function to load more accounts manually
+  const loadMoreAccounts = () => {
+    // Update accountOffset, which will trigger fetching more accounts
+    setAccountOffset((prevOffset) => prevOffset + 5);
+  };
+  const loadPreviousAccounts = () => {
+    // Update accountOffset, which will trigger fetching more accounts
+    setAccountOffset((prevOffset) => prevOffset - 5);
+  };
 
-    const addSelectedAccount = async (account: { index: number; address: string }) => {
-        // Add the selected account to your application's state or database
-        console.log("Adding account to app:", account);
-        // For example, you could store the selected account in state or local storage
-        await addUserAccount({
-            nickname: `Ledger Account ${account.index + 1}`, // Use nickname or a default name
+  // Manually choose an account (can be called anytime)
+  const chooseAccount = async () => {
+    const accounts = await connectLedgerAndGetAccounts();
+
+    if (accounts) {
+      console.log("Available accounts:", accounts);
+      const selectedAccount = accounts[0]; // For simplicity, selecting the first account
+      console.log("Selected account:", selectedAccount);
+      addSelectedAccount(selectedAccount);
+    }
+  };
+
+  // Function to add a selected account
+  const addSelectedAccount = async (account) => {
+    const addAccounts = Array.isArray(account)
+      ? account.map((acc) => ({
+          nickname: `Ledger Account ${acc.index}`,
+          address: acc.address,
+          privatekey: undefined,
+          current: false,
+          type: "ledger",
+          bip44Path: `44'/60'/${acc.index}'/0/0`.replace(/'/g, "%27"),
+        }))
+      : [
+          {
+            nickname: `Ledger Account ${account.index}`,
             address: account.address,
-            privatekey: undefined, // Ledger accounts won't have a private key stored
+            privatekey: undefined,
             current: false,
-            type: 'ledger',
-            bip44Path: `44'/60'/${account.index}'/0/0`
-          });
-    };
+            type: "ledger",
+            bip44Path: `44'/60'/${account.index}'/0/0`.replace(/'/g, "%27"),
+          },
+        ];
 
-    const disconnectLedger = async () => {
-        if (ledgerTransport) {
-            try {
-                await ledgerTransport.close();
-                setLedgerTransport(null);  // Clear the transport instance
-                setConnected(null);  // Update connection status
-                console.log("Ledger disconnected successfully.");
-            } catch (error) {
-                console.error("Failed to disconnect Ledger:", error);
-            }
-        } else {
-            console.warn("No Ledger device is connected.");
-        }
-    };
+    await addUserAccount(addAccounts);
+  };
 
-    return {
-        connected,
-        connectLedgerAndGetAccounts,
-        chooseAccount,
-        addSelectedAccount,
-        disconnectLedger // Include the disconnect method
-    };
+  // Function to disconnect the Ledger device
+  const disconnectLedger = async () => {
+    if (ledgerTransport) {
+      try {
+        await ledgerTransport.close();
+        setAccountOffset(0);
+        setLedgerTransport(null);
+        setConnected(null);
+        console.log("Ledger disconnected successfully.");
+      } catch (error) {
+        console.error("Failed to disconnect Ledger:", error);
+      }
+    } else {
+      console.warn("No Ledger device is connected.");
+    }
+  };
+
+  return {
+    connected,
+    connectLedgerAndGetAccounts,
+    chooseAccount,
+    addSelectedAccount,
+    disconnectLedger,
+    accountIndex,
+    setAccountIndex,
+    accountOffset,
+    setAccountOffset,
+    accounts, // Expose the accounts state
+    loadingMore,
+    loadPreviousAccounts,
+    loadMoreAccounts,
+  };
 };
 
 export default useLedger;
