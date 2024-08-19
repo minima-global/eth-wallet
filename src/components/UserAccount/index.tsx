@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useSpring, animated, config } from "react-spring";
+import { useSpring, animated, config, update } from "react-spring";
 
 import styles from "./UserAccount.module.css";
 import * as utils from "../../utils";
@@ -31,7 +31,15 @@ const UserAccount = () => {
   const handleConnectLedger = async () => {
     await connectLedgerAndGetAccounts();    
   };
-
+  const {
+    _promptAccountNameUpdate,
+    promptAccountNameUpdate,
+    _addressBook,
+    updateUserAccount,
+    _userAccounts,
+    addUserAccount,
+    _currentAccount
+  } = useContext(appContext);
 
   const [error, setError] = useState<{ import?: string; ledger?: string } | false>(false);
   const [viewPrivateKey, setViewPrivateKey] = useState(false);
@@ -39,16 +47,8 @@ const UserAccount = () => {
     null
   );
 
-  const [nickname, setNickname] = useState("");
+  const [nickname, setNickname] = useState((_currentAccount && _currentAccount.nickname) ? _currentAccount.nickname : "");
   const { _address } = useWalletContext();
-  const {
-    _promptAccountNameUpdate,
-    promptAccountNameUpdate,
-    _addressBook,
-    updateAddressBook,
-    _userAccounts,
-    addUserAccount
-  } = useContext(appContext);
 
   const [_promptQrCode, setPromptQrCode] = useState(false);
   const [viewKey, setViewKey] = useState(false);
@@ -63,6 +63,14 @@ const UserAccount = () => {
   const promptQrCode = () => {
     setPromptQrCode((prevState) => !prevState);
   };
+
+  useEffect(() => {
+
+    if (_currentAccount) {
+      setNickname(_currentAccount.nickname);
+    }
+    
+  }, [_currentAccount])
 
   const handleStart = () => {
     timeoutRef.current = setInterval(() => {
@@ -117,9 +125,7 @@ const UserAccount = () => {
           </div>
         )}
         <h3 className="truncate font-bold max-w-[128px] dark:text-black">
-          {_address && _addressBook[_address] && _addressBook[_address].length
-            ? _addressBook[_address]
-            : "Account"}
+          {_currentAccount && _currentAccount.nickname? _currentAccount.nickname : "Account"}
         </h3>
         <svg
           className="min-w-[20px] text-black"
@@ -219,10 +225,7 @@ const UserAccount = () => {
                     {!_promptAccountNameUpdate && (
                       <div className="flex gap-1 mt-3 items-center justify-center">
                         <h3 className="font-bold max-w-[128px] dark:text-teal-300 md:text-xl truncate">
-                          {_addressBook[_address!] &&
-                          _addressBook[_address!].length
-                            ? _addressBook[_address!]
-                            : "Minimalist"}
+                          {_currentAccount.nickname || "Minimalist"}
                         </h3>
 
                         <svg
@@ -253,12 +256,16 @@ const UserAccount = () => {
                           placeholder="Enter nickname"
                         />
                         <svg
-                          onClick={() =>
-                            updateAddressBook(
-                              _address,
-                              utils.sanitizeSQLInput(nickname)
-                            )
-                          }
+                          onClick={() => {
+                            if (!nickname.length) {
+                              return;
+                            }
+
+                            const sanitizedNickname = utils.sanitizeSQLInput(nickname);
+                            
+                            const updatedAccount = { ..._currentAccount, nickname: sanitizedNickname };
+                            updateUserAccount(updatedAccount);
+                          }}
                           xmlns="http://www.w3.org/2000/svg"
                           width="44"
                           height="44"
@@ -282,6 +289,7 @@ const UserAccount = () => {
 
                   <div className="w-max mx-auto my-4">
                     {!viewKey && <WalletAddress fullAddress />}
+                    
                     {!viewKey && (
                       <button
                         onMouseDown={handleStart}
@@ -298,6 +306,7 @@ const UserAccount = () => {
                           : `View private key`}
                       </button>
                     )}
+
                     {viewKey && (
                       <div className="my-2">
                         <PrivateKey fullAddress />
@@ -326,8 +335,7 @@ const UserAccount = () => {
                         type="button"
                         className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold"
                       >
-                        {!!_userAccounts.length &&
-                          _userAccounts.find((account) => account.current) && _userAccounts.find((account) => account.current).nickname
+                        {_currentAccount.nickname || "Minimalist"
                           }
                       </button>
                     </div>

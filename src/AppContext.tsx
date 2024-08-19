@@ -407,32 +407,34 @@ const AppProvider = ({ children }: IProps) => {
     // Update the state with the modified accounts
     setUserAccounts(updatedData);
 
-    // // If the selected account has a private key, use it; otherwise, generate a new key
-    // if (account.privatekey.length) {
-    //   createKey(account.privatekey);
-    // } else {
-    //   (window as any).MDS.cmd(`checkmode`, function (response: any) {
-    //     if (response.status) {
-    //       // If in write mode, generate & set key
-    //       if (response.response.mode === "WRITE") {
-    //         // Generate key for Eth Wallet
-    //         (window as any).MDS.cmd("seedrandom modifier:ghost", (resp) => {
-    //           if (!resp.status) {
-    //             if (resp.error && resp.error.includes("DB locked!")) {
-    //               return setPromptDatabaseLocked(true);
-    //             }
-    //           }
+    // Retrieve the existing rows from the cache
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
 
-    //           createKey(resp.response.seedrandom);
-    //         });
-    //       }
+    // If the row doesn't exist, insert a new one; otherwise, update the existing row
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, '%27')}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, '%27')}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+  };
+  
+  const updateUserAccount = async (account: UserAccount) => {
+    // Update the `current` property for each account
+    const updatedData = _userAccounts.map((userAccount) => ({
+      ...userAccount,
+      nickname: userAccount.address === account.address ? account.nickname : userAccount.nickname
+    }));
 
-    //       return setReadMode(response.response.mode === "READ");
-    //     }
-
-    //     return setReadMode(false);
-    //   });
-    // }
+    // Update the state with the modified accounts
+    setUserAccounts(updatedData);
 
     // Retrieve the existing rows from the cache
     const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
@@ -450,6 +452,11 @@ const AppProvider = ({ children }: IProps) => {
           updatedData
         ).replace(/'/g, '%27')}' WHERE name = 'USER_ACCOUNTS'`
       );
+    }
+
+
+    if (_promptAccountNameUpdate) {
+      setPromptAccountNameUpdate(false);
     }
   };
 
@@ -656,6 +663,7 @@ const AppProvider = ({ children }: IProps) => {
         _currentAccount: _userAccounts.find(a => a.current),
         _userAccounts,
         addUserAccount,
+        updateUserAccount,
         setCurrentUserAccount,
         deleteUserAccount,
 
