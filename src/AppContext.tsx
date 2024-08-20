@@ -412,7 +412,6 @@ const AppProvider = ({ children }: IProps) => {
   };
 
   const setCurrentUserAccount = async (account: UserAccount, filteredData?: UserAccount[]) => {
-    console.log('SetCurrentUserAccount', account);
     
     // Use filteredData if provided, otherwise fall back to _userAccounts
     const accountsToUpdate = filteredData || _userAccounts;
@@ -421,6 +420,7 @@ const AppProvider = ({ children }: IProps) => {
     const updatedData = accountsToUpdate.map((userAccount) => ({
       ...userAccount,
       current: userAccount.address === account.address, // Set `current` to true for the selected account
+      bip44Path: account.bip44Path ? account.bip44Path.replace(/''/g, "'") : undefined
     }));
 
     // Update the state with the modified accounts

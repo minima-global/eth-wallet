@@ -11,7 +11,7 @@ import AddressBook from "../AddressBook";
 import ConversionRateUSD from "../ConversionRateUSD";
 import AddressBookContact from "../AddressBookContact";
 
-import { formatUnits, getAddress, Interface, parseEther, parseUnits, toQuantity, Transaction } from "ethers";
+import { formatUnits, getAddress, Interface, parseEther, parseUnits,  Transaction } from "ethers";
 
 import * as yup from "yup";
 import SelectAsset from "../SelectAsset";
@@ -29,6 +29,7 @@ import * as utils from "../../utils";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import Eth, {ledgerService} from "@ledgerhq/hw-app-eth";
 import TransferIcon from "../UI/Icons/TransferIcon";
+import RefreshIcon from "../UI/Icons/RefreshIcon";
 
 const Send = () => {
   const {
@@ -37,10 +38,11 @@ const Send = () => {
     _defaultNetworks,
     _currentNetwork,
     _userAccounts,
-    _provider
+    _provider,
+    _currentAccount
   } = useContext(appContext);
   const { tokens, transferToken } = useTokenStoreContext();
-  const { _address, _balance, _network, callBalanceForApp, transfer } =
+  const { _chainId, _address, _balance, _network,  callBalanceForApp, transfer } =
     useWalletContext();
   const { level } = useGasContext();
 
@@ -50,6 +52,8 @@ const Send = () => {
 
   const { gasInfo, setGas } = useGasInfo(step, level);
   const { estimateGas } = useGasContext();
+
+  const [ledgerContext, setLedgerContext] = useState<false | 'waiting' | 'rejected' | 'accepted'>(false);
 
   const springProps = useSpring({
     opacity: _currentNavigation === "send" ? 1 : 0,
@@ -279,9 +283,14 @@ const Send = () => {
                       suggestedMaxPriorityFeePerGas
                     );
 
+                    // Account is a ledger a/c so we will use clear signatures
+                    if (current.type === 'ledger') {                      
+                      // if (!ledgerTransport) {
 
-                    if (current.type === 'ledger') {
-                      const transport = await TransportWebUSB.create();
+                      //   throw new Error("Please connect your ledger, unlock it and open the Ethereum application then try again.");
+                      // }
+                      const transport = await TransportWebUSB.create();                      
+
                       const ethApp = new Eth(transport);
                 
 
@@ -289,40 +298,38 @@ const Send = () => {
                         throw new Error("Gas API not available");
                       }
 
+                      const unsignedTx = new Transaction();
 
-                      const unsignedTx: any = {
-                        to: asset.type === "ether" ? address : asset.address, // Address of recipient for Ether, or ERC-20 contract address
-                        value: asset.type === "ether" ? toQuantity(parseEther(amount)) : "0x0", // Ether amount for Ether transfer, 0 for ERC-20
-                        gasLimit: toQuantity(parseUnits(gasUnits)), // must convert decimals to wei then use hex converter...
-                        maxFeePerGas: toQuantity(parseUnits(calculateGasPrice.baseFee)), // must convert decimals to wei then use hex converter...
-                        maxPriorityFeePerGas: toQuantity(parseUnits(calculateGasPrice.priorityFee)), // must convert decimals to wei then use hex converter...
-                        chainId: 1, // Mainnet ID; use appropriate chain ID for testnet or other networks
-                        nonce: await _provider.getTransactionCount(current.address), // Method to get nonce
-                        data: asset.type === 'erc20' 
+                      unsignedTx.to = asset.type === "ether" ? address : asset.address; // Address of recipient for Ether or ERC-20 Contract Address
+                      unsignedTx.value = asset.type === "ether" ? parseEther(amount) : BigInt(0);
+                      unsignedTx.gasLimit = gasUnits;
+                      unsignedTx.maxFeePerGas = parseUnits(calculateGasPrice.baseFee, 'gwei');
+                      unsignedTx.maxPriorityFeePerGas = parseUnits(calculateGasPrice.priorityFee, 'gwei');
+                      unsignedTx.chainId = _chainId ? BigInt(_chainId) : BigInt(1); // Mainnet ID; use appropriate chain ID for testnet or other networks
+                      unsignedTx.nonce = await _provider.getTransactionCount(current.address); // Method to get nonce
+                      unsignedTx.data = asset.type === 'erc20' 
                           ? new Interface([
                               "function transfer(address to, uint256 value)"
                             ]).encodeFunctionData("transfer", [address, parseUnits(amount, asset.decimals)])
                           : "0x" // No data for Ether transfer
-                      };
-                      
-                      console.log('unsignedTx', unsignedTx);
-                      console.log('current', current);
-                      ethApp.getAddress(current.bip44Path).then(address => console.log(address));
-                      return;
-                      const serializedTx = Transaction.from(unsignedTx).unsignedSerialized;
-                      console.log('serializedTx', serializedTx);
-                      const resolution = await ledgerService.resolveTransaction(serializedTx.slice(2), ethApp.loadConfig, {erc20: true, externalPlugins: true});
-                      console.log('res', resolution);                      
-                      const signature = await ethApp.signTransaction("44'/60'/0'/0/0", serializedTx.slice(2), resolution);
-                      console.log('signature', signature);
-                      const signedTx = Transaction.from(unsignedTx).serialized;
 
-                      console.log('signedTx', signedTx);
-                
-                      // const txResponse = await _provider.sendTransaction(signedTx);
-                      return;
+                      setLedgerContext('waiting');
+                      const serializedTx = unsignedTx.unsignedSerialized;
+                      const resolution = await ledgerService.resolveTransaction(serializedTx.slice(2), ethApp.loadConfig, {erc20: true, externalPlugins: true});
+                      const signature = await ethApp.signTransaction(current.bip44Path, serializedTx.slice(2), resolution);
+                      unsignedTx.signature = {r: "0x" + Buffer.from(signature.r), s: "0x"+Buffer.from(signature.s), v: "0x"+Buffer.from(signature.v)};
+
+                      unsignedTx.signature = {
+                        r: `0x${signature.r}`,
+                        s: `0x${signature.s}`,
+                        v: `0x${signature.v}`
+                      }  
+                      
+                      const serializedSignedTx = Transaction.from(unsignedTx).serialized;
+                      const txResponse = await _provider.broadcastTransaction(serializedSignedTx);
+                      
                       setStep(4);
-                      // setFieldValue("receipt", txResponse);
+                      setFieldValue("receipt", txResponse);
                       setFieldValue("gasPaid", calculateGasPrice!.finalGasFee);
                 
                       await callBalanceForApp();
@@ -364,12 +371,13 @@ const Send = () => {
                     setStep(4);
                 
                     if (error instanceof Error) {
-                      return setError(error && error.message);
+                      return setError(error.message);
                     }
                 
                     setError("Transaction failed. Please try again.");
                   } finally {
                     setLoading(false);
+                    setLedgerContext(false);
                   }
                 }}
               >
@@ -533,7 +541,7 @@ const Send = () => {
                           </div>
 
                           <GasEstimation />
-
+                          
                           {errors.amount && (
                             <p className="my-2 dark:text-neutral-300 text-sm font-bold rounded">
                               {errors.amount}
@@ -552,9 +560,19 @@ const Send = () => {
                       />
                     )}
                     <div
-                      className={` mt-8 ${step === 1 || step === 4 ? "" : ""}`}
+                      className={`relative mt-8 ${step === 1 || step === 4 ? "" : ""}`}
                     >
-                      <nav>
+
+                        <div className={`${ledgerContext ? "fixed left-0 right-0 bottom-0 top-0 flex items-center justify-center" : "hidden"}`}>
+                          <div className="fixed backdrop-blur-sm left-0 right-0 top-0 bottom-0 z-[43] bg-neutral-200/50 dark:bg-black/50"></div>
+                          <div className="z-[46] flex items-center justify-center flex-col text-sm gap-2">
+                            <span>
+                              <RefreshIcon fill="currentColor" extraClass="animate-spin" />
+                            </span>
+                            Waiting for Ledger confirmation...
+                          </div>
+                        </div>
+
                         {step === 1 && (
                           <div className="px-4">
                             <button
@@ -587,35 +605,42 @@ const Send = () => {
                           </div>
                         )}
                         {step === 3 && (
-                          <div className="px-4 grid grid-cols-2 gap-2">
-                            <button
-                              disabled={loading}
-                              type="button"
-                              onClick={() => {
-                                setStep(1);
-                                setGas(null);
-                                resetForm();
-                              }}
-                              className="w-full bg-[#1B1B1B] text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
-                            >
-                              Reject
-                            </button>
-                            <button
-                              type="submit"
-                              disabled={loading || !isValid || !gasInfo}
-                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:dark:bg-violet-600 disabled:bg-opacity-10 ${
-                                !gasInfo && "disabled:bg-opacity-50"
-                              } dark:disabled:bg-opacity-50`}
-                            >
-                              {loading && "Sending..."}
-                              {!loading && !gasInfo && "Fetching Gas"}
-                              {!loading && gasInfo && "Send"}
-                            </button>
+                          <div>
+                            {_currentAccount && _currentAccount.type === 'ledger' && <p className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 px-4 text-sm text-center mb-2 py-2">Make sure your ledger is connected, unlocked and your Ethereum App is open before clicking Send</p>}
+                            <div className="px-4 grid grid-cols-2 gap-2">
+                              <button
+                                disabled={loading}
+                                type="button"
+                                onClick={() => {
+                                  setStep(1);
+                                  setGas(null);
+                                  resetForm();
+                                }}
+                                className="w-full bg-[#1B1B1B] text-white font-bold tracking-wider py-4 disabled:bg-opacity-10"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                type="submit"
+                                disabled={loading || !isValid || !gasInfo}
+                                className={`bg-violet-500 text-white font-bold tracking-wide 
+                                            dark:bg-violet-500 dark:text-black 
+                                            hover:bg-violet-600 
+                                            hover:dark:bg-violet-600 
+                                            disabled:bg-opacity-80 
+                                            ${!gasInfo ? "disabled:bg-opacity-50" : ""} 
+                                            dark:disabled:bg-opacity-50`}
+                              >
+                                {loading ? "Sending..." : null}
+                                {!loading && !gasInfo ? "Fetching Gas" : null}
+                                {!loading && gasInfo ? "Send" : null}
+                              </button>
+                            </div>
                           </div>
                         )}
                         {step === 4 && error && (
                           <div className="px-4 my-16">
-                            <p className="my-2 dark:text-neutral-300 text-sm font-bold rounded text-center text-neutral-600 dark:text-neutral-400">
+                            <p className="my-2 text-sm font-bold rounded text-center text-neutral-600 dark:text-neutral-400 break-all">
                               {error}
                             </p>
                           </div>
@@ -650,7 +675,6 @@ const Send = () => {
                             </button>
                           </div>
                         )}
-                      </nav>
                     </div>
                   </form>
                 )}
