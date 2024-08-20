@@ -28,6 +28,7 @@ import * as utils from "../../utils";
 
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import Eth, {ledgerService} from "@ledgerhq/hw-app-eth";
+import TransferIcon from "../UI/Icons/TransferIcon";
 
 const Send = () => {
   const {
@@ -397,10 +398,10 @@ const Send = () => {
                             type="text"
                             onBlur={handleBlur}
                             placeholder="Recipient public (0x) Address"
-                            className={`w-full bg-gray-100 bg-opacity-30 focus:outline-none p-4 dark:bg-[#1B1B1B] mb-2 ${
+                            className={`w-full bg-neutral-100 placeholder:text-neutral-500 focus:outline-none p-4 dark:bg-[#1B1B1B] mb-2 ${
                               dirty && errors.address
-                                ? "outline !outline-violet-500"
-                                : "focus:outline-violet-300"
+                                ? "outline !outline-neutral-200"
+                                : "focus:outline focus:outline-teal-100"
                             }`}
                             onChange={(e) => {
                               handleChange(e);
@@ -425,7 +426,7 @@ const Send = () => {
                     {step === 2 && (
                       <div>
                         <div className="px-4">
-                          <div className="rounded grid grid-cols-[1fr_auto] items-center bg-neutral-100 dark:bg-[#1B1B1B] bg-opacity-30 p-4 outline outline-violet-300">
+                          <div className="rounded grid grid-cols-[1fr_auto] items-center bg-teal-100 shadow-sm shadow-teal-100 dark:shadow-none dark:bg-[#1B1B1B] p-4">
                             <input
                               disabled={isSubmitting}
                               required
@@ -505,42 +506,9 @@ const Send = () => {
                     )}
                     {step === 3 && (
                       <div className="pb-4">
-                        <div className="mt-4 mb-4 bg-teal-500 dark:bg-[#1B1B1B] bg-opacity-10 px-2 flex justify-between items-center gap-1">
+                        <div className="mt-4 mb-4 bg-teal-100 shadow-sm shadow-teal-200 dark:shadow-none dark:bg-[#1B1B1B] bg-opacity-10 px-2 flex justify-between items-center gap-1">
                           <AddressBookContact address={_address!} />
-                          <span className="text-white">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              fill="none"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path
-                                stroke="none"
-                                d="M0 0h24v24H0z"
-                                fill="none"
-                              />
-                              <path
-                                d="M12.089 3.634a2 2 0 0 0 -1.089 1.78l-.001 2.585l-1.999 .001a1 1 0 0 0 -1 1v6l.007 .117a1 1 0 0 0 .993 .883l1.999 -.001l.001 2.587a2 2 0 0 0 3.414 1.414l6.586 -6.586a2 2 0 0 0 0 -2.828l-6.586 -6.586a2 2 0 0 0 -2.18 -.434l-.145 .068z"
-                                strokeWidth="0"
-                                fill="currentColor"
-                              />
-                              <path
-                                d="M3 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                                strokeWidth="0"
-                                fill="currentColor"
-                              />
-                              <path
-                                d="M6 8a1 1 0 0 1 .993 .883l.007 .117v6a1 1 0 0 1 -1.993 .117l-.007 -.117v-6a1 1 0 0 1 1 -1z"
-                                strokeWidth="0"
-                                fill="currentColor"
-                              />
-                            </svg>
-                          </span>
+                          <span><TransferIcon fill="currentColor" size={32} /></span>
                           <AddressBookContact
                             contact
                             address={values.address}
@@ -591,7 +559,7 @@ const Send = () => {
                           <div className="px-4">
                             <button
                               onClick={() => handleNavigation("balance")}
-                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4"
+                              className="w-full bg-[#1B1B1B] text-white font-bold tracking-wider py-4"
                             >
                               Cancel
                             </button>
@@ -602,7 +570,7 @@ const Send = () => {
                             <button
                               type="button"
                               onClick={() => setStep(1)}
-                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
+                              className="w-full bg-[#1B1B1B] text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Cancel
                             </button>
@@ -612,7 +580,7 @@ const Send = () => {
                               disabled={
                                 errors && (!!errors.amount || !!errors.address)
                               }
-                              className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50 dark:disabled:bg-opacity-50"
+                              className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 hover:dark:bg-violet-600 dark:text-black disabled:bg-opacity-50 dark:disabled:bg-opacity-50"
                             >
                               Next
                             </button>
@@ -628,14 +596,14 @@ const Send = () => {
                                 setGas(null);
                                 resetForm();
                               }}
-                              className="w-full bg-[#1B1B1B] hover:bg-opacity-80 text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
+                              className="w-full bg-[#1B1B1B] text-white font-bold tracking-wider py-4 disabled:text-opacity-10 disabled:bg-opacity-10"
                             >
                               Reject
                             </button>
                             <button
                               type="submit"
                               disabled={loading || !isValid || !gasInfo}
-                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-10 ${
+                              className={`bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:dark:bg-violet-600 disabled:bg-opacity-10 ${
                                 !gasInfo && "disabled:bg-opacity-50"
                               } dark:disabled:bg-opacity-50`}
                             >

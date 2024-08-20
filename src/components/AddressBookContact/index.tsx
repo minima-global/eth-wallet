@@ -2,17 +2,15 @@ import { useContext, useEffect, useState } from "react";
 import { appContext } from "../../AppContext";
 import AddressBookAdd from "../AddressBookAdd";
 import Bear from "../UI/Avatars/Bear";
-import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 
 interface IProps {
   address: string;
   contact?: boolean;
 }
 const AddressBookContact = ({ contact = false, address }: IProps) => {
-  const { _addressBook, promptAddressBookAdd } = useContext(appContext);
-  const {_address} = useWalletContext();
+  const { _currentAccount, _addressBook, promptAddressBookAdd } = useContext(appContext);
 
-  const ownAddress = _address === address;
+  const ownAddress = _currentAccount.address === address;
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -33,20 +31,23 @@ const AddressBookContact = ({ contact = false, address }: IProps) => {
 
   return (
     <div className="flex items-center gap-2 py-2">
-      <Bear extraClass="w-[34px] min-w-[34px]" input={address} />
+      <Bear extraClass="w-12 min-w-12 shrink-0" input={address} />
       <div className="flex justify-center items-center">
         <div>
-          <h3 className="text-sm font-bold text-teal-800 dark:text-white dark:opacity-60">
-            {_addressBook[address] && _addressBook[address].length
+          
+          <h3 className="text-sm font-bold text-black dark:text-white">
+            {ownAddress && _currentAccount.nickname}
+              
+            {(!ownAddress && _addressBook[address] && _addressBook[address].length)
               ? _addressBook[address]
-              : "Account"}
+              : !ownAddress && !_addressBook[address] ? "Account": null}
           </h3>
 
           <input onBlur={() => setF(false)} onFocus={() => setF(true)} readOnly className={`w-full focus:font-bold font-mono max-w text-xs bg-transparent truncate focus:outline-none focus:trailing-wider `} value={`${_f ? address : address.substring(0, windowWidth < 560 ? 4 : 8)+'...'+address.substring(address.length-(windowWidth < 560 ? 4 : 8), address.length)}`} /> 
         </div>
 
         {contact && !ownAddress && (
-          <span className="text-yellow-300">
+          <span className="text-neutral-800 dark:text-neutral-100">
             <svg
               onClick={promptAddressBookAdd}
               xmlns="http://www.w3.org/2000/svg"
