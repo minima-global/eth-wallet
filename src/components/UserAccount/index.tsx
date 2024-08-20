@@ -289,7 +289,7 @@ const UserAccount = () => {
                   <div className="w-max mx-auto my-4">
                     {!viewKey && <WalletAddress fullAddress />}
                     
-                    {!viewKey && (
+                    {!viewKey && _currentAccount && _currentAccount.type !== 'ledger' && (
                       <button
                         onMouseDown={handleStart}
                         onMouseUp={handleEnd}
@@ -306,7 +306,7 @@ const UserAccount = () => {
                       </button>
                     )}
 
-                    {viewKey && (
+                    {viewKey && _currentAccount && _currentAccount.type !== 'ledger' && (
                       <div className="my-2">
                         <PrivateKey fullAddress />
                         <div
@@ -334,8 +334,7 @@ const UserAccount = () => {
                         type="button"
                         className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold"
                       >
-                        {_currentAccount.nickname || "Minimalist"
-                          }
+                        {_currentAccount.nickname || "Minimalist"}
                       </button>
                     </div>
                   </div>

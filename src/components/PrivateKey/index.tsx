@@ -4,13 +4,13 @@ import * as utils from "../../utils";
 import { appContext } from "../../AppContext";
 
 const PrivateKey = ({ fullAddress = false }) => {
-  const { _generatedKey } = useContext(appContext);
+  const { _currentAccount } = useContext(appContext);
 
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     setCopied(true);
-    utils.copyToClipboard(_generatedKey);
+    utils.copyToClipboard(_currentAccount.privatekey);
     setTimeout(() => {
       setCopied(false);
     }, 3000);
@@ -47,7 +47,7 @@ const PrivateKey = ({ fullAddress = false }) => {
           onKeyDown={handleKeyDown}
           onDoubleClick={handleDoubleClick}
           className="p-2 text-left font-bold rounded-lg focus:bg-teal-200 pr-10 break-all focus:outline-teal-600 dark:focus:text-black px-3 text-sm w-full bg-violet-300"
-          value={_generatedKey ? _generatedKey : "N/A"}
+          value={_currentAccount ? _currentAccount.privatekey : "N/A"}
         />
       )}
       <svg
