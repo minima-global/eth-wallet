@@ -64,9 +64,7 @@ const useLedger = () => {
     const accounts = await connectLedgerAndGetAccounts();
 
     if (accounts) {
-      console.log("Available accounts:", accounts);
       const selectedAccount = accounts[0]; // For simplicity, selecting the first account
-      console.log("Selected account:", selectedAccount);
       addSelectedAccount(selectedAccount);
     }
   };
@@ -80,7 +78,7 @@ const useLedger = () => {
           privatekey: undefined,
           current: false,
           type: "ledger",
-          bip44Path: `44'/60'/${acc.index}'/0/0`.replace(/'/g, "%27"),
+          bip44Path: `44'/60'/${acc.index}'/0/0`.replace(/'/g, "''"),
         }))
       : [
           {
@@ -89,7 +87,7 @@ const useLedger = () => {
             privatekey: undefined,
             current: false,
             type: "ledger",
-            bip44Path: `44'/60'/${account.index}'/0/0`.replace(/'/g, "%27"),
+            bip44Path: `44'/60'/${account.index}'/0/0`.replace(/'/g, "''"),
           },
         ];
 
@@ -104,7 +102,6 @@ const useLedger = () => {
         setAccountOffset(0);
         setLedgerTransport(null);
         setConnected(null);
-        console.log("Ledger disconnected successfully.");
       } catch (error) {
         console.error("Failed to disconnect Ledger:", error);
       }

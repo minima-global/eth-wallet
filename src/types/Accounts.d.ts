@@ -3,6 +3,6 @@ export interface UserAccount {
     address: string;
     current: boolean;
     privatekey?: string;
-    type: 'normal' | 'ledger';
+    type: 'normal' | 'ledger' | 'normalmain';
     bip44Path?: string; // required for ledger accounts
   }

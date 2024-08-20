@@ -108,7 +108,6 @@ const UserAccount = () => {
     config: config.gentle,
   });
 
-  console.log('ua', _userAccounts);
 
   return (
     <>
@@ -418,7 +417,6 @@ const UserAccount = () => {
                           const accountAddress = new Wallet(privatekey);
                           
                           await addUserAccount({nickname, address: accountAddress.address, privatekey, current: false, type: 'normal'});                        
-                          console.log('ADDED!');
                         } catch (err) {
                           if (err instanceof Error) {
                             setError((prevState) => prevState ? ({
@@ -487,14 +485,12 @@ const UserAccount = () => {
                   )}
                   {importType === "ledger" && <Formik
                       initialValues={{ selectedAccounts: [] as any[] }}
-                      onSubmit={async ({selectedAccounts}) => {
-                        console.log(selectedAccounts);
+                      onSubmit={async ({selectedAccounts}, {resetForm}) => {
                         try {
                           // add all selectedAccounts                          
                           await addSelectedAccount(selectedAccounts);
-                          
-                          console.log('All accounts added!');
-                        } catch (err) {
+                          resetForm();    
+                        } catch (err) { 
                           if (err instanceof Error) {
                             setError((prevState) =>
                               prevState
@@ -517,7 +513,7 @@ const UserAccount = () => {
                         }
                       }}
                     >
-                      {({ values, handleSubmit, resetForm, setFieldValue }) => (
+                      {({ values, isSubmitting, handleSubmit, resetForm, setFieldValue }) => (
                         <form onSubmit={handleSubmit}>
                           <p className="mx-6 text-black dark:text-neutral-500 font-bold">
                             Import Ledger Account(s)
@@ -631,7 +627,7 @@ const UserAccount = () => {
                             )}
                               <div className="mx-6 mt-8">
                                 <button
-                                  disabled={values.selectedAccounts.length === 0}
+                                  disabled={values.selectedAccounts.length === 0 || isSubmitting}
                                   type="submit"
                                   className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
                                 >
@@ -651,7 +647,7 @@ const UserAccount = () => {
                 <div className="mt-8 mb-16 relative">
                   {_address ? (
                     <>
-                      <ul className="space-y-2 h-[250px] overflow-y-scroll">
+                      <ul className="space-y-4 h-[250px] overflow-y-scroll">
                         {_userAccounts.length && ( _userAccounts.map((account) => <Account key={account.address} account={account} />)
                         )}
                       </ul>

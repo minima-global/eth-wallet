@@ -46,12 +46,11 @@ export const WalletContextProvider = ({ children }: Props) => {
   useMemo(async () => {
     const current = _userAccounts.find(account => account.current);
 
-    console.log('curr', current);    
-    if (_provider === null) return;
+    if (_provider === null || !current) return;
 
     let wallet;
 
-    if (current.type === 'normal') {
+    if (current.type.includes('normal')) {
       wallet = new Wallet(current.privatekey, _provider);
     } else {
       wallet = new VoidSigner(current.address, _provider);

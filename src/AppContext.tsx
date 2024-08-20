@@ -157,9 +157,22 @@ const AppProvider = ({ children }: IProps) => {
 
                 // if they exist init
                 if (userAccounts) {
-                  console.log("ua", JSON.parse(userAccounts.DATA.replace(/%27/g, "'")));
-                  setUserAccounts(JSON.parse(userAccounts.DATA.replace(/%27/g, "'")));
-                  // if not exist, create first account of node
+                  setUserAccounts(JSON.parse(userAccounts.DATA.replace(/''/g, "'")));
+                  
+                  
+                  
+                  // Run a reset
+                  
+                  // setUserAccounts(JSON.parse("[]")); //
+                  // const account = new Wallet(resp.response.seedrandom);
+
+                  // await addUserAccount({
+                  //   nickname: "Minimalist",
+                  //   privatekey: resp.response.seedrandom,
+                  //   address: account.address,
+                  //   current: true,
+                  //   type: "normalmain",
+                  // });
                 } else {
                   const account = new Wallet(resp.response.seedrandom);
 
@@ -168,7 +181,7 @@ const AppProvider = ({ children }: IProps) => {
                     privatekey: resp.response.seedrandom,
                     address: account.address,
                     current: true,
-                    type: "normal",
+                    type: "normalmain",
                   });
                 }
               })();
@@ -182,6 +195,7 @@ const AppProvider = ({ children }: IProps) => {
       });
     }
   }, [loaded, userKeys]);
+
 
   useEffect(() => {
     if (!loaded.current) {
@@ -397,9 +411,14 @@ const AppProvider = ({ children }: IProps) => {
     }
   };
 
-  const setCurrentUserAccount = async (account: UserAccount) => {
+  const setCurrentUserAccount = async (account: UserAccount, filteredData?: UserAccount[]) => {
+    console.log('SetCurrentUserAccount', account);
+    
+    // Use filteredData if provided, otherwise fall back to _userAccounts
+    const accountsToUpdate = filteredData || _userAccounts;
+
     // Update the `current` property for each account
-    const updatedData = _userAccounts.map((userAccount) => ({
+    const updatedData = accountsToUpdate.map((userAccount) => ({
       ...userAccount,
       current: userAccount.address === account.address, // Set `current` to true for the selected account
     }));
@@ -415,13 +434,13 @@ const AppProvider = ({ children }: IProps) => {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
           updatedData
-        ).replace(/'/g, '%27')}')`
+        ).replace(/'/g, "''")}')`
       );
     } else {
       await sql(
         `UPDATE cache SET data = '${JSON.stringify(
           updatedData
-        ).replace(/'/g, '%27')}' WHERE name = 'USER_ACCOUNTS'`
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
       );
     }
   };
@@ -444,13 +463,13 @@ const AppProvider = ({ children }: IProps) => {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
           updatedData
-        ).replace(/'/g, '%27')}')`
+        ).replace(/'/g, "''")}')`
       );
     } else {
       await sql(
         `UPDATE cache SET data = '${JSON.stringify(
           updatedData
-        ).replace(/'/g, '%27')}' WHERE name = 'USER_ACCOUNTS'`
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
       );
     }
 
@@ -460,15 +479,14 @@ const AppProvider = ({ children }: IProps) => {
     }
   };
 
-  const deleteUserAccount = async (acc: UserAccount) => {
-    // set all the current accounts to false, set the passed account to current true
-    const updatedData = [
-      ..._userAccounts.filter(
-        (account) => account.privatekey !== acc.privatekey
-      ),
-    ];
-
-    setUserAccounts(updatedData);
+  const deleteUserAccount = async (currAccount: UserAccount, accToDelete: UserAccount) => {  
+    console.log('accToDelete', accToDelete);  
+    const updatedData = [..._userAccounts.filter(user => user.address !== accToDelete.address)];
+    console.log('updatedData', updatedData);
+    setUserAccounts(updatedData.map(account => ({
+      ...account,
+      current: currAccount.address === account.address, // Set `current` to true for the selected account
+    })));
 
     const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
 
@@ -476,13 +494,13 @@ const AppProvider = ({ children }: IProps) => {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
           updatedData
-        )}')`
+        ).replace(/'/g, "''")}')`
       );
     } else {
       await sql(
         `UPDATE cache SET data = '${JSON.stringify(
           updatedData
-        )}' WHERE name = 'USER_ACCOUNTS'`
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
       );
     }
   };
