@@ -38,7 +38,7 @@ const SelectNetwork = () => {
   return (
     <>
       <div
-        className="my-4 hover:cursor-pointer grid grid-cols-[1fr_auto] bg-neutral-100 dark:bg-[#1B1B1B] dark:text-neutral-300 rounded-full w-max text-xs shadow-lg"
+        className="my-4 hover:cursor-pointer grid grid-cols-[1fr_auto] bg-neutral-100 hover:bg-neutral-50 dark:bg-[#1B1B1B] dark:hover:bg-[#2C2C2C] dark:text-neutral-300 rounded-full w-max text-xs shadow-lg pr-2"
         onClick={promptSelectNetwork}
       >
         {_network === "mainnet" && <EthereumNetwork />}

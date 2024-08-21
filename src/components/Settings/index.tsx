@@ -13,7 +13,7 @@ const Settings = () => {
 
   return (    
       <AnimatedDialog display={_promptSettings} dismiss={promptSettings}>
-        <div className="">
+        <div>
           <div className="flex justify-between items-center pr-4">
             <h3 className="font-bold ml-4">Settings</h3>
             <Cross dismiss={promptSettings} />
@@ -28,7 +28,7 @@ const Settings = () => {
           </div>
 
           <div
-            className="my-4 p-2 hover:cursor-pointer bg-neutral-100 rounded-full dark:bg-[#1B1B1B] hover:bg-opacity-30 dark:bg-opacity-50 grid grid-cols-[auto_1fr] items-center gap-1 shadow-lg"
+            className="my-4 p-2 hover:cursor-pointer bg-neutral-100 hover:bg-neutral-50 rounded-full dark:bg-[#1B1B1B] hover:dark:bg-[#2C2C2C] grid grid-cols-[auto_1fr] items-center gap-1 shadow-lg"
             onClick={promptJsonRpcSetup}
           >
             <span className=" text-sky-800 dark:text-neutral-500">

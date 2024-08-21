@@ -1,13 +1,18 @@
 import { Formik } from "formik";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { appContext } from "../../../AppContext";
-import { MaxUint256 } from "ethers";
+import { Interface, MaxUint256, Transaction } from "ethers";
 import { Token } from "@uniswap/sdk-core";
 import { useWalletContext } from "../../../providers/WalletProvider/WalletProvider";
 import { _defaults } from "../../../constants";
-import { getTokenTransferApproval } from "../libs/getTokenTransferApproval";
+import {
+  approveTokenWithLedger,
+  getTokenTransferApproval,
+} from "../libs/getTokenTransferApproval";
 import AnimatedDialog from "../../UI/AnimatedDialog";
 import Cross from "../../UI/Cross";
+import { SWAP_ROUTER_ADDRESS } from "../../../providers/QuoteProvider/libs/constants";
+import RefreshIcon from "../../UI/Icons/RefreshIcon";
 
 const Allowance = () => {
   const {
@@ -15,9 +20,57 @@ const Allowance = () => {
     _wallet: signer,
     _address,
   } = useWalletContext();
-  const { _promptAllowance, setPromptAllowance, _approving, setApproving } =
-    useContext(appContext);
+  const {
+    _provider,
+    _userAccounts,
+    _promptAllowance,
+    setPromptAllowance,
+    _approving,
+    setApproving,
+  } = useContext(appContext);
 
+  // Mock function to simulate approval process
+  const simulateLedgerApproval = async () => {
+    setLedgerContext({
+      status: "waiting",
+      approving: { wminima: true, tether: false },
+    });
+
+    // Simulate waiting for the first token approval
+    await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate 3 seconds delay
+    setLedgerContext({
+      status: "success",
+      approving: { wminima: true, tether: false },
+    });
+
+    // Now prompt for the second token approval
+    setLedgerContext({
+      status: "waiting",
+      approving: { wminima: false, tether: true },
+    });
+
+    // Simulate waiting for the second token approval
+    await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate 3 seconds delay
+    setLedgerContext({
+      status: "success",
+      approving: { wminima: false, tether: true },
+    });
+
+    // Finally, approval process is complete
+    setLedgerContext(false);
+  };
+
+  useEffect(() => {
+    simulateLedgerApproval(); // Start the approval process when the component mounts
+  }, []);
+
+  const [ledgerContext, setLedgerContext] = useState<
+    | false
+    | {
+        status: "waiting" | "success";
+        approving: { wminima: boolean; tether: boolean };
+      }
+  >(false);
   const [error, setError] = useState<string | false>(false);
   const [step, setStep] = useState(1);
 
@@ -53,12 +106,11 @@ const Allowance = () => {
             {isDefault && (
               <div>
                 <p className="px-4 text-sm">
-                  You need to approve your wMinima & USDT to start swapping. 
+                  You need to approve your wMinima & USDT to start swapping.
                 </p>
                 <p className="px-4 text-xs font-bold">
                   You require some ETH for this.
                 </p>
-
               </div>
             )}
             {isApproved && (
@@ -78,6 +130,7 @@ const Allowance = () => {
             onSubmit={async () => {
               setApproving(true);
               setError(false);
+              const current = _userAccounts.find((a) => a.current);
 
               try {
                 const supportedChains =
@@ -100,23 +153,69 @@ const Allowance = () => {
                   "Tether"
                 );
 
-                await getTokenTransferApproval(
-                  wMinima,
-                  MaxUint256.toString(),
-                  signer!,
-                  _address!
-                );
+                if (current.type === "ledger") {
+                  
+                  // Estimate Gas for approval 
 
-                await getTokenTransferApproval(
-                  tether,
-                  MaxUint256.toString(),
-                  signer!,
-                  _address!
-                );
+
+                  setLedgerContext({status: 'waiting', approving: {wminima: true, tether: false}});
+
+                  // approve Minima
+                  await approveTokenWithLedger({
+                    current,
+                    tokenAddress: wMinimaAddress,
+                    spenderAddress: SWAP_ROUTER_ADDRESS,
+                    amountToApprove: MaxUint256.toString(),
+                    chainId: supportedChains,
+                    gasLimit: undefined,
+                    gasPrice: undefined,
+                    priorityFee: undefined,
+                    nonce: await _provider.getTransactionCount(current.address),
+                    bip44Path: current.bip44Path,
+                    provider: _provider,
+                  });
+
+                  setLedgerContext({status: 'waiting', approving: {wminima: false, tether: true}});
+
+                  // approve Minima
+                  await approveTokenWithLedger({
+                    current,
+                    tokenAddress: tetherAddress,
+                    spenderAddress: SWAP_ROUTER_ADDRESS,
+                    amountToApprove: MaxUint256.toString(),
+                    chainId: supportedChains,
+                    gasLimit: undefined,
+                    gasPrice: undefined,
+                    priorityFee: undefined,
+                    nonce: await _provider.getTransactionCount(current.address),
+                    bip44Path: current.bip44Path,
+                    provider: _provider,
+                  });
+
+                  setLedgerContext({status: 'success', approving: {wminima: true, tether: true}});
+
+
+                } else {
+                  await getTokenTransferApproval(
+                    wMinima,
+                    MaxUint256.toString(),
+                    signer!,
+                    _address!
+                  );
+
+                  await getTokenTransferApproval(
+                    tether,
+                    MaxUint256.toString(),
+                    signer!,
+                    _address!
+                  );
+                }
 
                 setStep(2);
               } catch (error) {
                 setStep(1);
+                setLedgerContext(false);
+
                 if (error instanceof Error) {
                   return setError(
                     error.message.includes("insufficient funds")
@@ -134,8 +233,45 @@ const Allowance = () => {
             {({ handleSubmit }) => (
               <form
                 onSubmit={handleSubmit}
-                className="flex flex-col h-[calc(100%_-_100px)]"
+                className="relative flex flex-col h-[calc(100%_-_100px)]"
               >
+                <div
+                  className={`${
+                    ledgerContext
+                      ? "absolute left-0 right-0 bottom-0 top-0 flex items-center justify-center"
+                      : "hidden"
+                  }`}
+                >
+                  <div className="fixed backdrop-blur-sm left-0 right-0 top-0 bottom-0 z-[43] bg-neutral-200/50 dark:bg-black/50"></div>
+                  <div className="z-[46] flex items-center justify-center flex-col text-sm gap-2">
+                    {ledgerContext && ledgerContext.status === "waiting" && (
+                      <>
+                        <span>
+                          <RefreshIcon
+                            fill="currentColor"
+                            extraClass="animate-spin"
+                          />
+                        </span>
+                        <span>
+                          {ledgerContext.approving.wminima
+                            ? "Waiting for Ledger confirmation for WMinima..."
+                            : ledgerContext.approving.tether
+                            ? "Waiting for Ledger confirmation for Tether..."
+                            : ""}
+                        </span>
+                      </>
+                    )}
+                    {ledgerContext && ledgerContext?.status === "success" && (
+                      <span>
+                        {ledgerContext.approving.wminima
+                          ? "Ledger confirmation for WMinima complete."
+                          : ledgerContext.approving.tether
+                          ? "Ledger confirmation for Tether complete."
+                          : ""}
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <div className="flex-grow" />
                 <div className="mx-3 mt-36">
                   {step === 1 && (
