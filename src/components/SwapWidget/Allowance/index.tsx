@@ -51,10 +51,15 @@ const Allowance = () => {
         <div className="flex flex-col h-[calc(100%_-_60px)] justify-between">
           <div>
             {isDefault && (
-              <p className="px-4 text-sm">
-                You need to approve your wMinima & USDT to start swapping. You
-                will need some ETH for this approval.
-              </p>
+              <div>
+                <p className="px-4 text-sm">
+                  You need to approve your wMinima & USDT to start swapping. 
+                </p>
+                <p className="px-4 text-xs font-bold">
+                  You require some ETH for this.
+                </p>
+
+              </div>
             )}
             {isApproved && (
               <p className="px-4 text-sm">Approved Allowances, ready to go!</p>

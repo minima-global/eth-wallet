@@ -280,7 +280,7 @@ const UserAccount = () => {
                       <button
                         onClick={() => setPromptAccounts(true)}
                         type="button"
-                        className="w-full bg-neutral-300 dark:bg-[#1B1B1B] full-rounded border border-neutral-200 hover:border-neutral-500 dark:border-neutral-600 dark:hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold"
+                        className="w-full bg-neutral-300 dark:bg-[#1B1B1B] full-rounded border border-neutral-400 hover:border-neutral-500 dark:border-neutral-600 dark:hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold"
                       >
                         Manage Accounts
                       </button>
