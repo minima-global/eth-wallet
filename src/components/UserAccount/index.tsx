@@ -100,13 +100,6 @@ const UserAccount = () => {
     }
   }, [_addressBook, _address]);
 
-  const springProps = useSpring({
-    opacity: promptUserAccountDetails ? 1 : 0,
-    transform: promptUserAccountDetails
-      ? "translateY(0%) scale(1)"
-      : "translateY(-50%) scale(0.8)",
-    config: config.gentle,
-  });
 
 
   return (
@@ -155,67 +148,21 @@ const UserAccount = () => {
         />
       )}
 
-      {promptUserAccountDetails &&
-        createPortal(
-          <Dialog dismiss={() => setPromptUserAccountDetails(false)}>
-            <div className="h-full grid items-start">
-              <animated.div style={springProps}>
-                <div className="bg-white shadow-lg shadow-violet-300 mt-[80px] dark:bg-black w-[calc(100%_-_16px)] md:w-full pb-8 pt-4 px-4 rounded-lg mx-auto">
+      <AnimatedDialog display={promptUserAccountDetails} dismiss={() => setPromptUserAccountDetails(false)}>
+        <>
+      <div className="w-[calc(100%_-_16px)] md:w-full pb-8 px-4 rounded-lg mx-auto">
                   <div className="flex justify-between items-center">
+                    <h3 className="font-bold ml-4 dark:text-white">Account</h3>
                     <Cross dismiss={() => setPromptUserAccountDetails(false)} />
-                    <div>
-                      {_address && (
-                        <div className="flex gap-2 items-center">
-                          <div onClick={promptQrCode}>
-                            <QRCode size={34} value={_address} />
-                          </div>
-                          {window.navigator.userAgent.includes(
-                            "Minima Browser"
-                          ) && (
-                            <div
-                              onClick={() => {
-                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                // @ts-ignore
-                                Android.shareText(_address);
-                              }}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="icon icon-tabler icon-tabler-user-share"
-                                width="34"
-                                height="34"
-                                viewBox="0 0 24 24"
-                                strokeWidth="1.5"
-                                stroke="currentColor"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path
-                                  stroke="none"
-                                  d="M0 0h24v24H0z"
-                                  fill="none"
-                                />
-                                <path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                                <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                                <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                                <path d="M8.7 10.7l6.6 -3.4" />
-                                <path d="M8.7 13.3l6.6 3.4" />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
                   </div>
 
                   <div
                     onClick={promptAccountNameUpdate}
-                    className="flex items-center justify-center"
+                    className="flex items-center justify-center mt-8"
                   >
                     {_address && (
                       <Profile
-                        extraClass=" w-[160px] md:w-[220px]"
+                        extraClass="w-[120px] sm:w-[160px] md:w-[220px]"
                         input={_address}
                       />
                     )}
@@ -223,8 +170,8 @@ const UserAccount = () => {
                   <div className="mx-auto">
                     {!_promptAccountNameUpdate && (
                       <div className="flex gap-1 mt-3 items-center justify-center">
-                        <h3 className="font-bold max-w-[128px] dark:text-teal-300 md:text-xl truncate">
-                          {_currentAccount.nickname || "Minimalist"}
+                        <h3 className="font-bold max-w-sm md:max-w-lg dark:text-teal-300 md:text-xl truncate">
+                          {_currentAccount && _currentAccount.nickname || "Minimalist"}
                         </h3>
 
                         <svg
@@ -286,7 +233,8 @@ const UserAccount = () => {
                     )}
                   </div>
 
-                  <div className="w-max mx-auto my-4">
+                </div>
+                  <div className="!w-max mx-auto my-4">
                     {!viewKey && <WalletAddress fullAddress />}
                     
                     {!viewKey && _currentAccount && _currentAccount.type !== 'ledger' && (
@@ -332,20 +280,18 @@ const UserAccount = () => {
                       <button
                         onClick={() => setPromptAccounts(true)}
                         type="button"
-                        className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold"
+                        className="w-full bg-neutral-300 dark:bg-[#1B1B1B] full-rounded border border-neutral-200 hover:border-neutral-500 dark:border-neutral-600 dark:hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold"
                       >
-                        {_currentAccount.nickname || "Minimalist"}
+                        Manage Accounts
                       </button>
                     </div>
                   </div>
-                </div>
-              </animated.div>
-            </div>
-          </Dialog>,
-          document.body
-        )}
+        
+        </>
+      </AnimatedDialog>
 
       <AnimatedDialog
+        up={45}
         display={promptAccounts}
         dismiss={() => setPromptAccounts(false)}
       >        
@@ -378,12 +324,8 @@ const UserAccount = () => {
                   </div>
                 )}
 
-                <button
-                  onClick={() => setPromptAccounts(false)}
-                  className="text-purple-500 hover:text-purple-700"
-                >
-                  Close
-                </button>
+
+                <Cross dismiss={() => setPromptAccounts(false)} />
               </div>
               {promptAddAccount ? (
                 <div className="mt-8 mb-24">
@@ -470,7 +412,7 @@ const UserAccount = () => {
                             </div>
                           </div>
 
-                          <div className="mx-6 mt-8">
+                          <div className="mx-6 mt-8"> 
                             <button
                               type="submit"
                               className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"

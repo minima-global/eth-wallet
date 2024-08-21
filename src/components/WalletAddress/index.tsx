@@ -37,7 +37,7 @@ const WalletAddress = ({ fullAddress = false }) => {
         outline: 0,
         cursor: "pointer",
       }}
-      className="mx-auto text-center relative dark:text-black"
+      className="mx-auto w-max text-center relative dark:text-black"
     >
       {fullAddress && (
         <input

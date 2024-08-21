@@ -36,7 +36,7 @@ const AddressBookContact = ({ contact = false, address }: IProps) => {
         <div>
           
           <h3 className="text-sm font-bold text-black dark:text-white">
-            {ownAddress && _currentAccount.nickname}
+            {ownAddress && _currentAccount && _currentAccount.nickname}
               
             {(!ownAddress && _addressBook[address] && _addressBook[address].length)
               ? _addressBook[address]

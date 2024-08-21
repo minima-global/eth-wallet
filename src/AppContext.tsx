@@ -26,6 +26,11 @@ interface IProps {
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
 
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Initialize state based on localStorage
+    return localStorage.getItem("dark-mode") === "true";
+  });
+
   const swapWidgetProps = useSwapWidget();
 
   const [isWorking, setWorking] = useState(false);
@@ -85,6 +90,18 @@ const AppProvider = ({ children }: IProps) => {
 
   // display db locked, ask for unlock
   const [_promptDatabaseLocked, setPromptDatabaseLocked] = useState(false);
+
+    
+  useEffect(() => {
+    // Apply or remove the 'dark' class on the document element
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("dark-mode", "true");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("dark-mode", "false");
+    }
+  }, [isDarkMode]); // Re-run effect when isDarkMode changes
 
   useEffect(() => {
     (async () => {
@@ -759,6 +776,8 @@ const AppProvider = ({ children }: IProps) => {
         _currencyFormat,
 
         ...swapWidgetProps,
+
+        isDarkMode, setIsDarkMode
       }}
     >
       {children}

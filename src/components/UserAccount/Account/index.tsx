@@ -58,7 +58,7 @@ const Account = ({ account }: Props) => {
     >
       <Bear input={account.address} extraClass="w-12 h-12 min-w-12" />
       <div className="my-auto truncate">
-        <h3 className="font-bold">{account.nickname}</h3>
+        <h3 className="font-bold max-w-sm truncate">{account.nickname}</h3>
         <input
           value={account.address}
           readOnly

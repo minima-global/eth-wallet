@@ -8,6 +8,7 @@ interface AnimatedDialogProps {
     dismiss: () => void;
     extraClass?: string;
     noRest?: boolean;
+    up?: number;
 }
 
 const AnimatedDialog = ({
@@ -16,8 +17,10 @@ const AnimatedDialog = ({
     extraClass,
     noRest,
     dismiss,
+    up
 }: AnimatedDialogProps) => {
     const [show, setShow] = useState(display);
+    const [zIndex] = useState(22);
 
     // Update the show state based on display and noRest
     useEffect(() => {
@@ -53,10 +56,10 @@ const AnimatedDialog = ({
                         item ? (
                             <animated.div
                                 style={styles}
-                                className={`fixed top-[54px] right-0 left-0 bottom-0 md:grid md:grid-cols-[1fr_minmax(0,_560px)_1fr] z-[22]`}
+                                className={`fixed top-[80px] right-0 left-0 bottom-0 md:grid md:grid-cols-[1fr_minmax(0,_560px)_1fr] h-full z-[${!up ? zIndex : up+1}]`}
                             >
                                 <div />
-                                <div className={`z-[23] h-full ${extraClass || ''}`}>{children}</div>
+                                <div className={`z-[${!up ? zIndex+1 : up+2}] h-full ${extraClass || ''}`}>{children}</div>
                                 <div />
                             </animated.div>
                         ) : null
@@ -68,7 +71,7 @@ const AnimatedDialog = ({
                 createPortal(
                     <div
                         onClick={dismiss}
-                        className={`fixed backdrop-blur-sm left-0 right-0 top-0 bottom-0 z-[21] bg-neutral-200/90 dark:bg-black/90`}
+                        className={`fixed backdrop-blur-sm left-0 right-0 top-0 bottom-0 z-[${!up ? zIndex-1 : up-2}] bg-neutral-200/90 dark:bg-black/90`}
                     />,
                     document.body
                 )}

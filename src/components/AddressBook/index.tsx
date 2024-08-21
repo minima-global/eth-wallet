@@ -44,7 +44,7 @@ const AddressBook = ({ setStep }: IProps) => {
           </div>
           <div>
             <h3 className="font-bold text-sm text-teal-500 dark:text-teal-300">
-              {_currentAccount.nickname || "My Account"}
+              {_currentAccount && _currentAccount.nickname || "My Account"}
             </h3>
             <p className="break-all text-sm tracking-widest">
               {_currentAccount.address}

@@ -1,23 +1,12 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import LightIcon from "../UI/Icons/LightIcon";
 import DarkIcon from "../UI/Icons/DarkIcon";
+import { appContext } from "../../AppContext";
 
 const AppThemeSwitch = () => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Initialize state based on localStorage
-    return localStorage.getItem("dark-mode") === "true";
-  });
+  const { isDarkMode, setIsDarkMode } = useContext(appContext);
 
-  useEffect(() => {
-    // Apply or remove the 'dark' class on the document element
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("dark-mode", "true");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("dark-mode", "false");
-    }
-  }, [isDarkMode]); // Re-run effect when isDarkMode changes
+
 
   // Handler for the switch change event
   const handleSwitchChange = (e) => {
