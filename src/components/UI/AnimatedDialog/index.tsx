@@ -55,11 +55,11 @@ const AnimatedDialog = ({
                     transitions((styles, item) =>
                         item ? (
                             <animated.div
-                                style={styles}
-                                className={`fixed top-[80px] right-0 left-0 bottom-0 md:grid md:grid-cols-[1fr_minmax(0,_560px)_1fr] h-full z-[${!up ? zIndex : up+1}]`}
+                                style={{...styles, zIndex: !up ? zIndex+1 : up+1}}
+                                className={`fixed top-[80px] right-0 left-0 bottom-0 md:grid md:grid-cols-[1fr_minmax(0,_560px)_1fr] h-full z-[${!up ? zIndex+2 : up+1}]`}
                             >
                                 <div />
-                                <div className={`z-[${!up ? zIndex+1 : up+2}] h-full ${extraClass || ''}`}>{children}</div>
+                                <div className={`h-full ${extraClass || ''}`}>{children}</div>
                                 <div />
                             </animated.div>
                         ) : null
@@ -71,7 +71,8 @@ const AnimatedDialog = ({
                 createPortal(
                     <div
                         onClick={dismiss}
-                        className={`fixed backdrop-blur-sm left-0 right-0 top-0 bottom-0 z-[${!up ? zIndex-1 : up-2}] bg-neutral-200/90 dark:bg-black/90`}
+                        style={{ zIndex: !up ? zIndex-1 : up-2}}
+                        className={`fixed backdrop-blur-sm left-0 right-0 top-0 bottom-0 bg-neutral-200/90 dark:bg-black/90`}
                     />,
                     document.body
                 )}

@@ -91,7 +91,7 @@ const Send = () => {
       display={_currentNavigation === "send"}
       dismiss={() => null}
     >
-      <div className=" bg-white shadow-lg  shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
+      <div className=" ">
         <h3 className="px-4 pb-3 text-lg font-bold text-center">
           {step === 1 && "Send to"}
           {step === 2 && "Enter amount"}
@@ -416,10 +416,10 @@ const Send = () => {
             dirty,
             resetForm,
           }) => (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="mx-4 xs:mx-0">
               {step === 1 && (
                 <div className="mb-4">
-                  <div className="px-4">
+                  <div>
                     <input
                       disabled={isSubmitting}
                       required
@@ -455,7 +455,7 @@ const Send = () => {
               )}
               {step === 2 && (
                 <div>
-                  <div className="px-4">
+                  <div>
                     <div className="rounded grid grid-cols-[1fr_auto] items-center bg-teal-100 shadow-sm shadow-teal-100 dark:shadow-none dark:bg-[#1B1B1B] p-4">
                       <input
                         disabled={isSubmitting}
@@ -469,10 +469,10 @@ const Send = () => {
                       <Cross dismiss={() => handleClearButton(setFieldValue)} />
                     </div>
                   </div>
-                  <div className="mt-2 mx-4">
+                  <div className="mt-2">
                     <SelectAsset />
                   </div>
-                  <div className="px-4 py-3">
+                  <div className="py-3">
                     <InputWrapper
                       errors={errors && errors.amount ? errors.amount : false}
                       wrapperStyle="mt-2"
@@ -599,7 +599,7 @@ const Send = () => {
                 </div>
 
                 {step === 1 && (
-                  <div className="px-4">
+                  <div>
                     <button
                       onClick={() => handleNavigation("balance")}
                       className="w-full bg-[#1B1B1B] text-white font-bold tracking-wider py-4"
@@ -609,7 +609,7 @@ const Send = () => {
                   </div>
                 )}
                 {step === 2 && (
-                  <div className="px-4 grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setStep(1)}
@@ -630,12 +630,12 @@ const Send = () => {
                 {step === 3 && (
                   <div>
                     {_currentAccount && _currentAccount.type === "ledger" && (
-                      <p className="bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-400 px-4 text-sm text-center mb-2 py-2">
+                      <p className="bg-gray-100 dark:bg-neutral-900 dark:text-neutral-400 text-sm text-center mb-2 py-2">
                         Make sure your ledger is connected, unlocked and your
                         Ethereum App is open before clicking Send
                       </p>
                     )}
-                    <div className="px-4 grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         disabled={loading}
                         type="button"
@@ -671,14 +671,14 @@ const Send = () => {
                   </div>
                 )}
                 {step === 4 && error && (
-                  <div className="px-4 my-16">
+                  <div className="my-16">
                     <p className="my-2 text-sm font-bold rounded text-center text-neutral-600 dark:text-neutral-400 break-all">
                       {error}
                     </p>
                   </div>
                 )}
                 {step === 4 && error && (
-                  <div className="px-4 grid grid-cols-1 mt-4">
+                  <div className="grid grid-cols-1 mt-4">
                     <button
                       type="button"
                       onClick={() => {
@@ -691,7 +691,7 @@ const Send = () => {
                   </div>
                 )}
                 {step === 4 && !error && (
-                  <div className="px-4 grid grid-cols-1">
+                  <div className="grid grid-cols-1">
                     <button
                       type="button"
                       onClick={async () => {

@@ -28,7 +28,7 @@ const AddressBook = ({ setStep }: IProps) => {
         </span>
         <hr className="border border-neutral-900 my-6 w-full" />
       </div>
-      <ul className="max-h-[50%] h-[250px] overflow-y-scroll">
+      <ul className="max-h-[50%] h-[250px] overflow-y-auto">
         <li
           key={_currentAccount.address}
           onClick={() => {

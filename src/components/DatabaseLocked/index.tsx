@@ -12,16 +12,13 @@ const DatabaseLocked = () => {
 
   return (
     <AnimatedDialog
-      position="items-start mt-20"
       extraClass="max-w-sm mx-auto"
-      dialogStyles="h-[400px] rounded-lg !shadow-teal-800 !shadow-sm overflow-hidden"
-      isOpen={_promptDatabaseLocked}
-      onClose={() => {
-        if (window.navigator.userAgent.includes("Minima Browser")) {
-            // @ts-ignore
-            Android.showTitleBar();
-          }
-      }}
+      up={2000}
+      display={_promptDatabaseLocked}
+      dismiss={() => {if (window.navigator.userAgent.includes("Minima Browser")) {
+        // @ts-ignore
+        Android.showTitleBar();
+      }}}
     >
       <>
         <div className="flex items-center px-2">

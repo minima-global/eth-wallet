@@ -245,7 +245,7 @@ function GasEstimation() {
               loading ? "animate-pulse temporary-pulse" : ""
             }`}
           >
-            <h3 className="font-bold">Gas Fee <span className={`${level === 'high' && "text-violet-300"} ${level === 'low' && "text-teal-300"} ${level === 'medium' && "text-yellow-300"} text-xs`}>({level})</span></h3>
+            <h3 className="font-bold">Gas Fee <span className={`${level === 'high' && "text-violet-500"} ${level === 'low' && "text-sky-500"} ${level === 'medium' && "text-neutral-700 dark:text-neutral-500"} text-xs`}>({level})</span></h3>
 
             {!gas && loading ? (
               <Spinner />

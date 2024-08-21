@@ -85,3 +85,7 @@ input:-webkit-autofill:active{
       -webkit-box-shadow: 0 0 0 30px #1C1C1C inset !important;
   } 
 }
+
+button:focus:not(:focus-visible) {
+  outline: none;
+ }

@@ -35,7 +35,6 @@ const ImportToken = () => {
     return { symbol, decimals, name };
   }
 
-
   return (
     <>
       <div className="flex justify-center my-4">
