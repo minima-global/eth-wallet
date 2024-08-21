@@ -6,6 +6,8 @@ import { Token } from "@uniswap/sdk-core";
 import { useWalletContext } from "../../../providers/WalletProvider/WalletProvider";
 import { _defaults } from "../../../constants";
 import { getTokenTransferApproval } from "../libs/getTokenTransferApproval";
+import AnimatedDialog from "../../UI/AnimatedDialog";
+import Cross from "../../UI/Cross";
 
 const Allowance = () => {
   const {
@@ -19,25 +21,18 @@ const Allowance = () => {
   const [error, setError] = useState<string | false>(false);
   const [step, setStep] = useState(1);
 
-  // this should check on load our allowances for both USDT & wMinima on the HTLC contract
-  // useAllowanceChecker();
-
-  if (!_promptAllowance) {
-    return null;
-  }
-
   const isDefault = !_approving && !error && step === 1;
   const isApproved = !_approving && !error && step === 2;
   const isError = !_approving && error;
   const isApproving = _approving && !error;
 
   return (
-    <div className="absolute left-0 right-0 bottom-0 top-0 flex justify-center z-[1000]">
-      <div
-        onClick={() => (!isApproving ? setPromptAllowance(false) : null)}
-        className="backdrop-blur-sm z-9 fixed left-0 right-0 top-0 bottom-0"
-      ></div>
-      <div className="z-9 fixed h-[400px] max-w-sm mx-4 md:mx-auto bg-white dark:bg-black rounded-lg !shadow-teal-800 !shadow-sm overflow-hidden w-full">
+    <AnimatedDialog
+      up={60}
+      display={_promptAllowance}
+      dismiss={() => (!isApproving ? setPromptAllowance(false) : null)}
+    >
+      <div>
         <div className="flex justify-between py-3 items-center px-4">
           {isDefault && (
             <h3 className="my-auto font-bold">Allowance Approval</h3>
@@ -49,6 +44,8 @@ const Allowance = () => {
           {isApproving && (
             <h3 className="my-auto font-bold">Approving Allowance</h3>
           )}
+
+          {!isApproving && <Cross dismiss={() => setPromptAllowance(false)} />}
         </div>
 
         <div className="flex flex-col h-[calc(100%_-_60px)] justify-between">
@@ -135,12 +132,12 @@ const Allowance = () => {
                 className="flex flex-col h-[calc(100%_-_100px)]"
               >
                 <div className="flex-grow" />
-                <div className="mx-3">
+                <div className="mx-3 mt-36">
                   {step === 1 && (
                     <button
                       type="submit"
                       disabled={_approving}
-                      className="disabled:bg-gray-500 hover:bg-opacity-80 w-full bg-teal-300 text-white  dark:text-black font-bold"
+                      className="w-full full-rounded border border-neutral-500 hover:border-neutral-600 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
                     >
                       {_approving && "Approving..."}
                       {isDefault && "Approve"}
@@ -153,7 +150,7 @@ const Allowance = () => {
                       onClick={() => setPromptAllowance(false)}
                       className="disabled:bg-gray-500 hover:bg-opacity-80 w-full bg-teal-300 text-white  dark:text-black font-bold"
                     >
-                      Ready to swap
+                      I'm Ready
                     </button>
                   )}
                 </div>
@@ -162,7 +159,7 @@ const Allowance = () => {
           </Formik>
         </div>
       </div>
-    </div>
+    </AnimatedDialog>
   );
 };
 

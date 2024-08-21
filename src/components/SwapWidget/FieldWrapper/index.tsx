@@ -21,7 +21,6 @@ const FieldWrapper = ({
   disabled,
   extraClass,
   type,
-  token,
   balance,
   decimals,
   inputRef,
@@ -34,8 +33,8 @@ const FieldWrapper = ({
     <div
       className={`${disabled ? "opacity-30" : ""} ${
         extraClass && extraClass
-      }   bg-gray-100 dark:bg-gray-800 rounded pb-0 grid grid-cols-[1fr_auto] ${
-        f ? "border border-teal-300" : ""
+      }    rounded pb-0 flex justify-between ${
+        f ? "" : ""
       } overflow-hidden`}
     >
       <div className="p-4">
@@ -55,22 +54,23 @@ const FieldWrapper = ({
           }}
           onFocus={() => setF(true)}
           placeholder="0"
-          className="w-full max-w text-2xl truncate bg-gray-100 dark:bg-gray-800 font-mono focus:border-none focus:outline-none placeholder:text-teal-300 font-bold"
+          className={`${f && "underline"} w-full max-w text-2xl truncate bg-transparent font-mono focus:border-none focus:outline-none placeholder:text-neutral-500 font-bold`}
         />
       </div>
       <div
-        className={`bg-gray-400 dark:bg-gray-700 bg-opacity-10 p-4 pb-0 grid grid-rows-[1fr_auto] ${
+        className={`grid my-auto ${
           reviewMode ? " flex items-center py-0" : ""
         }`}
       >
-        <div>{token}</div>
-        <p className="font-mono tracking-wider font-bold text-gray-500 text-center">
+        <div className="font-bold">{type === 'input' && formik.values.input.symbol}{type === 'output' && formik.values.output.symbol}</div>
+        <p className="font-mono tracking-widest text-center dark:text-neutral-500 text-xs">
           {balance &&
             balance.length ?
             new Decimal(formatUnits(balance!, decimals!).toString()).toFixed(0):'-'}
         </p>
         {type === "output" && <div className="my-1" />}
-        {type === "input" && !reviewMode && (
+        
+        {type === "input" && !reviewMode && !(balance && formik.values.inputAmount.length && new Decimal(formatUnits(balance, decimals)).equals(formik.values.inputAmount)) && (
           <button
             ref={buttonRef}
             type="button"

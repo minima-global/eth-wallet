@@ -19,7 +19,7 @@ const getTokenWrapper = (asset: Asset, amount?: string) => {
     }
   
     return (
-      <div className="text-center flex items-center gap-1 p-1 rounded">
+      <div>
         {tokenIconSrc && (
           <img
             alt="token-icon"
@@ -28,7 +28,6 @@ const getTokenWrapper = (asset: Asset, amount?: string) => {
           />
         )}
         {amount &&  <p className="font-mono">{new Decimal(amount).toFixed(2)}</p>}
-        {/* {tokenName && <p className="font-bold">{tokenName}</p>} */}
       </div>
     );
   };

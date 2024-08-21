@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
-import styles from "./Styles.module.css";
 import { useContext } from "react";
 import { appContext } from "../../../AppContext";
+import SwitchIcon from "../../UI/Icons/SwitchIcon";
 
 const SwapDirection = () => {
   const formik: any = useFormikContext();
@@ -25,29 +25,18 @@ const SwapDirection = () => {
   };
 
   return (
-    <div className={styles["overlay"]}>
-      <button
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+        <hr className="border border-neutral-500 my-6 w-full" />
+        <button
         type="button"
-        onClick={handleFlip}
-        className="bg-slate-800 p-1 outline outline-offset-2 outline-black focus:outline-offset-4 focus:outline-teal-300"
+        onClick={handleFlip}        
+        className={`w-max text-neutral-800 dark:text-neutral-300`}
+        
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          strokeWidth="2.5"
-          stroke="#5eead4"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3" />
-          <path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3" />
-        </svg>
+        <SwitchIcon fill="currentColor" />
       </button>
-    </div>
+        <hr className="border border-neutral-500 my-6 w-full" />
+      </div>
   );
 };
 

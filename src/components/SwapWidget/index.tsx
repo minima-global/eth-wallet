@@ -217,7 +217,7 @@ const SwapWidget = () => {
             <QuoteContextProvider>
               <Allowance />
 
-              <form onSubmit={handleSubmit} className="relative">
+              <form onSubmit={handleSubmit} className="relative border border-neutral-500 dark:border-[#1B1B1B] rounded p-3">
                 <>
                   <FieldWrapper
                     handleBlur={handleBlur}
