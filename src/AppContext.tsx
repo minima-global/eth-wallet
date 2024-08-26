@@ -83,7 +83,7 @@ const AppProvider = ({ children }: IProps) => {
 
   const [_promptAllowance, setPromptAllowance] = useState(false);
   const [_approving, setApproving] = useState(false);
-  const [_allowanceLock, setAllowanceLock] = useState(false);
+  const [_allowanceLock, setAllowanceLock] = useState<{wminima: true, tether: false} | false>(false);
 
   const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] =
     useState(false);

@@ -33,16 +33,22 @@ const SwapWidget = () => {
     setPromptAllowance,
   } = useContext(appContext);
   const { _wallet, _balance, callBalanceForApp } = useWalletContext();
-  const { tokens } = useTokenStoreContext();
+  const { isLoading, tokens, error: tokenLoadingError, retryFetchTokens } = useTokenStoreContext();
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState<false | string>(false);
 
   useEffect(() => {
     (async () => {
-      await callBalanceForApp();
+      callBalanceForApp();
     })();
-  }, [_network, step, swapDirection]);
+  }, [swapDirection]);
+
+  useEffect(() => {
+    if (!isLoading && !tokenLoadingError && tokens.length === 0) {
+      retryFetchTokens();
+    }
+  }, [isLoading, tokenLoadingError, tokens, retryFetchTokens]);
 
   if (_network !== "mainnet") {
     return (

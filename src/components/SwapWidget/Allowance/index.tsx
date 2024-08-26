@@ -1,7 +1,7 @@
 import { Formik } from "formik";
 import { useContext, useEffect, useState } from "react";
 import { appContext } from "../../../AppContext";
-import { Interface, MaxUint256, Transaction } from "ethers";
+import { MaxUint256 } from "ethers";
 import { Token } from "@uniswap/sdk-core";
 import { useWalletContext } from "../../../providers/WalletProvider/WalletProvider";
 import { _defaults } from "../../../constants";
@@ -13,6 +13,7 @@ import AnimatedDialog from "../../UI/AnimatedDialog";
 import Cross from "../../UI/Cross";
 import { SWAP_ROUTER_ADDRESS } from "../../../providers/QuoteProvider/libs/constants";
 import RefreshIcon from "../../UI/Icons/RefreshIcon";
+import { useGasContext } from "../../../providers/GasProvider";
 
 const Allowance = () => {
   const {
@@ -20,48 +21,29 @@ const Allowance = () => {
     _wallet: signer,
     _address,
   } = useWalletContext();
+  const { gasInfo, startFetchingGasInfo, stopFetchingGasInfo } = useGasContext();
+  
+  useEffect(() => {
+    startFetchingGasInfo();    
+    
+    return () => {
+      stopFetchingGasInfo();
+    }
+  }, [stopFetchingGasInfo, startFetchingGasInfo]);
+  
   const {
     _provider,
     _userAccounts,
     _promptAllowance,
+    _allowanceLock,
     setPromptAllowance,
     _approving,
     setApproving,
   } = useContext(appContext);
 
-  // Mock function to simulate approval process
-  const simulateLedgerApproval = async () => {
-    setLedgerContext({
-      status: "waiting",
-      approving: { wminima: true, tether: false },
-    });
-
-    // Simulate waiting for the first token approval
-    await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate 3 seconds delay
-    setLedgerContext({
-      status: "success",
-      approving: { wminima: true, tether: false },
-    });
-
-    // Now prompt for the second token approval
-    setLedgerContext({
-      status: "waiting",
-      approving: { wminima: false, tether: true },
-    });
-
-    // Simulate waiting for the second token approval
-    await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate 3 seconds delay
-    setLedgerContext({
-      status: "success",
-      approving: { wminima: false, tether: true },
-    });
-
-    // Finally, approval process is complete
-    setLedgerContext(false);
-  };
 
   useEffect(() => {
-    simulateLedgerApproval(); // Start the approval process when the component mounts
+    // simulateLedgerApproval(); // Start the approval process when the component mounts
   }, []);
 
   const [ledgerContext, setLedgerContext] = useState<
@@ -78,6 +60,7 @@ const Allowance = () => {
   const isApproved = !_approving && !error && step === 2;
   const isError = !_approving && error;
   const isApproving = _approving && !error;
+
 
   return (
     <AnimatedDialog
@@ -116,7 +99,7 @@ const Allowance = () => {
             {isApproved && (
               <p className="px-4 text-sm">Approved Allowances, ready to go!</p>
             )}
-            {isError && <p className="px-4 text-sm">{error}</p>}
+            {isError && <p className="px-4 text-sm break-all">{error}</p>}
 
             {_approving && (
               <p className="px-4 text-sm animate-pulse text-black dark:text-white">
@@ -155,45 +138,57 @@ const Allowance = () => {
 
                 if (current.type === "ledger") {
                   
+                  if (!gasInfo) throw new Error("No Gas Info Available, please refresh this page");
                   // Estimate Gas for approval 
 
+                  const { suggestedMaxFeePerGas, suggestedMaxPriorityFeePerGas } = gasInfo!;
 
-                  setLedgerContext({status: 'waiting', approving: {wminima: true, tether: false}});
 
-                  // approve Minima
-                  await approveTokenWithLedger({
-                    current,
-                    tokenAddress: wMinimaAddress,
-                    spenderAddress: SWAP_ROUTER_ADDRESS,
-                    amountToApprove: MaxUint256.toString(),
-                    chainId: supportedChains,
-                    gasLimit: undefined,
-                    gasPrice: undefined,
-                    priorityFee: undefined,
-                    nonce: await _provider.getTransactionCount(current.address),
-                    bip44Path: current.bip44Path,
-                    provider: _provider,
-                  });
+                  setLedgerContext({status: 'waiting', approving: {..._allowanceLock}});
 
-                  setLedgerContext({status: 'waiting', approving: {wminima: false, tether: true}});
+                  if (_allowanceLock.wminima) {
+                    // approve Minima
+                    await approveTokenWithLedger({
+                      current,
+                      tokenAddress: wMinimaAddress,
+                      spenderAddress: SWAP_ROUTER_ADDRESS,
+                      amountToApprove: MaxUint256.toString(),
+                      chainId: supportedChains,
+                      gasLimit: undefined,
+                      gasPrice: suggestedMaxFeePerGas,
+                      priorityFee: suggestedMaxPriorityFeePerGas,
+                      nonce: await _provider.getTransactionCount(current.address),
+                      bip44Path: current.bip44Path,
+                      provider: _provider,
+                    });
+                    
+                    setLedgerContext({status: 'waiting', approving: {wminima: false, tether: true}});
+                  }
+                  
 
-                  // approve Minima
-                  await approveTokenWithLedger({
-                    current,
-                    tokenAddress: tetherAddress,
-                    spenderAddress: SWAP_ROUTER_ADDRESS,
-                    amountToApprove: MaxUint256.toString(),
-                    chainId: supportedChains,
-                    gasLimit: undefined,
-                    gasPrice: undefined,
-                    priorityFee: undefined,
-                    nonce: await _provider.getTransactionCount(current.address),
-                    bip44Path: current.bip44Path,
-                    provider: _provider,
-                  });
+                  if (_allowanceLock.tether) {
+                    // approve Minima
+                    await approveTokenWithLedger({
+                      current,
+                      tokenAddress: tetherAddress,
+                      spenderAddress: SWAP_ROUTER_ADDRESS,
+                      amountToApprove: MaxUint256.toString(),
+                      chainId: supportedChains,
+                      gasLimit: undefined,
+                      gasPrice: suggestedMaxFeePerGas,
+                      priorityFee: suggestedMaxPriorityFeePerGas,
+                      nonce: await _provider.getTransactionCount(current.address),
+                      bip44Path: current.bip44Path,
+                      provider: _provider,
+                    });
+                    
+                    setLedgerContext({status: 'success', approving: {wminima: true, tether: true}});
+                  }
 
-                  setLedgerContext({status: 'success', approving: {wminima: true, tether: true}});
 
+                  setTimeout(() => {
+                    setLedgerContext(false);
+                  }, 3000);
 
                 } else {
                   await getTokenTransferApproval(
@@ -263,11 +258,7 @@ const Allowance = () => {
                     )}
                     {ledgerContext && ledgerContext?.status === "success" && (
                       <span>
-                        {ledgerContext.approving.wminima
-                          ? "Ledger confirmation for WMinima complete."
-                          : ledgerContext.approving.tether
-                          ? "Ledger confirmation for Tether complete."
-                          : ""}
+                        Approval successful.
                       </span>
                     )}
                   </div>
@@ -289,7 +280,7 @@ const Allowance = () => {
                     <button
                       type="button"
                       onClick={() => setPromptAllowance(false)}
-                      className="disabled:bg-gray-500 hover:bg-opacity-80 w-full bg-teal-300 text-white  dark:text-black font-bold"
+                      className="w-full full-rounded border border-neutral-500 hover:border-neutral-600 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
                     >
                       I'm Ready
                     </button>

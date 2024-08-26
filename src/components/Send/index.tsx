@@ -25,7 +25,6 @@ import { _defaults } from "../../constants";
 import TransactionReceiptCard from "../TransactionReceipt";
 import Cross from "../UI/Cross";
 import InputWrapper from "../UI/FormComponents/InputWrapper";
-import useGasInfo from "../../hooks/useGasInfo";
 import { useGasContext } from "../../providers/GasProvider";
 
 import * as utils from "../../utils";
@@ -55,14 +54,13 @@ const Send = () => {
     callBalanceForApp,
     transfer,
   } = useWalletContext();
-  const { level } = useGasContext();
+  
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | false>(false);
 
-  const { gasInfo, setGas } = useGasInfo(step, level);
-  const { estimateGas } = useGasContext();
+  const { gasInfo, clearGas, estimateGas, startFetchingGasInfo, stopFetchingGasInfo } = useGasContext();
 
   const [ledgerContext, setLedgerContext] = useState<
     false | "waiting" | "rejected" | "accepted"
@@ -75,6 +73,19 @@ const Send = () => {
     setFieldValueRef("address", "");
     setStep(1);
   };
+
+  useEffect(() => {
+    if (step >= 2) {
+      startFetchingGasInfo();
+    } else {
+      stopFetchingGasInfo();
+
+    }
+
+    return () => {
+      stopFetchingGasInfo();
+    }
+  }, [step, stopFetchingGasInfo, startFetchingGasInfo]);
 
   useEffect(() => {
     if (_currentNavigation === 'send') {
@@ -333,11 +344,11 @@ const Send = () => {
                   serializedTx.slice(2),
                   resolution
                 );
-                unsignedTx.signature = {
-                  r: "0x" + Buffer.from(signature.r),
-                  s: "0x" + Buffer.from(signature.s),
-                  v: "0x" + Buffer.from(signature.v),
-                };
+                // unsignedTx.signature = {
+                //   r: "0x" + Buffer.from(signature.r),
+                //   s: "0x" + Buffer.from(signature.s),
+                //   v: "0x" + Buffer.from(signature.v),
+                // };
 
                 unsignedTx.signature = {
                   r: `0x${signature.r}`,
@@ -641,7 +652,7 @@ const Send = () => {
                         type="button"
                         onClick={() => {
                           setStep(1);
-                          setGas(null);
+                          clearGas();
                           resetForm();
                         }}
                         className="w-full bg-[#1B1B1B] text-white font-bold tracking-wider py-4 disabled:bg-opacity-10"
@@ -696,7 +707,7 @@ const Send = () => {
                       type="button"
                       onClick={async () => {
                         setStep(1);
-                        setGas(null);
+                        clearGas();
                         resetForm();
                         handleNavigation("balance");
                         await callBalanceForApp();

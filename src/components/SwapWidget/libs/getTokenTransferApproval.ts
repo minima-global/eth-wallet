@@ -95,62 +95,74 @@ export async function approveTokenWithLedger({
 }) {
   try {
     // Establish connection with Ledger
-    const transport = await TransportWebUSB.create();
+    let transport;
+
+    // Attempt to initialize the TransportWebUSB connection
+    try {
+      transport = await TransportWebUSB.create();
+    } catch (err) {
+      console.error("Failed to initialize TransportWebUSB:", err);
+      throw new Error("Please ensure Ledger is connected and unlocked.");
+    }
     const ethApp = new Eth(transport);
 
     // Create the unsigned transaction for approval
-    const unsignedTx = new Transaction();
-    unsignedTx.to = tokenAddress;
-    unsignedTx.value = BigInt(0);
+    const tx: any = {
+      to: tokenAddress,
+      value: 0,
+      data: new Interface([
+        "function approve(address spender, uint256 amount)",
+      ]).encodeFunctionData("approve", [spenderAddress, amountToApprove]),
+      chainId: Number(chainId),
+      nonce: nonce || await provider.getTransactionCount(current.address),
+    };
 
-    // Setting optional parameters if provided
-    if (gasLimit) unsignedTx.gasLimit = gasLimit;
-    if (gasPrice) unsignedTx.maxFeePerGas = parseUnits(gasPrice, "gwei");
-    if (priorityFee) unsignedTx.maxPriorityFeePerGas = parseUnits(priorityFee, "gwei");
+    // Estimate gas before signing
+    const estimatedGas = await provider.estimateGas({...tx, from: current.address});
+    tx.gasLimit = gasLimit || estimatedGas;
 
-    // Encode the approval function data
-    unsignedTx.data = new Interface([
-      "function approve(address spender, uint256 amount)",
-    ]).encodeFunctionData("approve", [spenderAddress, amountToApprove]);
-
-    // Set the chain ID and nonce
-    unsignedTx.chainId = BigInt(chainId);
-    unsignedTx.nonce = nonce || await provider.getTransactionCount(current.address);
+    if (gasPrice) tx.maxFeePerGas = parseUnits(gasPrice, "gwei");
+    if (priorityFee) tx.maxPriorityFeePerGas = parseUnits(priorityFee, "gwei");
 
     // Serialize the unsigned transaction
-    const serializedTx = unsignedTx.unsignedSerialized;
+    const serializedTx = Transaction.from(tx).unsignedSerialized;
 
-    // Resolve the transaction using Ledger's service
+    // Resolve and sign the transaction
     const resolution = await ledgerService.resolveTransaction(
       serializedTx.slice(2),
       ethApp.loadConfig,
       { erc20: true, externalPlugins: true }
     );
-
-    // Sign the transaction with Ledger
+    
     const signature = await ethApp.signTransaction(
       bip44Path,
       serializedTx.slice(2),
       resolution
     );
+    
+    // Construct the signed transaction
+    const signedTx = Transaction.from({
+      ...tx,
+      signature: {
+        r: `0x${signature.r}`,
+        s: `0x${signature.s}`,
+        v: parseInt(signature.v, 16),
+      },
+    });
 
-    // Add the signature to the transaction
-    unsignedTx.signature = {
-      r: `0x${signature.r}`,
-      s: `0x${signature.s}`,
-      v: `0x${signature.v}`,
-    };
-
-    // Serialize the signed transaction
-    const serializedSignedTx = Transaction.from(unsignedTx).serialized;
-
+    console.log(signedTx);
     // Broadcast the transaction
-    const txResponse = await provider.broadcastTransaction(serializedSignedTx);
+    const txResponse = await provider.broadcastTransaction(signedTx.serialized);
 
-    // Return the transaction response
     return txResponse;
-  } catch (error) {
-    console.error("Error approving token with Ledger:", error);
-    throw error;
+  } catch (error: any) {
+    if (error.error && typeof error.error === 'object' && error.error.code === -32000 && error.error.message === "already known") {      
+      // You might want to implement a way to track this transaction
+      // or inform the user that the transaction is already pending
+      throw Error("Transaction already submitted. Waiting for confirmation...");
+    } else {
+      console.error("Error approving token with Ledger:", error);
+      throw error;
+    }
   }
 }
