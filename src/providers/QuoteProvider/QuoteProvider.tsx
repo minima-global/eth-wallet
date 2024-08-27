@@ -27,16 +27,18 @@ export const QuoteContextProvider = ({ children }: Props) => {
 
   const formik: FormikContextType<FormikValues> = useFormikContext();
   const { values, setFieldValue, isSubmitting } = formik;
-  const { tokenA, tokenB, inputAmount } = values;
+  const { tokenA, tokenB, inputAmount, inputMode } = values;
 
   const widgetNotReady =
-    createDecimal(inputAmount) === null ||
-    new Decimal(inputAmount).lte(0) ||
+    // createDecimal(inputAmount) === null ||
+    // new Decimal(inputAmount).lte(0) ||
     !_poolContract;
 
   useEffect(() => {
+    console.log("Run");
     if (widgetNotReady) return;
 
+    console.log("Fetch data?");
     const fetchData = async () => {
       const [fee, tickSpacing, liquidity, slot0] = await Promise.all([
         _poolContract.fee(),
@@ -44,6 +46,10 @@ export const QuoteContextProvider = ({ children }: Props) => {
         _poolContract.liquidity(),
         _poolContract.slot0(),
       ]);
+
+      console.log('Current price token0/token1', slot0[0]);
+      console.log('Current tick', slot0[1]);
+      console.log('Pool fee', fee);
 
       const poolInfo = {
         fee,
@@ -62,18 +68,20 @@ export const QuoteContextProvider = ({ children }: Props) => {
         parseInt(poolInfo.tick)
       );
 
+      console.log('Pool', pool);
+
       const swapRoute = new Route([pool], tokenA, tokenB);
 
       const quoteData = await getOutputQuote(
-        tokenA,
-        values.inputAmount,
+        inputMode ? tokenA:tokenB,
+        inputMode ? values.inputAmount : values.outputAmount,
         swapRoute,
         _provider
       );
 
       setFieldValue(
-        "outputAmount",
-        toReadableAmount(quoteData[0], tokenB.decimals)
+        inputMode ? "outputAmount":"inputAmount",
+        toReadableAmount(quoteData[0], inputMode?tokenB.decimals:tokenA.decimals)
       );
     };
 
@@ -100,12 +108,14 @@ export const QuoteContextProvider = ({ children }: Props) => {
     values.receipt,
     widgetNotReady,
     values.inputAmount,
+    values.outputAmount,
     values.input,
     values.output,
     _provider,
     _poolContract,
     tokenA,
     tokenB,
+    inputMode,
     setFieldValue,
   ]);
 

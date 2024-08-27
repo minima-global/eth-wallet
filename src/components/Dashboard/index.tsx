@@ -20,7 +20,6 @@ import NavigationButton from "../UI/NavigationButton";
 import HistoryIcon from "../UI/Icons/HistoryIcon";
 import SendIcon from "../UI/Icons/SendIcon";
 import SwapIcon from "../UI/Icons/SwapIcon";
-import AppThemeSwitch from "../AppThemeSwitch";
 import useLedger from "../../hooks/useLedger";
 
 const Dashboard = () => {

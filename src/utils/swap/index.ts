@@ -3,7 +3,7 @@ import { Trade } from '@uniswap/v3-sdk'
 import { formatUnits } from 'ethers'
 import { ethers } from 'ethers-5'
 
-const MAX_DECIMALS = 4
+const MAX_DECIMALS = 20
 
 
 export function fromReadableAmount(

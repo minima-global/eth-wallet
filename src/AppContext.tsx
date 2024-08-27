@@ -245,6 +245,14 @@ const AppProvider = ({ children }: IProps) => {
               `SELECT * FROM cache WHERE name = 'API_KEYS'`
             );
 
+            const swapWidgetSettings: any = await sql(
+              `SELECT * FROM cache WHERE name = 'SWAP_WIDGET_SETTINGS'`
+            );
+
+            if (swapWidgetSettings) {
+              swapWidgetProps.setSwapWidgetSettings(JSON.parse(swapWidgetSettings.DATA))
+            }
+
             // USER PREFERENCES
             if (cachedApiKeys) {
               setUserKeys(JSON.parse(cachedApiKeys.DATA));
@@ -427,6 +435,7 @@ const AppProvider = ({ children }: IProps) => {
       );
     }
   };
+
 
   const setCurrentUserAccount = async (account: UserAccount, filteredData?: UserAccount[]) => {
     

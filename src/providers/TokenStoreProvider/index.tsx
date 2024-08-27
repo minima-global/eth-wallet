@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import ABI_ERC20 from "../../abis/ERC20.json";
-import { Contract, parseUnits, BigNumber } from "ethers";
+import { Contract, parseUnits } from "ethers";
 import { appContext } from "../../AppContext";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
 import { TransactionResponse } from "ethers";
