@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useSpring, animated, config, update } from "react-spring";
+import { useSpring, animated, config } from "react-spring";
 
 import styles from "./UserAccount.module.css";
 import * as utils from "../../utils";
@@ -380,7 +380,7 @@ const UserAccount = () => {
                           
                           setImportType(null);
                           setPromptAddAccount(false);
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
                           if (err instanceof Error) {
                             setError((prevState) => prevState ? ({
@@ -501,7 +501,7 @@ const UserAccount = () => {
                           // Add all selected accounts
                           await addSelectedAccount(selectedAccounts);
                           resetForm();    
-                        } catch (err) { 
+                        } catch (err: any) { 
                           if (err instanceof Error) {
                             setError((prevState) =>
                               prevState

@@ -9,7 +9,6 @@ import { createPortal } from "react-dom";
 import Decimal from "decimal.js";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { appContext } from "../../AppContext";
-import useGasInfo from "../../hooks/useGasInfo";
 
 import * as utils from "../../utils";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
@@ -32,8 +31,11 @@ function GasEstimation() {
     showGasCards,
     estimateGas,
     promptGasCards,
+    gasInfo,
+    gasCardData
   } = useGasContext();
-  const { gasInfo, gasCardData } = useGasInfo(3, level);
+  
+  // const { gasInfo, gasCardData } = useGasInfo(3, level);
   const { _defaultNetworks, _currentNetwork } = useContext(appContext);
 
   const springProps = useSpring({
@@ -68,6 +70,8 @@ function GasEstimation() {
           suggestedMaxFeePerGas,
           suggestedMaxPriorityFeePerGas
         );
+
+        console.log('finalGas', finalGas);
 
         setGas(finalGas);
       } catch (error) {

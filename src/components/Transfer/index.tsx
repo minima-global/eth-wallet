@@ -11,6 +11,7 @@ const Transfer = () => {
   const { transfer } = useWalletContext();
   const {gas} = useGasContext();
 
+  return null;
   const [error, setError] = useState<false | string>();
   const [etherscanLink, setEtherScanLink] = useState<false | string>();
 

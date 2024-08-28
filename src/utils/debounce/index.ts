@@ -5,6 +5,7 @@ export function debounce(func, delay) {
         clearTimeout(timeoutId);
       }
       timeoutId = setTimeout(() => {
+        //@ts-ignore
         func.apply(this, args);
       }, delay);
     };

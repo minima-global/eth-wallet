@@ -676,7 +676,8 @@ const Send = () => {
                       >
                         {loading ? "Sending..." : null}
                         {!loading && !gasInfo ? "Fetching Gas" : null}
-                        {!loading && gasInfo ? "Send" : null}
+                        {!loading && gasInfo && _currentAccount.type !== "ledger" ? "Send" : null}
+                        {!loading && gasInfo && _currentAccount.type === "ledger" ? "Sign & Send" : null}
                       </button>
                     </div>
                   </div>

@@ -151,7 +151,7 @@ export const TokenStoreContextProvider = ({ children }: Props) => {
   ) => {
     try {
       const contract = new Contract(tokenAddress, ABI_ERC20, signer);
-      const gasUnits: BigNumber = await contract.transfer.estimateGas(
+      const gasUnits = await contract.transfer.estimateGas(
         recipientAddress,
         parseUnits(amount, decimals)
       );

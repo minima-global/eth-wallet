@@ -4,9 +4,7 @@ import { FormikContextType, FormikValues, useFormikContext } from "formik";
 import getOutputQuote from "../../components/SwapWidget/libs/getOutputQuote";
 import { appContext } from "../../AppContext";
 import { FeeAmount, Pool, Route } from "@uniswap/v3-sdk";
-import Decimal from "decimal.js";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
-import createDecimal from "../../utils/createDecimal";
 
 const READABLE_FORM_LEN = 20;
 
