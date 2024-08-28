@@ -241,9 +241,11 @@ const Allowance = () => {
                   <div className="z-[46] flex items-center justify-center flex-col text-sm gap-2">
                     {ledgerContext && ledgerContext.status === "waiting" && (
                       <>
-                        <span className="animate-spin">
+                        <span >
                           <RefreshIcon
                             fill="currentColor"
+                            extraClass="animate-spin"
+                            size={20}
                           />
                         </span>
                         <span>

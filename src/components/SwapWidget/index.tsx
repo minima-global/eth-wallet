@@ -436,8 +436,8 @@ const SwapWidget = () => {
     </Formik>
   ) : (
     <div className="flex flex-col justify-center items-center mt-16">
-      <span className="animate-spin dark:text-neutral-300">
-        <RefreshIcon fill="currentColor" />
+      <span className="dark:text-neutral-300">
+        <RefreshIcon size={20} extraClass="animate-spin" fill="currentColor" />
       </span>
       <p className="text-center text-xs pt-1 dark:text-neutral-400">
         Refreshing your experience...

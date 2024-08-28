@@ -599,8 +599,9 @@ const Send = () => {
                 >
                   <div className="fixed backdrop-blur-sm left-0 right-0 top-0 bottom-0 z-[43] bg-neutral-200/50 dark:bg-black/50"></div>
                   <div className="z-[46] flex items-center justify-center flex-col text-sm gap-2">
-                    <span className="animate-spin">
+                    <span>
                       <RefreshIcon
+                        size={20} extraClass="animate-spin"
                         fill="currentColor"
                       />
                     </span>

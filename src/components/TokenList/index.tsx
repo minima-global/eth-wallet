@@ -73,6 +73,8 @@ const TokenList = () => {
         <span onClick={callBalanceForApp} className={`dark:text-sky-500 ${_triggerBalanceUpdate && "!animate-spin !text-neutral-300"}`}>
           <RefreshIcon            
             fill="currentColor"
+            size={20}
+            extraClass={_triggerBalanceUpdate && "animate-spin"}
           />
         </span>
       </div>
