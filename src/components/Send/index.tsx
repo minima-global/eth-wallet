@@ -442,7 +442,7 @@ const Send = () => {
                       className={`w-full bg-neutral-100 placeholder:text-neutral-500 focus:outline-none p-4 dark:bg-[#1B1B1B] mb-2 ${
                         dirty && errors.address
                           ? "outline !outline-neutral-200"
-                          : "focus:outline focus:outline-teal-100"
+                          : "focus:outline focus:outline-neutral-100 dark:focus:outline-neutral-900"
                       }`}
                       onChange={(e) => {
                         handleChange(e);
@@ -467,7 +467,7 @@ const Send = () => {
               {step === 2 && (
                 <div>
                   <div>
-                    <div className="rounded grid grid-cols-[1fr_auto] items-center bg-teal-100 shadow-sm shadow-teal-100 dark:shadow-none dark:bg-[#1B1B1B] p-4">
+                    <div className="rounded grid grid-cols-[1fr_auto] items-center bg-neutral-100 shadow-sm shadow-neutral-100 dark:shadow-none dark:bg-[#1B1B1B] p-4">
                       <input
                         disabled={isSubmitting}
                         required

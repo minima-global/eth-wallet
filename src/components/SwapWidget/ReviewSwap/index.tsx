@@ -59,7 +59,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
   return (
     <AnimatedDialog up={2000} display={step > 1} dismiss={() => null}>
       <>
-        <div className="grid grid-cols-[1fr_auto] items-center max-w-sm mx-auto">
+        <div className={`grid grid-cols-[1fr_auto] items-center mx-auto ${error ? "max-w-lg" : "max-w-sm"}`}>
           <h3 className="px-4 text-base font-bold text-center">
             {!error && step === 2 && "Review Swap"}
             {error && "Transaction Failed"}
@@ -82,7 +82,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
           )}
         </div>
 
-        <div className="mt-8 max-w-sm mx-auto">
+        <div className={`mt-8 max-w-sm mx-auto ${error ? "max-w-lg" : "max-w-sm"}`}>
           {!error && (
             <>
               {step === 2 && (
@@ -426,9 +426,9 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
           )}
 
           {error && (
-            <>
-              <p className="dark:text-neutral-500">{error}</p>
-            </>
+            <div className="overflow-y-auto max-h-[400px]">
+              <p className="dark:text-neutral-500 break-all">{error}</p>
+            </div>
           )}
         </div>
       </>

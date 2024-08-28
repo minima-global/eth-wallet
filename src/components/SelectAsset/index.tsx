@@ -60,7 +60,7 @@ const SelectAsset = () => {
         aria-haspopup="true"
         aria-expanded="true"
         onClick={handleButtonClick}
-        className="focus:border focus:border-teal-100 mt-4 outline outline-teal-100 items-center grid gap-2 grid-cols-[auto_1fr_auto] break-all p-4 rounded-lg w-full"
+        className="mt-4 focus:border-neutral-800 border border-neutral-500 dark:border-neutral-900 items-center grid gap-2 grid-cols-[auto_1fr_auto] break-all p-4 rounded-lg w-full"
       >
         {formik.values.asset.type === "ether" && (
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">

@@ -270,9 +270,11 @@ const SwapWidget = () => {
             setLedgerContext("success");
 
             await new Promise((resolve) => setTimeout(resolve, 5000));
-            
+            const serializedSignedTx =
+                  Transaction.from(signedTx).serialized;
+                  
             const txResponse = await _provider.broadcastTransaction(
-              signedTx
+              serializedSignedTx
             );
 
             const receipt = await txResponse.wait();

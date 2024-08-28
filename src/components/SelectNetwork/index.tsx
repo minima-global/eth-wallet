@@ -10,6 +10,7 @@ import CustomNetwork from "../UI/CustomNetwork";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import BackIcon from "../UI/Icons/BackIcon";
 import AnimatedDialog from "../UI/AnimatedDialog";
+import Cross from "../UI/Cross";
 
 const SelectNetwork = () => {
   const {
@@ -47,30 +48,15 @@ const SelectNetwork = () => {
         {_network.length === 0 && <p className="font-bold">Select Network</p>}
       </div>
 
-      <AnimatedDialog display={_promptSelectNetwork} dismiss={() => null}>
-        <div className="bg-white shadow-lg  shadow-slate-300  dark:shadow-none dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
+      <AnimatedDialog display={_promptSelectNetwork} dismiss={() => null} up={2000}>
+        <div className=" p-4 px-0 rounded mx-auto">
           {step === 1 && (
             <div>
               <div className="flex justify-between pr-4">
                 <h1 className="text-lg md:text-xl px-4 mb-4">
                   Select a network
                 </h1>
-                <svg
-                  onClick={promptSelectNetwork}
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2.5"
-                  stroke="currentColor"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M18 6l-12 12" />
-                  <path d="M6 6l12 12" />
-                </svg>
+                <Cross dismiss={promptSelectNetwork} />
               </div>
               <div className="grid grid-cols-1">
                 <ul>

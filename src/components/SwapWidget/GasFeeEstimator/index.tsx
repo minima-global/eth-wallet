@@ -7,7 +7,7 @@ import {
   Trade,
 } from "@uniswap/v3-sdk";
 import { FormikValues, FormikContextType, useFormikContext } from "formik";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import getOutputQuote from "../libs/getOutputQuote";
 import { appContext } from "../../../AppContext";
 import { CurrencyAmount, Percent, TradeType } from "@uniswap/sdk-core";
@@ -19,6 +19,8 @@ import { useWalletContext } from "../../../providers/WalletProvider/WalletProvid
 import { SWAP_ROUTER_ADDRESS } from "../../../providers/QuoteProvider/libs/constants";
 import Decimal from "decimal.js";
 import { useGasContext } from "../../../providers/GasProvider";
+import { parseUnits } from "ethers";
+
 
 const GasFeeEstimator = () => {
   const formik: FormikContextType<FormikValues> = useFormikContext();
@@ -26,16 +28,26 @@ const GasFeeEstimator = () => {
 
   const { gasInfo } = useGasContext();
 
-  const { _address, _poolContract, _wallet } = useWalletContext();
+  const { _chainId, _address, _poolContract, _wallet } = useWalletContext();
 
+  const { setFieldValue, setFieldError } = formik;
   const { tokenA, tokenB, inputAmount, outputAmount, gas, locked, inputMode } =
     formik.values;
 
-  useEffect(() => {
-    if (!_poolContract || locked || utils.createDecimal(inputAmount) === null)
-      return;
 
-    (async () => {
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const fetchQuote = async () => {
+      console.log("Fetching new quote");
+      if (
+        !_poolContract ||
+        locked ||
+        (utils.createDecimal(inputAmount) === null &&
+          utils.createDecimal(outputAmount))
+      )
+        return;
+
       const [liquidity, slot0] = await Promise.all([
         _poolContract.liquidity(),
         _poolContract.slot0(),
@@ -79,19 +91,12 @@ const GasFeeEstimator = () => {
         tradeType: TradeType.EXACT_INPUT,
       });
 
-      console.log("uncheckedTrade", uncheckedTrade);
-
-      console.log("swapWidgetSettings", swapWidgetSettings);
-
       const deadline =
         (swapWidgetSettings && swapWidgetSettings.deadline) || 20;
       const slippage =
         (swapWidgetSettings && swapWidgetSettings.slippage) || 0.5; // Default slippage percentage
 
-      // Convert percentage to basis points
       const slippageBips = Math.round(slippage * 100); // Convert to basis points
-
-      // Ensure slippage is within the valid range of 0% (0 bips) to 50% (5000 bips)
       const validSlippageBips = Math.max(0, Math.min(5000, slippageBips));
 
       const options: SwapOptions = {
@@ -99,7 +104,6 @@ const GasFeeEstimator = () => {
         deadline: Math.floor(Date.now() / 1000) + 60 * deadline, // Deadline in seconds
         recipient: _address!,
       };
-
 
       const methodParameters = SwapRouter.swapCallParameters(
         [uncheckedTrade],
@@ -109,19 +113,17 @@ const GasFeeEstimator = () => {
       const feeData = await _provider.getFeeData();
       const { maxFeePerGas, maxPriorityFeePerGas } = feeData;
 
-      const tx = {
+      const tx: any = {
         data: methodParameters.calldata,
         to: SWAP_ROUTER_ADDRESS,
         value: methodParameters.value,
-        // from: _address,
-        maxFeePerGas: maxFeePerGas,
-        maxPriorityFeePerGas: maxPriorityFeePerGas,
+        chainId: BigInt(_chainId!),
       };
 
       try {
         const gasUnits = await _wallet!.estimateGas(tx);
 
-        console.log('gasUnits requierd GWEI', gasUnits);
+        tx.gasLimit = BigInt(gasUnits);
 
         if (maxFeePerGas) {
           const _gas = await utils.calculateGasFee(
@@ -130,19 +132,48 @@ const GasFeeEstimator = () => {
             maxPriorityFeePerGas.toString()
           );
 
-          // calculated gas..
-          formik.setFieldValue("gas", _gas!.finalGasFee);
+          tx.maxFeePerGas = parseUnits(maxFeePerGas, "gwei");
+          tx.maxPriorityFeePerGas = parseUnits(maxPriorityFeePerGas, "gwei");
+
+          setFieldValue("gas", _gas!.finalGasFee);
         }
 
-        console.log('Tx', tx);
-
-        formik.setFieldValue("tx", tx);
+        setFieldValue("tx", tx);
       } catch (error) {
-        // console.error(error);
-        formik.setFieldError("gas", "Need more ETH to pay for this swap");
+        setFieldError("gas", "Need more ETH to pay for this swap");
       }
-    })();
-  }, [_poolContract, locked, inputAmount, outputAmount, inputMode, gasInfo]);
+    }; 
+
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(() => {
+      fetchQuote();
+    }, 15000);
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [
+    setFieldValue,
+    setFieldError,
+    _poolContract,
+    locked,
+    inputAmount,
+    outputAmount,
+    inputMode,
+    gasInfo,
+    _provider,
+    tokenA.token,
+    tokenB.token,
+    _address,
+    _chainId,
+    swapWidgetSettings,
+    _wallet,
+  ]);
 
   return (
     <>

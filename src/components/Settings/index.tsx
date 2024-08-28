@@ -13,7 +13,7 @@ const Settings = () => {
 
   return (    
       <AnimatedDialog display={_promptSettings} dismiss={promptSettings}>
-        <div>
+        <div className="mx-0 sm:mx-4">
           <div className="flex justify-between items-center pr-4">
             <h3 className="font-bold ml-4">Settings</h3>
             <Cross dismiss={promptSettings} />

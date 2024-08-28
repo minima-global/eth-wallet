@@ -24,7 +24,7 @@ const InputWrapper = ({
     <div>
       <div
         className={`${wrapperStyle} ${
-          errors && "outline !outline-violet-500"
+          errors && "outline !outline-violet-300"
         } grid ${_f ? "outline dark:outline-yellow-300" : ""} ${
           hasAction ? "sm:grid-cols-[1fr_minmax(0,_120px)]" : "grid-cols-1"
         } rounded bg-gray-100 bg-opacity-50 dark:bg-[#1B1B1B]`}
