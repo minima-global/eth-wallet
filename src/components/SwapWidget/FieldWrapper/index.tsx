@@ -20,6 +20,7 @@ interface Props {
 }
 
 import { debounce } from "lodash";
+import { createDecimal } from "../../../utils";
 
 
 const FieldWrapper = ({
@@ -102,7 +103,7 @@ const FieldWrapper = ({
     <div
       className={`${disabled ? "opacity-30" : ""} ${
         extraClass && extraClass
-      } rounded pb-0 flex justify-between grid grid-cols-[2fr_0.5fr] `}
+      } rounded pb-0 justify-between grid grid-cols-[2fr_0.5fr] `}
     >
       <div className="p-4">
         <label className="block text-sm text-gray-500 font-bold">
@@ -134,7 +135,7 @@ const FieldWrapper = ({
             : '-'}
         </p>
         {type === "output" && <div className="my-1" />}
-        {type === "input" && currency.balance && !(currency.balance && formik.values.inputAmount.length && new Decimal(formatUnits(currency.balance, currency.token.decimals)).equals(formik.values.inputAmount)) && (
+        {type === "input" && createDecimal(formik.values.inputAmount) !== null && currency.balance && !(currency.balance && formik.values.inputAmount.length && new Decimal(formatUnits(currency.balance, currency.token.decimals)).equals(formik.values.inputAmount)) && (
           <button
             type="button"
             onClick={() =>

@@ -150,7 +150,6 @@ export async function approveTokenWithLedger({
       },
     });
 
-    console.log(signedTx);
     // Broadcast the transaction
     const txResponse = await provider.broadcastTransaction(signedTx.serialized);
 

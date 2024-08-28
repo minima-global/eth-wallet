@@ -120,7 +120,7 @@ const SwapWidget = () => {
               const parseBalance = formatUnits(
                 tokenA.balance,
                 tokenA.token.decimals
-              );
+              );            
 
               if (new Decimal(parseBalance.toString()).isZero()) {
                 return createError({
@@ -160,6 +160,10 @@ const SwapWidget = () => {
               return false;
             }
           }),
+        outputAmount: yup
+          .string()
+          .required("Enter an amount")
+          .matches(/^\d+(\.\d+)?$/, "Invalid output amount"),
         gas: yup
           .string()
           .required("Gas is required")
@@ -217,9 +221,10 @@ const SwapWidget = () => {
         tokenB: tokenB,
       }}
       onSubmit={async ({ tx, gas }, { setFieldValue }) => {
-        console.log("Submitting...");
         setStep(3); // Set Global form state to submission
         const current = _userAccounts.find((a) => a.current);
+
+        setFieldValue("locked", true);
 
         try {
           if (!tx) {
@@ -239,7 +244,6 @@ const SwapWidget = () => {
               throw new Error("Gas API not available");
             }
 
-            console.log("tx", tx);
 
             const serializedTx = Transaction.from(tx).unsignedSerialized;
 
@@ -266,10 +270,9 @@ const SwapWidget = () => {
               },
             });
 
-            console.log("SignedTx", signedTx);
             setLedgerContext("success");
 
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 3000));
             const serializedSignedTx =
                   Transaction.from(signedTx).serialized;
                   
@@ -303,6 +306,7 @@ const SwapWidget = () => {
           }
         } catch (error) {
           console.error(error);
+          setFieldValue("locked", false);
           if (error instanceof Error) {
             // Rejection of ledger signature
             if (
@@ -384,7 +388,7 @@ const SwapWidget = () => {
                       type="submit"
                       className="font-bold bg-transparent border border-neutral-500 dark:border-none dark:bg-[#1B1B1B] w-full py-4 tracking-wide dark:text-neutral-100 dark:disabled:text-neutral-500 rounded-full"
                     >
-                      {errors.inputAmount ? errors.inputAmount : "Error"}
+                      {errors.inputAmount ? errors.inputAmount : errors.outputAmount ? errors.outputAmount : "Review"}
                     </button>
                   </div>
                 )}
@@ -395,12 +399,12 @@ const SwapWidget = () => {
                   !_allowanceLock && (
                     <div className="mt-8">
                       <button
-                        disabled={!!errors.inputAmount}
+                        disabled={!!errors.inputAmount || !!errors.outputAmount}
                         onClick={() => setStep(2)}
                         type="button"
                         className="font-bold text-neutral-100 bg-neutral-800 border border-neutral-500 dark:border-none dark:bg-[#1B1B1B] w-full py-4 tracking-wide dark:text-neutral-100 dark:disabled:text-neutral-500 rounded-full"
                       >
-                        {errors.inputAmount ? errors.inputAmount : "Review"}
+                        {errors.inputAmount ? errors.inputAmount : errors.outputAmount ? errors.outputAmount : "Review"}
                       </button>
 
                       <GasFeeEstimator />

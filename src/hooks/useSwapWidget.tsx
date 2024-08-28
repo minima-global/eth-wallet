@@ -37,8 +37,6 @@ const useSwapWidget = () => {
         )}' WHERE name = 'SWAP_WIDGET_SETTINGS'`
       );
     }
-
-    console.log("Saved!");
   }
 
   return {

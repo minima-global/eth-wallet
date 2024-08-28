@@ -168,7 +168,7 @@ function GasEstimation() {
                     <div className="grid grid-cols-2 divide-x">
                       <div className="text-center py-1">
                         <p>
-                          {new Decimal(gasCardData!.estimatedBaseFee)
+                          {utils.createDecimal(gasCardData!.estimatedBaseFee) !== null && new Decimal(gasCardData!.estimatedBaseFee)
                             .toDecimalPlaces(0)
                             .toString()}{" "}
                           GWEI
@@ -177,11 +177,11 @@ function GasEstimation() {
                       </div>
                       <div className="text-center py-1">
                         <p>
-                          {new Decimal(gasCardData!.latestPriorityFeeRange[0])
+                          {utils.createDecimal(gasCardData!.latestPriorityFeeRange[0]) !== null && new Decimal(gasCardData!.latestPriorityFeeRange[0])
                             .toDecimalPlaces(1)
                             .toString()}{" "}
                           -{" "}
-                          {new Decimal(gasCardData!.latestPriorityFeeRange[1])
+                          {utils.createDecimal(gasCardData!.latestPriorityFeeRange[1]) !== null && new Decimal(gasCardData!.latestPriorityFeeRange[1])
                             .toDecimalPlaces(1)
                             .toString()}{" "}
                           GWEI
@@ -275,7 +275,7 @@ function GasEstimation() {
                   {formik.values.asset.type === "ether" && (
                     <div className="flex">
                       <h3 className="text-sm font-bold">
-                        {new Decimal(formik.values.amount)
+                        {utils.createDecimal(formik.values.amount) !== null && new Decimal(formik.values.amount)
                           .plus(gas.finalGasFee)
                           .toString()}{" "}
                         {_defaultNetworks[_currentNetwork].symbol}

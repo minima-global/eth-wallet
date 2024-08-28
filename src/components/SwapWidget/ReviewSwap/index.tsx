@@ -29,12 +29,50 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
 
   const [showMore, setShowMore] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  // Ref to store initial values
+  const initialValuesRef = useRef<{ inputAmount: string, outputAmount: string } | null>(null);
 
   const expandAnimation = useSpring({
     opacity: showMore ? 1 : 0,
     height: showMore ? contentRef.current?.scrollHeight : 0,
     config: { tension: 250, friction: 30 },
   });
+
+  useEffect(() => {
+    // Store initial values on first render
+    if (initialValuesRef.current === null) {
+      initialValuesRef.current = {
+        inputAmount,
+        outputAmount,
+      };
+    }
+
+    
+  }, [inputAmount, outputAmount]);
+  
+  
+  useEffect(() => {
+    // Check if the current values are different from initial values
+    if (initialValuesRef.current) {
+      const initialInputAmount = initialValuesRef.current.inputAmount;
+      const initialOutputAmount = initialValuesRef.current.outputAmount;
+
+      if (
+        inputAmount !== initialInputAmount ||
+        outputAmount !== initialOutputAmount
+      ) {
+        setPricesUpdated(true);
+      } else {
+        setPricesUpdated(false);
+      }
+    }
+
+    return () => {
+      if (initialValuesRef.current) {
+        initialValuesRef.current = null;
+      }
+    }
+  }, [inputAmount, outputAmount]);
 
   // Handle rendering state to ensure content mounts/unmounts correctly
   useEffect(() => {
@@ -68,14 +106,17 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
           {(ledgerContext || step !== 3) && (
             <Cross
               dismiss={() => {
+                // reset
+                setPricesUpdated(false);
+                
                 if (ledgerContext || step !== 3) {
                   setStep(1);
-                  clearError();
+                  clearError();                  
+                }
 
-                  if (step === 4) {
-                    setStep(1);
-                    resetForm();
-                  }
+                if (step === 4) {
+                  setStep(1);
+                  resetForm();
                 }
               }}
             />
@@ -217,7 +258,9 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                     )}
                     <div>
                       <button
-                        onClick={() => submitForm()}
+                        onClick={() => {
+                          submitForm();
+                        }}
                         type="button"
                         className="font-bold text-neutral-100 bg-neutral-800 border border-neutral-500 dark:border-none dark:bg-[#1B1B1B] w-full py-4 tracking-wide dark:text-neutral-100 dark:disabled:text-neutral-500 rounded-full"
                       >
@@ -312,7 +355,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                       <div
                         className={`text-neutral-400 bg-neutral-300 dark:bg-neutral-900 w-max p-2 rounded-full ${
                           ledgerContext === "success" &&
-                          "!text-white dark:!text-black !bg-teal-700 dark:!bg-teal-900"
+                          "!text-white dark:!text-black !bg-teal-700 dark:!bg-teal-900 animate-pulse"
                         }`}
                       >
                         <SwapIcon size={20} />
@@ -351,9 +394,9 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
               {step === 4 && (
                 <div className="grid">
                   <Lottie
-                    className="w-[140px] h-[140px] self-center place-self-center justify-self-center"
+                    className="w-[140px] h-[140px] self-center place-self-center justify-self-center dark:grayscale-[95%]"
                     animationData={Success}
-                    loop={false}
+                    loop={true}
                   />
 
                   <div className="grid grid-cols-[1fr_auto_1fr] gap-1 my-8">
@@ -397,12 +440,14 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                   </div>
 
                   <div className="grid grid-cols-1 items-center">
-                    <hr className="border border-neutral-300 dark:border-neutral-900 my-6 w-full" />
+                    <hr className="border border-neutral-300 dark:border-neutral-900 mb-3 w-full" />
                   </div>
 
                   <div className="text-center">
                     <a
                       onClick={(e) => {
+                        if (!receipt) return;
+
                         if (
                           window.navigator.userAgent.includes("Minima Browser")
                         ) {
@@ -413,9 +458,9 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                           );
                         }
                       }}
-                      href={`https://etherscan.io/tx/${receipt.hash}`}
+                      href={`${receipt && `https://etherscan.io/tx/${receipt.hash}`}`}
                       target="_blank"
-                      className="text-sm cursor-pointer text-blue-600 dark:text-blue-900 active:text-neutral-300 active:dark:text-neutral-500"
+                      className="font-bold text-sm cursor-pointer !text-sky-600 dark:text-sky-900 active:text-neutral-300 active:dark:text-neutral-500"
                     >
                       View on Etherscan
                     </a>

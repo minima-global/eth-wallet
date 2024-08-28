@@ -57,3 +57,13 @@
 ##### [1.8.7] - 23 July 24
 
 - Design tweaks
+
+##### [1.9.0] - 28 Aug 24
+
+- Multi-account support
+- Ledger account support w/ signing
+- SwapWidget design lift & re-factoring
+- SwapWidget now supports cross-directional input (will calculate your input if you enter output)
+- SwapWidget opts (slippage, deadline support)
+- App Design lift
+- Debouncing API calls to lessen load on Infura API calls

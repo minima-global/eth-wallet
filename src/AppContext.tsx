@@ -506,9 +506,7 @@ const AppProvider = ({ children }: IProps) => {
   };
 
   const deleteUserAccount = async (currAccount: UserAccount, accToDelete: UserAccount) => {  
-    console.log('accToDelete', accToDelete);  
     const updatedData = [..._userAccounts.filter(user => user.address !== accToDelete.address)];
-    console.log('updatedData', updatedData);
     setUserAccounts(updatedData.map(account => ({
       ...account,
       current: currAccount.address === account.address, // Set `current` to true for the selected account

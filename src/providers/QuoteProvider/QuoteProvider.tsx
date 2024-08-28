@@ -27,7 +27,7 @@ export const QuoteContextProvider = ({ children }: Props) => {
 
   const formik: FormikContextType<FormikValues> = useFormikContext();
   const { values, setFieldValue, isSubmitting } = formik;
-  const { tokenA, tokenB, inputAmount, inputMode } = values;
+  const { tokenA, tokenB,  inputMode } = values;
 
   const widgetNotReady =
     // createDecimal(inputAmount) === null ||
@@ -35,10 +35,8 @@ export const QuoteContextProvider = ({ children }: Props) => {
     !_poolContract;
 
   useEffect(() => {
-    console.log("Run");
     if (widgetNotReady) return;
 
-    console.log("Fetch data?");
     const fetchData = async () => {
       const [fee, tickSpacing, liquidity, slot0] = await Promise.all([
         _poolContract.fee(),
@@ -46,10 +44,6 @@ export const QuoteContextProvider = ({ children }: Props) => {
         _poolContract.liquidity(),
         _poolContract.slot0(),
       ]);
-
-      console.log('Current price token0/token1', slot0[0]);
-      console.log('Current tick', slot0[1]);
-      console.log('Pool fee', fee);
 
       const poolInfo = {
         fee,
@@ -67,8 +61,6 @@ export const QuoteContextProvider = ({ children }: Props) => {
         poolInfo.liquidity.toString(),
         parseInt(poolInfo.tick)
       );
-
-      console.log('Pool', pool);
 
       const swapRoute = new Route([pool], tokenA, tokenB);
 

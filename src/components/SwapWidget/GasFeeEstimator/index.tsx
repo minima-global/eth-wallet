@@ -7,7 +7,7 @@ import {
   Trade,
 } from "@uniswap/v3-sdk";
 import { FormikValues, FormikContextType, useFormikContext } from "formik";
-import { useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import getOutputQuote from "../libs/getOutputQuote";
 import { appContext } from "../../../AppContext";
 import { CurrencyAmount, Percent, TradeType } from "@uniswap/sdk-core";
@@ -19,7 +19,7 @@ import { useWalletContext } from "../../../providers/WalletProvider/WalletProvid
 import { SWAP_ROUTER_ADDRESS } from "../../../providers/QuoteProvider/libs/constants";
 import Decimal from "decimal.js";
 import { useGasContext } from "../../../providers/GasProvider";
-import { parseUnits } from "ethers";
+import { Transaction } from "ethers";
 
 
 const GasFeeEstimator = () => {
@@ -36,144 +36,180 @@ const GasFeeEstimator = () => {
 
 
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null); // only do this when the user has stopped typing etc.
+  
 
-  useEffect(() => {
-    const fetchQuote = async () => {
-      console.log("Fetching new quote");
-      if (
-        !_poolContract ||
-        locked ||
-        (utils.createDecimal(inputAmount) === null &&
-          utils.createDecimal(outputAmount))
-      )
-        return;
+// Fetch the quote
+const fetchQuote = useCallback(async () => {
+  if (
+    !_poolContract ||
+    locked ||
+    (utils.createDecimal(inputAmount) === null &&
+      utils.createDecimal(outputAmount) === null)
+  )
+    return;
 
-      const [liquidity, slot0] = await Promise.all([
-        _poolContract.liquidity(),
-        _poolContract.slot0(),
-      ]);
 
-      const pool = new Pool(
-        tokenA.token,
-        tokenB.token,
-        FeeAmount.HIGH,
-        slot0[0].toString(),
-        liquidity.toString(),
-        parseInt(slot0[1])
+  const [liquidity, slot0] = await Promise.all([
+    _poolContract.liquidity(),
+    _poolContract.slot0(),
+  ]);
+
+  const pool = new Pool(
+    tokenA.token,
+    tokenB.token,
+    FeeAmount.HIGH,
+    slot0[0].toString(),
+    liquidity.toString(),
+    parseInt(slot0[1])
+  );
+
+  const swapRoute = new Route(
+    [pool],
+    inputMode ? tokenA.token : tokenB.token,
+    inputMode ? tokenB.token : tokenA.token
+  );
+
+  const quoteData = await getOutputQuote(
+    inputMode ? tokenA.token : tokenB.token,
+    inputMode ? inputAmount : outputAmount,
+    swapRoute,
+    _provider
+  );
+
+  const uncheckedTrade = Trade.createUncheckedTrade({
+    route: swapRoute,
+    inputAmount: CurrencyAmount.fromRawAmount(
+      inputMode ? tokenA.token : tokenB.token,
+      fromReadableAmount(
+        inputMode ? inputAmount.toString() : outputAmount.toString(),
+        inputMode ? tokenA.token.decimals : tokenB.token.decimals
+      ).toString()
+    ),
+    outputAmount: CurrencyAmount.fromRawAmount(
+      inputMode ? tokenB.token : tokenA.token,
+      JSBI.BigInt(quoteData)
+    ),
+    tradeType: TradeType.EXACT_INPUT,
+  });
+
+  const deadline =
+    (swapWidgetSettings && swapWidgetSettings.deadline) || 20;
+  const slippage =
+    (swapWidgetSettings && swapWidgetSettings.slippage) || 0.5;
+
+  const slippageBips = Math.round(slippage * 100);
+  const validSlippageBips = Math.max(0, Math.min(5000, slippageBips));
+
+  const options: SwapOptions = {
+    slippageTolerance: new Percent(validSlippageBips, 10_000),
+    deadline: Math.floor(Date.now() / 1000) + 60 * deadline,
+    recipient: _address!,
+  };
+
+  const methodParameters = SwapRouter.swapCallParameters(
+    [uncheckedTrade],
+    options
+  );
+
+  const feeData = await _provider.getFeeData();
+  const { maxFeePerGas, maxPriorityFeePerGas } = feeData;
+
+  const tx: any = {
+    data: methodParameters.calldata,
+    to: SWAP_ROUTER_ADDRESS,
+    value: BigInt(methodParameters.value),
+    chainId: BigInt(_chainId!),
+    nonce: await _provider.getTransactionCount(
+      _address
+    )
+  };
+
+  try {
+    const gasUnits = await _wallet!.estimateGas(tx);
+    tx.gasLimit = BigInt(gasUnits);
+
+    if (maxFeePerGas) {
+      const _gas = await utils.calculateGasFee(
+        gasUnits.toString(),
+        maxFeePerGas.toString(),
+        maxPriorityFeePerGas.toString()
       );
 
-      const swapRoute = new Route(
-        [pool],
-        inputMode ? tokenA.token : tokenB.token,
-        inputMode ? tokenB.token : tokenA.token
-      );
+      tx.maxFeePerGas = BigInt(maxFeePerGas);
+      tx.maxPriorityFeePerGas = BigInt(maxPriorityFeePerGas);
+      setFieldValue("gas", _gas!.finalGasFee);
+    }
 
-      const quoteData = await getOutputQuote(
-        inputMode ? tokenA.token : tokenB.token,
-        inputMode ? inputAmount : outputAmount,
-        swapRoute,
-        _provider
-      );
+    setFieldValue("tx", tx);
+  } catch (error) {
+    setFieldError("gas", "Need more ETH to pay for this swap");
+  }
+}, [
+  setFieldValue,
+  setFieldError,
+  gasInfo,
+  _poolContract,
+  locked,
+  inputAmount,
+  outputAmount,
+  inputMode,
+  _provider,
+  tokenA.token,
+  tokenB.token,
+  _address,
+  _chainId,
+  swapWidgetSettings,
+  _wallet,
+]);
 
-      const uncheckedTrade = Trade.createUncheckedTrade({
-        route: swapRoute,
-        inputAmount: CurrencyAmount.fromRawAmount(
-          inputMode ? tokenA.token : tokenB.token,
-          fromReadableAmount(
-            inputMode ? inputAmount.toString() : outputAmount.toString(),
-            inputMode ? tokenA.token.decimals : tokenB.token.decimals
-          ).toString()
-        ),
-        outputAmount: CurrencyAmount.fromRawAmount(
-          inputMode ? tokenB.token : tokenA.token,
-          JSBI.BigInt(quoteData)
-        ),
-        tradeType: TradeType.EXACT_INPUT,
-      });
+// Helper to start the interval
+const startInterval = useCallback(() => {
+  if (intervalRef.current) clearInterval(intervalRef.current);
+  intervalRef.current = setInterval(() => {
+    fetchQuote();
+  }, 15000);
+}, [fetchQuote]);
 
-      const deadline =
-        (swapWidgetSettings && swapWidgetSettings.deadline) || 20;
-      const slippage =
-        (swapWidgetSettings && swapWidgetSettings.slippage) || 0.5; // Default slippage percentage
+useEffect(() => {
+  // Clear any previous debounce timeout
+  if (debounceTimeout.current) {
+    clearTimeout(debounceTimeout.current);
+  }
 
-      const slippageBips = Math.round(slippage * 100); // Convert to basis points
-      const validSlippageBips = Math.max(0, Math.min(5000, slippageBips));
+  // Set a new debounce timeout
+  debounceTimeout.current = setTimeout(() => {
+    fetchQuote();
 
-      const options: SwapOptions = {
-        slippageTolerance: new Percent(validSlippageBips, 10_000), // Basis points to Percent
-        deadline: Math.floor(Date.now() / 1000) + 60 * deadline, // Deadline in seconds
-        recipient: _address!,
-      };
+    // // Start the interval after the debounce finishes
+    startInterval();
+  }, 500); // Adjust the debounce delay
 
-      const methodParameters = SwapRouter.swapCallParameters(
-        [uncheckedTrade],
-        options
-      );
-
-      const feeData = await _provider.getFeeData();
-      const { maxFeePerGas, maxPriorityFeePerGas } = feeData;
-
-      const tx: any = {
-        data: methodParameters.calldata,
-        to: SWAP_ROUTER_ADDRESS,
-        value: methodParameters.value,
-        chainId: BigInt(_chainId!),
-      };
-
-      try {
-        const gasUnits = await _wallet!.estimateGas(tx);
-
-        tx.gasLimit = BigInt(gasUnits);
-
-        if (maxFeePerGas) {
-          const _gas = await utils.calculateGasFee(
-            gasUnits.toString(),
-            maxFeePerGas.toString(),
-            maxPriorityFeePerGas.toString()
-          );
-
-          tx.maxFeePerGas = parseUnits(maxFeePerGas, "gwei");
-          tx.maxPriorityFeePerGas = parseUnits(maxPriorityFeePerGas, "gwei");
-
-          setFieldValue("gas", _gas!.finalGasFee);
-        }
-
-        setFieldValue("tx", tx);
-      } catch (error) {
-        setFieldError("gas", "Need more ETH to pay for this swap");
-      }
-    }; 
-
+  // Clean up on unmount or when dependencies change
+  return () => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
     }
-
-    debounceTimeout.current = setTimeout(() => {
-      fetchQuote();
-    }, 15000);
-
-    return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
-    };
-  }, [
-    setFieldValue,
-    setFieldError,
-    _poolContract,
-    locked,
-    inputAmount,
-    outputAmount,
-    inputMode,
-    gasInfo,
-    _provider,
-    tokenA.token,
-    tokenB.token,
-    _address,
-    _chainId,
-    swapWidgetSettings,
-    _wallet,
-  ]);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  };
+}, [
+  fetchQuote,
+  locked,
+  inputAmount,
+  outputAmount,
+  inputMode,
+  gasInfo,
+  _provider,
+  tokenA.token,
+  tokenB.token,
+  _address,
+  _chainId,
+  swapWidgetSettings,
+  _wallet,
+  startInterval, // added as a dependency
+]);
 
   return (
     <>
@@ -224,7 +260,7 @@ const GasFeeEstimator = () => {
               <path d="M4 12c0 -1.657 1.592 -3 3.556 -3c1.963 0 3.11 1.5 4.444 3c1.333 1.5 2.48 3 4.444 3s3.556 -1.343 3.556 -3" />
             </svg>
             <p className="text-sm font-bold text-black dark:text-neutral-400">
-              <span className="font-mono">{new Decimal(gas).toFixed(0)}</span>{" "}
+              <span className="font-mono">{utils.createDecimal(gas) !== null && new Decimal(gas).toFixed(0)}</span>{" "}
               GWEI
             </p>
           </div>

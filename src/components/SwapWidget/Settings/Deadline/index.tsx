@@ -8,7 +8,6 @@ import CaretIcon from "../../../UI/Icons/CaretIcon";
 const Deadline = () => {
   const { swapWidgetSettings, updateSwapWidgetSettings } =
     useContext(appContext);
-  console.log(swapWidgetSettings);
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(
     swapWidgetSettings && swapWidgetSettings.deadline && swapWidgetSettings.deadline !== null ? swapWidgetSettings.deadline.toString() : ""

@@ -7,7 +7,6 @@ import CaretIcon from "../../../UI/Icons/CaretIcon";
 const SlippageItem = () => {
   const { swapWidgetSettings, updateSwapWidgetSettings } =
     useContext(appContext);
-  console.log(swapWidgetSettings);
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(
     swapWidgetSettings && swapWidgetSettings.slippage  && swapWidgetSettings.slippage !== null ? swapWidgetSettings.slippage.toString() : ""

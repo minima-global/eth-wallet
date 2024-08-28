@@ -46,7 +46,6 @@ const useLedger = () => {
 
   // Auto-call connectLedgerAndGetAccounts when accountIndex or accountOffset changes
   useEffect(() => {
-    console.log("Connect to ledger");
 
     connectLedgerAndGetAccounts();
   }, [connectLedgerAndGetAccounts]);
