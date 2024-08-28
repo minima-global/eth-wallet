@@ -113,13 +113,15 @@ const GasFeeEstimator = () => {
         data: methodParameters.calldata,
         to: SWAP_ROUTER_ADDRESS,
         value: methodParameters.value,
-        from: _address,
+        // from: _address,
         maxFeePerGas: maxFeePerGas,
         maxPriorityFeePerGas: maxPriorityFeePerGas,
       };
 
       try {
         const gasUnits = await _wallet!.estimateGas(tx);
+
+        console.log('gasUnits requierd GWEI', gasUnits);
 
         if (maxFeePerGas) {
           const _gas = await utils.calculateGasFee(
@@ -131,6 +133,8 @@ const GasFeeEstimator = () => {
           // calculated gas..
           formik.setFieldValue("gas", _gas!.finalGasFee);
         }
+
+        console.log('Tx', tx);
 
         formik.setFieldValue("tx", tx);
       } catch (error) {
