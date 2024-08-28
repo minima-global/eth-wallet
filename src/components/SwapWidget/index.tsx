@@ -240,7 +240,6 @@ const SwapWidget = () => {
           errors,
           handleSubmit,
           handleBlur,
-          submitForm,
           setFieldValue,
         }) => {
           const { tokenA, tokenB } =
@@ -334,12 +333,7 @@ const SwapWidget = () => {
                   )}
                 </>
 
-                <ReviewSwap
-                  error={error}
-                  step={step}
-                  setStep={setStep}
-                  submitForm={submitForm}
-                />
+                <ReviewSwap step={step} setStep={setStep} />
               </form>
             </>
           );
