@@ -54,7 +54,9 @@ const SwapWidget = () => {
   const { _wallet, _balance, callBalanceForApp } = useWalletContext();
 
   const [step, setStep] = useState(1);
-  const [ledgerContext, setLedgerContext] = useState<false | "waiting" | "rejected" | "success">(false);
+  const [ledgerContext, setLedgerContext] = useState<
+    false | "waiting" | "rejected" | "success"
+  >(false);
   const [error, setError] = useState<false | string>(false);
 
   useEffect(() => {
@@ -214,7 +216,7 @@ const SwapWidget = () => {
         tokenA: tokenA,
         tokenB: tokenB,
       }}
-      onSubmit={async ({ tx, gas }, { setFieldValue, setSubmitting }) => {
+      onSubmit={async ({ tx, gas }, { setFieldValue }) => {
         console.log("Submitting...");
         setStep(3); // Set Global form state to submission
         const current = _userAccounts.find((a) => a.current);
@@ -226,7 +228,7 @@ const SwapWidget = () => {
             );
           }
 
-          if (current.type === "ledger") {            
+          if (current.type === "ledger") {
             setLedgerContext("waiting");
 
             const transport = await TransportWebUSB.create();
@@ -256,7 +258,7 @@ const SwapWidget = () => {
 
             // Construct the signed transaction
             const signedTx = Transaction.from({
-              ...tx as object,
+              ...(tx as object),
               signature: {
                 r: `0x${signature.r}`,
                 s: `0x${signature.s}`,
@@ -264,51 +266,56 @@ const SwapWidget = () => {
               },
             });
 
-            console.log('SignedTx', signedTx);
+            console.log("SignedTx", signedTx);
             setLedgerContext("success");
 
-            await new Promise((resolve) => setTimeout(resolve, 10000000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+            
+            const txResponse = await _provider.broadcastTransaction(
+              signedTx
+            );
+
+            const receipt = await txResponse.wait();
+            setFieldValue("receipt", receipt);
             // rid of ledger screen confirmation
             setLedgerContext(false);
             // show swapping screen like normal...
             setStep(3);
-            await new Promise((resolve) => setTimeout(resolve, 1000000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
+            setStep(4);
+            await callBalanceForApp();
+          } else {
+            // set locked to true...
 
+            const res = await _wallet!.sendTransaction(tx);
 
-            // reset form, show success etc. etc.
+            const receipt = await res.wait();
+            setFieldValue("receipt", receipt);
+
+            setStep(3);
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+
+            setStep(4);
+            await callBalanceForApp();
           }
         } catch (error) {
           console.error(error);
           if (error instanceof Error) {
             // Rejection of ledger signature
-            if (error.message.includes("Ledger device: Condition of use not satisfied (denied by the user?)")) {
-              setLedgerContext('rejected');
+            if (
+              error.message.includes(
+                "Ledger device: Condition of use not satisfied (denied by the user?)"
+              )
+            ) {
+              setLedgerContext("rejected");
             }
 
             return setError(error.message as string);
           }
 
           setError("Your submission failed, please try again later.");
-        }
-        // try {
-        //   setFieldValue("locked", true);
-        //   const res = await _wallet!.sendTransaction(tx);
-
-        //   const receipt = await res.wait();
-        //   setFieldValue("receipt", receipt);
-
-        //   setStep(4);
-        //   await callBalanceForApp();
-        // } catch (error) {
-        //   console.error(error);
-        //   setStep(5);
-        //   if (error instanceof Error) {
-        //     return setError(error.message);
-        //   }
-
-        //   return setError(JSON.stringify(error));
-        // }
+        }        
       }}
     >
       {({
@@ -409,7 +416,13 @@ const SwapWidget = () => {
                 )}
               </>
 
-              <ReviewSwap ledgerContext={ledgerContext} step={step} setStep={setStep} />
+              <ReviewSwap
+                clearError={() => setError(false)}
+                error={error}
+                ledgerContext={ledgerContext}
+                step={step}
+                setStep={setStep}
+              />
             </form>
           </>
         );

@@ -425,13 +425,13 @@ const AppProvider = ({ children }: IProps) => {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
           updatedData
-        )}')`
+        ).replace(/'/g, "''")}')`
       );
     } else {
       await sql(
         `UPDATE cache SET data = '${JSON.stringify(
           updatedData
-        )}' WHERE name = 'USER_ACCOUNTS'`
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
       );
     }
   };
