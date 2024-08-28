@@ -19,7 +19,6 @@ import { useWalletContext } from "../../../providers/WalletProvider/WalletProvid
 import { SWAP_ROUTER_ADDRESS } from "../../../providers/QuoteProvider/libs/constants";
 import Decimal from "decimal.js";
 import { useGasContext } from "../../../providers/GasProvider";
-import { Transaction } from "ethers";
 
 
 const GasFeeEstimator = () => {

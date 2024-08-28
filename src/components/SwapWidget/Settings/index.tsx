@@ -34,6 +34,7 @@ const DropdownButton = () => {
   useEffect(() => {
     // Handle clicks outside of the dropdown
     const handleClickOutside = (event) => {
+      //@ts-ignore
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }

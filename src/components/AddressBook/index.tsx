@@ -1,5 +1,4 @@
 import { useContext } from "react";
-import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { appContext } from "../../AppContext";
 import { useFormikContext } from "formik";
 import Profile from "../UI/Profile";
