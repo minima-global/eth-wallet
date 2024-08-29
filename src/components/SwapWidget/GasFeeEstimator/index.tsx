@@ -21,8 +21,7 @@ import Decimal from "decimal.js";
 import { useGasContext } from "../../../providers/GasProvider";
 import calculateRate from "../libs/calculateRate";
 import { animated, useSpring } from "react-spring";
-import CaretIcon from "../../UI/Icons/CaretIcon";
-import CaretDown from "../../UI/Icons/ArrowDown copy";
+import CaretDown from "../../UI/Icons/CaretDown";
 
 const GasFeeEstimator = () => {
   const formik: FormikContextType<FormikValues> = useFormikContext();

@@ -2,10 +2,6 @@ import ConversionRateUSD from "../ConversionRateUSD";
 import { useGasContext } from "../../providers/GasProvider";
 import { useFormikContext } from "formik";
 import { useContext, useEffect, useState } from "react";
-import { useSpring, animated, config } from "react-spring";
-import Dialog from "../UI/Dialog";
-import { createPortal } from "react-dom";
-// import GasCard from "./GasCard";
 import Decimal from "decimal.js";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { appContext } from "../../AppContext";
@@ -39,13 +35,6 @@ function GasEstimation() {
   // const { gasInfo, gasCardData } = useGasInfo(3, level);
   const { _defaultNetworks, _currentNetwork } = useContext(appContext);
 
-  const springProps = useSpring({
-    opacity: showGasCards ? 1 : 0,
-    transform: showGasCards
-      ? "translateY(0%) scale(1)"
-      : "translateY(-50%) scale(0.8)",
-    config: config.stiff,
-  });
 
   useEffect(() => {
     const calculateFinalGasPrice = async () => {
