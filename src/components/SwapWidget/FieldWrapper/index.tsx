@@ -139,10 +139,13 @@ const FieldWrapper = ({
           <button
             type="button"
             onClick={() =>
-              formik.setFieldValue(
-                "inputAmount",
-                formatUnits(currency.balance, currency.token.decimals).toString()
-              )
+              {
+                formik.setFieldValue("inputMode", true);
+                formik.setFieldValue(
+                  "inputAmount",
+                  formatUnits(currency.balance, currency.token.decimals).toString()
+                )
+              }
             }
             className="!outline-none p-0 m-0 tracking-wide transition-all hover:text-black dark:text-neutral-400 dark:hover:text-teal-500 font-bold"
           >
