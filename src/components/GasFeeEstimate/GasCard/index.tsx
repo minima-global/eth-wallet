@@ -38,7 +38,7 @@ const GasCard = ({ type, card, gasUnit }: IProps) => {
           : ""
       }`}
     >
-      <div className="flex items-center gap-1">
+      <div className="flex items-center justify-center gap-1">
         {type === "low" && (
           <svg
             xmlns="http://www.w3.org/2000/svg"

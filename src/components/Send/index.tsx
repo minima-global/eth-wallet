@@ -427,7 +427,7 @@ const Send = () => {
             dirty,
             resetForm,
           }) => (
-            <form onSubmit={handleSubmit} className="mx-4 xs:mx-0">
+            <form onSubmit={handleSubmit}>
               {step === 1 && (
                 <div className="mb-4">
                   <div>
@@ -558,7 +558,7 @@ const Send = () => {
                     <div className="flex justify-between items-center mx-4">
                       <h3 className="font-bold">Amount</h3>
                       <div className="text-right">
-                        <p className="font-mono font-bold">{values.amount}</p>
+                        <p className="font-mono font-bold text-xs sm:text-base truncate">{values.amount}</p>
                         <ConversionRateUSD
                           asset={values.asset}
                           amount={values.amount}

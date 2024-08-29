@@ -47,7 +47,7 @@ const ImportToken = () => {
         display={_promptTokenImport}
         dismiss={() => promptTokenImport()}
       >
-        <div className="bg-white shadow-lg shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
+        <div className="p-4 px-0 rounded">
           <div className="px-4 flex justify-between gap-2 items-center">
             <div>
               <h3 className="font-bold">Import tokens</h3>
@@ -178,7 +178,7 @@ const ImportToken = () => {
                       </div>
                       {errors.address && (
                         <div className="px-6">
-                          <p className="text-black text-sm dark:text-neutral-800">
+                          <p className="text-black text-sm dark:text-neutral-500">
                             {errors.address}
                           </p>
                         </div>
@@ -196,39 +196,11 @@ const ImportToken = () => {
                           id="decimals"
                           {...getFieldProps("decimals")}
                           placeholder="Token Decimals"
-                          className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-80"
+                          className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 dark:disabled:bg-gray-950 dark:disabled:text-neutral-700 disabled:bg-neutral-100 disabled:text-neutral-500"
                         />
                       </div>
                     </div>
-                    {/* <label>
-                      <span className="px-4">Token contract address</span>
-                      <input
-                        type="text"
-                        id="address"
-                        name="address"
-                        onChange={async (e) => {
-                          handleChange(e);
-                          try {
-                            const { symbol, decimals, name } =
-                              await getTokenMetadata(e.target.value);
-                            // set fields
-                            setFieldValue("decimals", parseInt(decimals));
-                            setFieldValue("symbol", symbol);
-                            setFieldValue("name", name);
-                          } catch (error) {
-                            // reset fields
-                            setFieldValue("decimals", 0);
-                            setFieldValue("symbol", "");
-                          }
-                        }}
-                        value={values.address}
-                        onBlur={handleBlur}
-                        placeholder="Token contract address"
-                        className={`mb-2 ${
-                          errors.address ? "!border-4 !border-violet-500" : ""
-                        }`}
-                      />
-                    </label> */}
+                    
 
                     {(values.decimals > 0 || values.symbol.length > 0) && (
                       <>
@@ -261,40 +233,11 @@ const ImportToken = () => {
                               id="decimals"
                               {...getFieldProps("decimals")}
                               placeholder="Token Decimals"
-                              className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-80"
+                              className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 dark:disabled:bg-gray-950 dark:disabled:text-neutral-700 disabled:bg-neutral-100 disabled:text-neutral-500"
                             />
                           </div>
                         </div>
-                        {/* <label>
-                          <span className="px-4">Token symbol</span>
-                          <input
-                            type="text"
-                            {...getFieldProps("symbol")}
-                            onBlur={handleBlur}
-                            placeholder="Token symbol"
-                            className={`mb-2 ${
-                              errors.symbol
-                                ? "!border-4 !border-violet-500"
-                                : ""
-                            }`}
-                          />
-                        </label> */}
-                        {/* <label>
-                          <span className="px-4">Token decimals</span>
-
-                          <input
-                            disabled
-                            type="number"
-                            {...getFieldProps("decimals")}
-                            onBlur={handleBlur}
-                            placeholder="Token decimals"
-                            className={`mb-2 ${
-                              errors.decimals
-                                ? "!border-4 !border-violet-500"
-                                : ""
-                            }`}
-                          />
-                        </label> */}
+                        
                       </>
                     )}
 
@@ -303,7 +246,7 @@ const ImportToken = () => {
                         disabled={!dirty || !isValid}
                         type="button"
                         onClick={() => setStep(1)}
-                        className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
+                        className="w-full full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
                       >
                         Next
                       </button>
@@ -327,7 +270,7 @@ const ImportToken = () => {
                     <div className="grid grid-cols-2 gap-2 mt-4 mx-4">
                       <button
                         onClick={() => setStep((prevState) => prevState - 1)}
-                        className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
+                        className="w-full full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
                       >
                         Back
                       </button>

@@ -39,7 +39,7 @@ const InputWrapper = ({
           </label>
           <input
             {...inputProps}
-            className="bg-gray-100 font-mono bg-opacity-50 dark:bg-[#1B1B1B] truncate w-full focus:outline-none max-w"
+            className="bg-gray-100 bg-transparent font-mono bg-opacity-50 dark:bg-[#1B1B1B] truncate w-full focus:outline-none max-w"
             onBlur={(e) => {
               inputProps.onBlur(e);
               setF(false);

@@ -190,9 +190,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                       <h6 className="dark:text-neutral-500">Rate</h6>
                       <p className="text-sm dark:text-neutral-100">
                         1 {tokenA.token.symbol} ={" "}
-                        {calculateRate(inputAmount, outputAmount).toFixed(
-                          tokenB.token.decimals > 6 ? 4 : 2
-                        )}{" "}
+                        {calculateRate(inputAmount, outputAmount).toFixed(4)}{" "}
                         {tokenB.token.symbol}
                       </p>
                     </div>

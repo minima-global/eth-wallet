@@ -153,9 +153,11 @@ const UserAccount = () => {
 
       <AnimatedDialog display={promptUserAccountDetails} dismiss={() => setPromptUserAccountDetails(false)}>
         <>
-          <div className="w-[calc(100%_-_16px)] md:w-full pb-8 px-4 rounded-lg mx-auto">
+          <div className="w-[calc(100%_-_16px)] md:w-full pb-8 rounded-lg mx-auto">
             <div className="flex justify-between items-center">
-              <h3 className="font-bold ml-4 dark:text-white">Account</h3>
+                <h2 className="text-xl font-bold dark:text-neutral-400">
+                  Account
+                </h2>
               <Cross dismiss={() => setPromptUserAccountDetails(false)} />
             </div>
 
@@ -302,7 +304,7 @@ const UserAccount = () => {
         dismiss={() => setPromptAccounts(false)}
         >        
         <div>
-          <div className="w-full rounded-lg py-8 text-left max-h-[80vh] flex flex-col">            
+          <div className="w-full rounded-lg py-8 pt-0 text-left max-h-[80vh] flex flex-col">            
             {/* Header Section */}
             <div className="flex justify-between items-center">
               {!promptAddAccount && (
