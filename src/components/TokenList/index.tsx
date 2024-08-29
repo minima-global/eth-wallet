@@ -70,7 +70,7 @@ const TokenList = () => {
     <div className="mx-4 md:mx-0">
       <div className="grid grid-cols-[1fr_auto]">
         <h3 className="font-bold mb-2">Your Tokens</h3>
-        <span onClick={callBalanceForApp} className={`dark:text-sky-500 ${_triggerBalanceUpdate && "!animate-spin !text-neutral-300"}`}>
+        <span onClick={callBalanceForApp} className={`dark:text-sky-500 ${_triggerBalanceUpdate && "!text-neutral-300"}`}>
           <RefreshIcon            
             fill="currentColor"
             size={20}

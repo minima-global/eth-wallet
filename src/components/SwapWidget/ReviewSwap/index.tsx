@@ -133,7 +133,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                       Sell
                     </span>
                     <div className="grid grid-cols-[1fr_auto] items-center">
-                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl">
+                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl truncate">
                         {inputAmount} {tokenA.token.symbol}
                       </p>
 
@@ -153,7 +153,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                       Buy
                     </span>
                     <div className="grid grid-cols-[1fr_auto] items-center">
-                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl">
+                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl truncate">
                         {outputAmount} {tokenB.token.symbol}
                       </p>
 
@@ -281,7 +281,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                       Sell
                     </span>
                     <div className="grid grid-cols-[1fr_auto] items-center">
-                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl">
+                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl truncate">
                         {inputAmount} {tokenA.token.symbol}
                       </p>
 
@@ -301,7 +301,7 @@ const ReviewSwap = ({ error, clearError, step, setStep, ledgerContext }) => {
                       Buy
                     </span>
                     <div className="grid grid-cols-[1fr_auto] items-center">
-                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl">
+                      <p className="dark:text-neutral-100 tracking-widest font-bold text-xl truncate">
                         {outputAmount} {tokenB.token.symbol}
                       </p>
 

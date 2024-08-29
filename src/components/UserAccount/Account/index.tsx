@@ -53,7 +53,7 @@ const Account = ({ account }: Props) => {
         setCurrentUserAccount(account);
       }}
       className={`relative grid grid-cols-[48px_1fr] gap-1 px-4 py-2  ${
-        account.current ? "bg-teal-500 py-2 text-white dark:text-neutral-100 dark:bg-neutral-900" : "hover:bg-teal-100 dark:hover:bg-neutral-800 dark:text-neutral-400"
+        account.current ? "bg-teal-50 py-2 text-black dark:text-neutral-100 dark:bg-neutral-950 dark:bg-opacity-50" : "hover:bg-teal-100 dark:hover:bg-neutral-800 dark:text-neutral-400"
       }`}
     >
       <Bear input={account.address} extraClass="w-12 h-12 min-w-12" />
@@ -79,7 +79,7 @@ const Account = ({ account }: Props) => {
       {isDropdownOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-neutral-800 dark:border-neutral-700 z-50"
+          className="text-black absolute right-0 mt-2 w-48 bg-white border border-gray-200 dark:text-neutral-100 rounded-lg shadow-lg dark:bg-neutral-800 dark:border-neutral-700 z-50"
         >
           <ul>
             <li

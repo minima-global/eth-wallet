@@ -24,7 +24,7 @@ const TokenSwap = () => {
           </div>
           <Cross dismiss={() => handleNavigation("balance")} />
         </div>
-        <div className="my-4 px-4">
+        <div className="my-4">
           <SwapWidget />
         </div>
       </div>

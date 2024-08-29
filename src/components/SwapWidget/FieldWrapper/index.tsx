@@ -20,7 +20,6 @@ interface Props {
 }
 
 import { debounce } from "lodash";
-import { createDecimal } from "../../../utils";
 
 
 const FieldWrapper = ({
@@ -135,7 +134,8 @@ const FieldWrapper = ({
             : '-'}
         </p>
         {type === "output" && <div className="my-1" />}
-        {type === "input" && createDecimal(formik.values.inputAmount) !== null && currency.balance && !(currency.balance && formik.values.inputAmount.length && new Decimal(formatUnits(currency.balance, currency.token.decimals)).equals(formik.values.inputAmount)) && (
+
+        {type === "input" && currency.balance && (formatUnits(currency.balance, currency.token.decimals) !== formik.values.inputAmount) && (
           <button
             type="button"
             onClick={() =>

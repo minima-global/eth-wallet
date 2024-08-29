@@ -301,11 +301,10 @@ const UserAccount = () => {
         display={promptAccounts}
         dismiss={() => setPromptAccounts(false)}
         >        
-        <div className="max-w-lg mx-4 sm:mx-auto">
-          <div className="w-full rounded-lg bg-white dark:bg-[#1B1B1B] shadow-md dark:shadow-none py-8 text-left max-h-[80vh] flex flex-col">
-            
+        <div>
+          <div className="w-full rounded-lg py-8 text-left max-h-[80vh] flex flex-col">            
             {/* Header Section */}
-            <div className="flex justify-between items-center px-6">
+            <div className="flex justify-between items-center">
               {!promptAddAccount && (
                 <h2 className="text-xl font-bold dark:text-neutral-400">
                   User Accounts
@@ -339,7 +338,7 @@ const UserAccount = () => {
             </div>
             
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto mt-8 mb-4 px-6">
+            <div className="flex-1 overflow-y-auto mt-8 mb-4">
               {promptAddAccount ? (
                 <div className="mb-24">
                   {/* Add Account Form or Ledger Form */}
@@ -348,14 +347,14 @@ const UserAccount = () => {
                       <button
                         onClick={() => setImportType("account")}
                         type="button"
-                        className="sm:max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                        className="sm:max-w-sm full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
                       >
                         Import Account
                       </button>
                       <button
                         onClick={() => setImportType("ledger")}
                         type="button"
-                        className="sm:max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                        className="sm:max-w-sm full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
                       >
                         Import Ledger Account(s)
                       </button>
@@ -483,7 +482,7 @@ const UserAccount = () => {
                             <button
                               disabled={!isValid}
                               type="submit"
-                              className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                              className="w-full full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
                             >
                               Import Account
                             </button>
@@ -541,7 +540,8 @@ const UserAccount = () => {
                                       resetForm();
                                     }
                                   }}
-                                  className="full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                                  disabled={loadingMore}
+                                  className="full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
                                 >
                                   {connected ? "Disconnect Ledger" : "Connect Ledger"}
                                 </button>
@@ -629,7 +629,7 @@ const UserAccount = () => {
                                       <h3 className="px-6 font-bold">Selected Accounts:</h3>
                                       <ul>
                                         {values.selectedAccounts.map((acc, index) => (
-                                          <li key={index} className="px-6 tracking-wide text-sm">
+                                          <li key={index} className="px-6 tracking-wide text-sm truncate">
                                             {acc.address}
                                           </li>
                                         ))}
@@ -640,7 +640,7 @@ const UserAccount = () => {
                                     <button
                                       disabled={values.selectedAccounts.length === 0 || isSubmitting}
                                       type="submit"
-                                      className="w-full full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
+                                      className="w-full full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
                                     >
                                       Import Account(s)
                                     </button>
@@ -677,7 +677,7 @@ const UserAccount = () => {
                 <button
                   onClick={() => setPromptAddAccount(true)}
                   type="button"
-                  className="w-full text-sm sm:text-base max-w-sm full-rounded border border-neutral-200 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
+                  className="w-full text-sm sm:text-base max-w-sm full-rounded border border-neutral-300 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold"
                 >
                   Import Account or Ledger Wallet
                 </button>

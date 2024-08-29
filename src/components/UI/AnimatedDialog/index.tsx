@@ -59,7 +59,7 @@ const AnimatedDialog = ({
                                 className={`fixed top-[80px] right-0 left-0 bottom-0 md:grid md:grid-cols-[1fr_minmax(0,_560px)_1fr] h-full z-[${!up ? zIndex+2 : up+1}]`}
                             >
                                 <div />
-                                <div className={`h-full mx-4 sm:mx-0 ${extraClass || ''}`}>{children}</div>
+                                <div className={`h-full mx-4 ${extraClass || ''}`}>{children}</div>
                                 <div />
                             </animated.div>
                         ) : null

@@ -144,10 +144,10 @@ const SetUpJsonRPC = () => {
 
 
   return (
-    <AnimatedDialog extraClass="overflow-y-auto h-[calc(100%_-_86px)]" dismiss={() => null} display={_promptJsonRpcSetup}>
-      <div className="z-[20000] bg-white dark:bg-black overflow-y-auto">
+    <AnimatedDialog up={3000} dismiss={() => null} display={_promptJsonRpcSetup}>
+      <div className="bg-white dark:bg-black overflow-y-auto max-h-full h-[calc(100%_-_86px)]">
         {step === SETUPSTATE["INTRO"] && (
-          <div className={`px-4 grid ${_promptSettings ? "grid-rows-[56px_1fr_86px]" : "grid-rows-[1fr_86px]"} h-full md:h-max`}>
+          <div className={`grid ${_promptSettings ? "grid-rows-[56px_1fr_86px]" : "grid-rows-[1fr_86px]"} h-full md:h-max`}>
             <header className={`grid-cols-[1fr_minmax(0,_560px)_1fr] ${_promptSettings ? "grid" : "hidden"} `}>
               <div />
               {_promptSettings && (
