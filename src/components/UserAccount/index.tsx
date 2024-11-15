@@ -450,7 +450,7 @@ const UserAccount = () => {
                             <div className="flex flex-col px-6">
                               <label
                                 htmlFor="nickname"
-                                className="px-4 text-sm pb-1 dark:text-neutral-500"
+                                className="px-4 text-sm pb-1"
                               >
                                 Account Name
                               </label>
@@ -459,13 +459,13 @@ const UserAccount = () => {
                                 id="nickname"
                                 {...getFieldProps("nickname")}
                                 placeholder="Account Name"
-                                className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800"
+                                className="w-full dark:bg-white p-4 rounded text-white dark:text-black dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-50"
                               />
                             </div>
                             <div className="flex flex-col px-6">
                               <label
                                 htmlFor="privatekey"
-                                className="px-4 text-sm pb-1 dark:text-neutral-500"
+                                className="px-4 text-sm pb-1"
                               >
                                 Private Key
                               </label>
@@ -474,7 +474,7 @@ const UserAccount = () => {
                                 id="privatekey"
                                 {...getFieldProps("privatekey")}
                                 placeholder="Private Key"
-                                className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800"
+                                className="w-full dark:bg-white p-4 rounded text-white dark:text-black dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-50"
                               />
                               {errors && errors.privatekey && touched.privatekey && <p className="text-red-400 pt-1">{errors.privatekey}</p>}
                             </div>
