@@ -67,3 +67,7 @@
 - SwapWidget opts (slippage, deadline support)
 - App Design lift
 - Debouncing API calls to lessen load on Infura API calls
+
+##### [1.10.0] - 15 Nov 24
+
+- Design tweaks on Import Token/Account Importer input fields
