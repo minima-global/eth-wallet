@@ -476,7 +476,7 @@ const UserAccount = () => {
                                 placeholder="Private Key"
                                 className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800"
                               />
-                              {errors && errors.privatekey && touched.privatekey && <p className="text-neutral-900 dark:text-neutral-400 pt-1">{errors.privatekey}</p>}
+                              {errors && errors.privatekey && touched.privatekey && <p className="text-red-400 pt-1">{errors.privatekey}</p>}
                             </div>
                           </div>
                           <div className="mx-6 mt-8"> 

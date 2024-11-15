@@ -149,7 +149,7 @@ const ImportToken = () => {
                       <div className="flex flex-col px-4">
                         <label
                           htmlFor="nickname"
-                          className="px-4 text-sm pb-1"
+                          className="px-4 text-sm pb-1 dark:text-neutral-500"
                         >
                           Token Contract Address
                         </label>
@@ -173,12 +173,12 @@ const ImportToken = () => {
                             }
                           }}
                           placeholder="Contract Address"
-                          className="p-4 rounded bg-white focus:outline-none disabled:opacity-50 disabled:text-gray-500"
+                          className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-50"
                         />
                       </div>
                       {errors.address && (
                         <div className="px-6">
-                          <p className="text-red-400 text-sm">
+                          <p className="text-red-400 pt-1">
                             {errors.address}
                           </p>
                         </div>
@@ -186,7 +186,7 @@ const ImportToken = () => {
                       <div className="flex flex-col px-4">
                         <label
                           htmlFor="decimals"
-                          className="px-4 text-sm pb-1"
+                          className="px-4 text-sm pb-1 dark:text-neutral-500"
                         >
                           Decimals
                         </label>
@@ -196,7 +196,7 @@ const ImportToken = () => {
                           id="decimals"
                           {...getFieldProps("decimals")}
                           placeholder="Token Decimals"
-                          className="p-4 rounded bg-white focus:outline-none disabled:opacity-50 disabled:text-gray-500"
+                          className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-50"
                         />
                       </div>
                     </div>
@@ -208,7 +208,7 @@ const ImportToken = () => {
                           <div className="flex flex-col px-4">
                             <label
                               htmlFor="nickname"
-                              className="px-4 text-sm pb-1 "
+                              className="px-4 text-sm pb-1 dark:text-neutral-500"
                             >
                               Token Symbol
                             </label>
@@ -217,13 +217,13 @@ const ImportToken = () => {
                               id="symbol"
                               {...getFieldProps("symbol")}
                               placeholder="Token Symbol"
-                              className="p-4 rounded bg-white focus:outline-none disabled:opacity-50 disabled:text-gray-500"
+                              className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-50"
                             />
                           </div>
                           <div className="flex flex-col px-4">
                             <label
                               htmlFor="privatekey"
-                              className="px-4 text-sm pb-1"
+                              className="px-4 text-sm pb-1 dark:text-neutral-500"
                             >
                               Private Key
                             </label>
@@ -233,7 +233,7 @@ const ImportToken = () => {
                               id="decimals"
                               {...getFieldProps("decimals")}
                               placeholder="Token Decimals"
-                              className="p-4 rounded bg-white focus:outline-none disabled:opacity-50 disabled:text-gray-500"
+                              className="w-full p-4 rounded text-white dark:text-neutral-100 dark:placeholder:text-neutral-600 focus:outline-neutral-500 dark:focus:outline-neutral-800 disabled:opacity-50"
                             />
                           </div>
                         </div>
