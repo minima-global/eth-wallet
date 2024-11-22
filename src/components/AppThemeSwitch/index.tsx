@@ -1,47 +1,24 @@
-import { useEffect, useState } from "react";
-import LightIcon from "../UI/Icons/LightIcon";
-import DarkIcon from "../UI/Icons/DarkIcon";
+import { useContext } from "react";
+import { appContext } from "../../AppContext";
+
+import "@theme-toggles/react/css/Around.css"
+import { Around } from "@theme-toggles/react"
 
 const AppThemeSwitch = () => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Initialize state based on localStorage
-    return localStorage.getItem("dark-mode") === "true";
-  });
-
-  useEffect(() => {
-    // Apply or remove the 'dark' class on the document element
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("dark-mode", "true");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("dark-mode", "false");
-    }
-  }, [isDarkMode]); // Re-run effect when isDarkMode changes
+  const { isDarkMode, setIsDarkMode } = useContext(appContext);
 
   // Handler for the switch change event
-  const handleSwitchChange = (e) => {
-    setIsDarkMode(e.target.checked);
+  const handleSwitchChange = () => {
+    setIsDarkMode(!isDarkMode);
   };
 
   return (
-    <div className="mr-1">
-      <input
-        type="checkbox"
-        id="light-switch"
-        className="light-switch sr-only"
-        checked={isDarkMode}
-        onChange={handleSwitchChange}
-      />
-      <label className="relative cursor-pointer" htmlFor="light-switch">
-        <span className="dark:hidden text-white">
-          <LightIcon size={24} />
-        </span>
-        <span className="hidden dark:block text-[#1B1B1B] opacity-90"><DarkIcon size={24} /></span>
-        <span className="sr-only">Switch to light / dark version</span>
-      </label>
+    <div onClick={handleSwitchChange} className="bg-neutral-100 hover:cursor-pointer hover:bg-neutral-50 dark:bg-[#1B1B1B] dark:hover:bg-[#2C2C2C] rounded-full flex items-center p-2 pr-3 shadow-lg">      
+      <Around toggled={isDarkMode} onToggle={handleSwitchChange}  className="focus:outline-none p-0" duration={750} />
+      <p className="text-xs ml-2">{isDarkMode ? "Dark" : "Light"}</p>
     </div>
   );
 };
 
 export default AppThemeSwitch;
+

@@ -86,8 +86,9 @@ const useAllowanceChecker = () => {
       // If allowances for both are at zero let's max them up...      
       const wrappedAllowance = userAllowances[0];
       const tetherAllowance = userAllowances[1];
+
       if (new Decimal(wrappedAllowance.toString()).isZero() || new Decimal(tetherAllowance.toString()).isZero()) {
-        setAllowanceLock(true);
+        setAllowanceLock({wminima: new Decimal(wrappedAllowance.toString()).isZero(), tether: new Decimal(tetherAllowance.toString()).isZero()});
       } else {        
         setAllowanceLock(false);
       }

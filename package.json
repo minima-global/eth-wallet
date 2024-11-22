@@ -1,7 +1,7 @@
 {
   "name": "ethwallet",
   "private": true,
-  "version": "1.8.7",
+  "version": "1.11.0",
   "type": "module",
   "description": "A Wrapped Minima, ERC-20 compatible Wallet",
   "scripts": {
@@ -17,12 +17,18 @@
     "@dicebear/collection": "^8.0.0",
     "@dicebear/core": "^8.0.0",
     "@ethereumjs/tx": "^5.2.1",
+    "@ledgerhq/hw-app-btc": "^10.4.1",
+    "@ledgerhq/hw-app-eth": "^6.38.0",
+    "@ledgerhq/hw-transport-webusb": "^6.29.2",
+    "@ledgerhq/logs": "^6.12.0",
+    "@theme-toggles/react": "^4.1.0",
     "@uniswap/sdk-core": "^4.2.0",
     "@uniswap/v3-sdk": "^3.11.0",
     "@vitejs/plugin-legacy": "^4.1.1",
     "@vitejs/plugin-react-swc": "^3.4.1",
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.7",
+    "core-js": "^3.37.1",
     "crypto-js": "^4.2.0",
     "date-fns": "^3.6.0",
     "decimal.js": "^10.4.3",
@@ -31,10 +37,14 @@
     "format-number": "^3.0.0",
     "formik": "^2.4.5",
     "jotai": "^2.7.1",
+    "lodash": "^4.17.21",
+    "lottie-react": "^2.4.0",
+    "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-qr-code": "^2.0.12",
     "react-spring": "^9.7.3",
+    "stream-browserify": "^3.0.0",
     "tailwindcss": "^3.3.5",
     "vite-plugin-html": "^3.2.0",
     "vite-plugin-node-polyfills": "^0.21.0",
@@ -52,5 +62,8 @@
     "hardhat": "^2.19.5",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
+  },
+  "alias": {
+    "@ledgerhq/devices": "@ledgerhq/devices/lib-es"
   }
 }

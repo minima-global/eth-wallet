@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from "ethers";
+import { JsonRpcProvider, Wallet } from "ethers";
 import { createContext, useRef, useEffect, useState } from "react";
 import { sql } from "./utils/SQL";
 import { TransactionResponse } from "ethers";
@@ -7,6 +7,7 @@ import { Asset } from "./types/Asset";
 import { Network, Networks } from "./types/Network";
 import defaultAssetsStored, { _defaults } from "./constants";
 import useSwapWidget from "./hooks/useSwapWidget";
+import { UserAccount } from "./types/Accounts";
 
 export const appContext = createContext({} as any);
 
@@ -25,6 +26,11 @@ interface IProps {
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
 
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Initialize state based on localStorage
+    return localStorage.getItem("dark-mode") === "true";
+  });
+
   const swapWidgetProps = useSwapWidget();
 
   const [isWorking, setWorking] = useState(false);
@@ -41,10 +47,13 @@ const AppProvider = ({ children }: IProps) => {
     null
   );
   const [_addressBook, setAddressBook] = useState([]);
+  const [_userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
   const [_activities, setActivities] = useState<
     (TransactionResponse | ContractTransactionResponse)[]
   >([]);
+
   const [_generatedKey, setGeneratedKey] = useState("");
+
   // mainnet, sepolia, hardhat, etc...
   const [_provider, setProvider] = useState<JsonRpcProvider | null>(null); //  new JsonRpcProvider(networks["sepolia"].rpc)
   const [_promptReadMode, setReadMode] = useState<null | boolean>(null);
@@ -73,8 +82,8 @@ const AppProvider = ({ children }: IProps) => {
   });
 
   const [_promptAllowance, setPromptAllowance] = useState(false);
-    const [_approving, setApproving] = useState(false);
-  const [_allowanceLock, setAllowanceLock] = useState(false);
+  const [_approving, setApproving] = useState(false);
+  const [_allowanceLock, setAllowanceLock] = useState<{wminima: true, tether: false} | false>(false);
 
   const [_promptAllowanceApprovalModal, setPromptAllowanceApprovalModal] =
     useState(false);
@@ -82,6 +91,17 @@ const AppProvider = ({ children }: IProps) => {
   // display db locked, ask for unlock
   const [_promptDatabaseLocked, setPromptDatabaseLocked] = useState(false);
 
+    
+  useEffect(() => {
+    // Apply or remove the 'dark' class on the document element
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("dark-mode", "true");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("dark-mode", "false");
+    }
+  }, [isDarkMode]); // Re-run effect when isDarkMode changes
 
   useEffect(() => {
     (async () => {
@@ -145,8 +165,43 @@ const AppProvider = ({ children }: IProps) => {
                   return setPromptDatabaseLocked(true);
                 }
               }
-              
-              setGeneratedKey(resp.response.seedrandom);
+
+              (async () => {
+                // Get all user's saved accounts
+                const userAccounts: any = await sql(
+                  `SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`
+                );
+
+                // if they exist init
+                if (userAccounts) {
+                  setUserAccounts(JSON.parse(userAccounts.DATA.replace(/''/g, "'")));
+                  
+                  
+                  
+                  // Run a reset
+                  
+                  // setUserAccounts(JSON.parse("[]")); //
+                  // const account = new Wallet(resp.response.seedrandom);
+
+                  // await addUserAccount({
+                  //   nickname: "Minimalist",
+                  //   privatekey: resp.response.seedrandom,
+                  //   address: account.address,
+                  //   current: true,
+                  //   type: "normalmain",
+                  // });
+                } else {
+                  const account = new Wallet(resp.response.seedrandom);
+
+                  await addUserAccount({
+                    nickname: "Minimalist",
+                    privatekey: resp.response.seedrandom,
+                    address: account.address,
+                    current: true,
+                    type: "normalmain",
+                  });
+                }
+              })();
             });
           }
 
@@ -158,13 +213,14 @@ const AppProvider = ({ children }: IProps) => {
     }
   }, [loaded, userKeys]);
 
+
   useEffect(() => {
     if (!loaded.current) {
       (window as any).MDS.init((msg: any) => {
         if (msg.event === "inited") {
           loaded.current = true;
           // do something Minim-y
-          
+
           (async () => {
             setWorking(true);
             // Initialize cache-ing table
@@ -188,7 +244,15 @@ const AppProvider = ({ children }: IProps) => {
             const cachedApiKeys: any = await sql(
               `SELECT * FROM cache WHERE name = 'API_KEYS'`
             );
-            
+
+            const swapWidgetSettings: any = await sql(
+              `SELECT * FROM cache WHERE name = 'SWAP_WIDGET_SETTINGS'`
+            );
+
+            if (swapWidgetSettings) {
+              swapWidgetProps.setSwapWidgetSettings(JSON.parse(swapWidgetSettings.DATA))
+            }
+
             // USER PREFERENCES
             if (cachedApiKeys) {
               setUserKeys(JSON.parse(cachedApiKeys.DATA));
@@ -230,7 +294,6 @@ const AppProvider = ({ children }: IProps) => {
               // set all networks saved
               setDefaultNetworks(JSON.parse(defaultNetworks.DATA));
             } else {
-
               // Initialize networks
               await sql(
                 `INSERT INTO cache (name, data) VALUES ('DEFAULTNETWORKS', '${JSON.stringify(
@@ -265,21 +328,6 @@ const AppProvider = ({ children }: IProps) => {
                 },
               });
             }
-
-            /**
-             * We now require the User to set up his default networks in the start of the App
-             * else {
-              // initialize
-              await sql(
-                `INSERT INTO cache (name, data) VALUES ('CURRENT_NETWORK', '${JSON.stringify(
-                  { default: "sepolia" }
-                )}')`
-              );
-
-              setRPCNetwork("sepolia", networks);
-            }
-             * 
-             */
 
             setWorking(false);
           })();
@@ -334,7 +382,6 @@ const AppProvider = ({ children }: IProps) => {
     networks: Networks,
     cachedApiKeys: any
   ) => {
-
     let rpcUrl = networks && networks[network] ? networks[network].rpc : null;
 
     if (rpcUrl) {
@@ -365,10 +412,127 @@ const AppProvider = ({ children }: IProps) => {
     }
   };
 
+  const addUserAccount = async (newAccounts: UserAccount[] | UserAccount) => {
+    const updatedData = Array.isArray(newAccounts)
+      ? [..._userAccounts, ...newAccounts]
+      : [..._userAccounts, newAccounts];
+
+    setUserAccounts(updatedData);
+
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+  };
+
+
+  const setCurrentUserAccount = async (account: UserAccount, filteredData?: UserAccount[]) => {
+    
+    // Use filteredData if provided, otherwise fall back to _userAccounts
+    const accountsToUpdate = filteredData || _userAccounts;
+
+    // Update the `current` property for each account
+    const updatedData = accountsToUpdate.map((userAccount) => ({
+      ...userAccount,
+      current: userAccount.address === account.address, // Set `current` to true for the selected account
+      bip44Path: account.bip44Path ? account.bip44Path.replace(/''/g, "'") : undefined
+    }));
+
+    // Update the state with the modified accounts
+    setUserAccounts(updatedData);
+
+    // Retrieve the existing rows from the cache
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
+
+    // If the row doesn't exist, insert a new one; otherwise, update the existing row
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+  };
+  
+  const updateUserAccount = async (account: UserAccount) => {
+    // Update the `current` property for each account
+    const updatedData = _userAccounts.map((userAccount) => ({
+      ...userAccount,
+      nickname: userAccount.address === account.address ? account.nickname : userAccount.nickname
+    }));
+
+    // Update the state with the modified accounts
+    setUserAccounts(updatedData);
+
+    // Retrieve the existing rows from the cache
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
+
+    // If the row doesn't exist, insert a new one; otherwise, update the existing row
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+
+
+    if (_promptAccountNameUpdate) {
+      setPromptAccountNameUpdate(false);
+    }
+  };
+
+  const deleteUserAccount = async (currAccount: UserAccount, accToDelete: UserAccount) => {  
+    const updatedData = [..._userAccounts.filter(user => user.address !== accToDelete.address)];
+    setUserAccounts(updatedData.map(account => ({
+      ...account,
+      current: currAccount.address === account.address, // Set `current` to true for the selected account
+    })));
+
+    const rows = await sql(`SELECT * FROM cache WHERE name = 'USER_ACCOUNTS'`);
+
+    if (!rows) {
+      await sql(
+        `INSERT INTO cache (name, data) VALUES ('USER_ACCOUNTS', '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}')`
+      );
+    } else {
+      await sql(
+        `UPDATE cache SET data = '${JSON.stringify(
+          updatedData
+        ).replace(/'/g, "''")}' WHERE name = 'USER_ACCOUNTS'`
+      );
+    }
+  };
+
   const updateDefaultAssets = async (asset: Asset, chainId: string) => {
     const updatedData = [..._defaultAssets.assets, asset];
     const nested = { assets: updatedData };
-    setDefaultAssets(nested);  
+    setDefaultAssets(nested);
 
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
@@ -391,15 +555,17 @@ const AppProvider = ({ children }: IProps) => {
 
   const deleteAsset = async (assetToRemove: string, chainId: string) => {
     // Step 1: Update the local state
-    const updatedAssets = _defaultAssets.assets.filter(asset => asset.address !== assetToRemove);
+    const updatedAssets = _defaultAssets.assets.filter(
+      (asset) => asset.address !== assetToRemove
+    );
     const nested = { assets: updatedAssets };
     setDefaultAssets(nested);
-  
+
     // Step 2: Update the database
     const rows = await sql(
       `SELECT * FROM cache WHERE name = 'DEFAULTASSETS_${chainId}'`
     );
-    
+
     if (!rows) {
       await sql(
         `INSERT INTO cache (name, data) VALUES ('DEFAULTASSETS_${chainId}', '${JSON.stringify(
@@ -536,6 +702,13 @@ const AppProvider = ({ children }: IProps) => {
         loaded,
         isWorking,
 
+        _currentAccount: _userAccounts.find(a => a.current),
+        _userAccounts,
+        addUserAccount,
+        updateUserAccount,
+        setCurrentUserAccount,
+        deleteUserAccount,
+
         userKeys,
         updateApiKeys,
 
@@ -590,7 +763,7 @@ const AppProvider = ({ children }: IProps) => {
         setPromptAllowance,
         _allowanceLock,
         setAllowanceLock,
-        
+
         _promptAllowanceApprovalModal,
         promptAllowanceApprovalModal,
 
@@ -609,7 +782,9 @@ const AppProvider = ({ children }: IProps) => {
         verifyRPCNetwork,
         _currencyFormat,
 
-        ...swapWidgetProps
+        ...swapWidgetProps,
+
+        isDarkMode, setIsDarkMode
       }}
     >
       {children}

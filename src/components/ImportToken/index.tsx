@@ -1,9 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { appContext } from "../../AppContext";
-import { useSpring, animated, config } from "react-spring";
-import { createPortal } from "react-dom";
-import styles from "./ImportToken.module.css";
-import Dialog from "../UI/Dialog";
 import ERC20ABI from "../../abis/ERC20.json";
 import { Contract, getAddress } from "ethers";
 import { Formik } from "formik";
@@ -11,12 +7,19 @@ import * as yup from "yup";
 import { useWalletContext } from "../../providers/WalletProvider/WalletProvider";
 import { rings } from "@dicebear/collection";
 import { createAvatar } from "@dicebear/core";
+import AnimatedDialog from "../UI/AnimatedDialog";
+import Cross from "../UI/Cross";
 
 const ImportToken = () => {
   const [step, setStep] = useState(0);
   const { _chainId } = useWalletContext();
-  const { _promptTokenImport, promptTokenImport, _provider, updateDefaultAssets, _defaultAssets } =
-    useContext(appContext);
+  const {
+    _promptTokenImport,
+    promptTokenImport,
+    _provider,
+    updateDefaultAssets,
+    _defaultAssets,
+  } = useContext(appContext);
 
   async function getTokenMetadata(address: string) {
     const tokenContract = new Contract(address, ERC20ABI, _provider);
@@ -28,285 +31,264 @@ const ImportToken = () => {
     return { symbol, decimals, name };
   }
 
-  const springProps = useSpring({
-    opacity: _promptTokenImport ? 1 : 0,
-    transform: _promptTokenImport
-      ? "translateY(0%) scale(1)"
-      : "translateY(-50%) scale(0.8)",
-    config: config.stiff,
-  });
-
   return (
     <>
       <div className="flex justify-center my-4">
         <button
-          className="flex items-center text-xs bg-white text-black hover:bg-opacity-80 dark:hover:bg-black dark:bg-[#1B1B1B] dark:text-[#FEFEFF]"
           onClick={promptTokenImport}
-          >
-          <span className="text-black dark:text-[#FEFEFF]">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M12 5l0 14" />
-              <path d="M5 12l14 0" />
-            </svg>
-          </span>
+          type="button"
+          className="max-w-sm text-xs text-neutral-500 bg-neutral-100 dark:bg-[#1B1B1B] full-rounded border border-neutral-200 hover:border-neutral-500 dark:border-neutral-600 dark:hover:border-neutral-500 bg-transparent dark:text-neutral-100 font-bold focus:outline-none"
+        >
           Import tokens
         </button>
       </div>
 
-      {_promptTokenImport &&
-        createPortal(
-          <Dialog dismiss={promptTokenImport}>
-            <div className="h-[100vh_-_64px] grid items-center mt-[80px]">
-              <animated.div className={styles["tokens"]} style={springProps}>
-                <div className=" bg-white shadow-lg shadow-slate-300 dark:shadow-sm dark:bg-black w-[calc(100%_-_16px)] md:w-full p-4 px-0 rounded mx-auto">
-                  <div className="px-4 flex justify-between gap-2 items-center">
-                    <div>
-                    <h3 className="font-bold">Import tokens</h3>                    
-                    </div>
-                    <svg
-                      onClick={promptTokenImport}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="icon icon-tabler icon-tabler-x"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      strokeWidth="4.5"
-                      stroke="currentColor"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                      <path d="M18 6l-12 12" />
-                      <path d="M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <Formik
-                    initialValues={{
-                      address: "",
-                      decimals: 18,
-                      symbol: "",
-                      name: "",
-                    }}
-                    validateOnChange={true}
-                    onSubmit={async ({ address, decimals, symbol, name, }, {resetForm}) => {
-                      try {
-                        const newToken = {
-                          name,
-                          symbol,
-                          balance: "",
-                          address,
-                          decimals,
-                          type: "erc20",
-                        };
-
-                        await updateDefaultAssets(newToken, _chainId!);
-                        setStep(0);
-                        resetForm();
-                        promptTokenImport();
-                      } catch (error) {
-                        //
-                        console.error(error);
-                      }
-                    }}
-                    validationSchema={yup.object().shape({
-                      address: yup
-                        .string()
-                        .required("Enter a contract address")
-                        .test("testing address checksum", async function (val) {
-                          const { path, createError } = this;
-
-                          if (!val || val.length === 0) return false;
-
-                          try {
-                            getAddress(val);
-                            const c = new Contract(val, ERC20ABI, _provider);
-
-
-                            await c.name();
-                            return true;  
-                          } catch (error) {
-                            return createError({
-                              path,
-                              message: "Invalid ERC-20 Contract",
-                            });
-                          }
-                        })                    
-                        .test("checking if already has this token", function (val) {
-                          const { path, createError } = this;
-
-                          try {
-                            const alreadyHasToken = _defaultAssets.assets.find(a => a.address === val);
-                            if (alreadyHasToken) {
-                              return createError({
-                                path,
-                                message: "You have already imported this token.",
-                              });
-                            }
-                            return true;
-                          } catch (error) {
-
-                            return createError({
-                              path,
-                              message: "Invalid ERC20 Contract",
-                            });
-                          }
-                        }),                        
-                      symbol: yup.string(),
-                      decimals: yup.number(),
-                    })}
-                  >
-                    {({
-                      isValid,
-                      values,
-                      errors,
-                      dirty,
-                      handleSubmit,
-                      getFieldProps,
-                      handleBlur,
-                      handleChange,
-                      setFieldValue,
-                    }) => (
-                      <form className="my-4 px-4" onSubmit={handleSubmit}>
-                        {step === 0 && (
-                          <>
-                            <label>
-                              <span className="px-4">
-                                Token contract address
-                              </span>
-                              <input
-                                type="text"
-                                id="address"
-                                name="address"
-                                onChange={async (e) => {
-                                  handleChange(e);
-                                  try {
-                                    const { symbol, decimals, name } =
-                                      await getTokenMetadata(e.target.value);
-                                    // set fields
-                                    setFieldValue(
-                                      "decimals",
-                                      parseInt(decimals)
-                                    );
-                                    setFieldValue("symbol", symbol);
-                                    setFieldValue("name", name);
-                                  } catch (error) {
-                                    // reset fields
-                                    setFieldValue("decimals", 0);
-                                    setFieldValue("symbol", "");
-                                  }
-                                }}
-                                value={values.address}
-                                onBlur={handleBlur}
-                                placeholder="Token contract address"
-                                className={`mb-2 ${
-                                  errors.address
-                                    ? "!border-4 !border-violet-500"
-                                    : ""
-                                }`}
-                              />
-                            </label>
-
-                            {errors.address && (
-                              <div className="my-2 dark:text-neutral-300 text-sm font-bold">
-                                {errors.address}
-                              </div>
-                            )}                            
-
-                            {(values.decimals > 0 ||
-                              values.symbol.length > 0) && (
-                              <>
-                                <label>
-                                  <span className="px-4">Token symbol</span>
-                                  <input
-                                    type="text"
-                                    {...getFieldProps("symbol")}
-                                    onBlur={handleBlur}
-                                    placeholder="Token symbol"
-                                    className={`mb-2 ${
-                                      errors.symbol
-                                        ? "!border-4 !border-violet-500"
-                                        : ""
-                                    }`}
-                                  />
-                                </label>
-                                <label>
-                                  <span className="px-4">Token decimals</span>
-
-                                  <input
-                                    disabled
-                                    type="number"
-                                    {...getFieldProps("decimals")}
-                                    onBlur={handleBlur}
-                                    placeholder="Token decimals"
-                                    className={`mb-2 ${
-                                      errors.decimals
-                                        ? "!border-4 !border-violet-500"
-                                        : ""
-                                    }`}
-                                  />
-                                </label>
-                              </>
-                            )}
-                            <button
-                              disabled={!dirty || !isValid}
-                              type="button"
-                              onClick={() => setStep(1)}
-                              className="bg-violet-500 text-white py-4 mt-3 font-bold tracking-wide dark:bg-violet-500 dark:text-black hover:bg-opacity-80 disabled:bg-opacity-50 dark:disabled:bg-opacity-50 w-full"
-                            >
-                              Next
-                            </button>
-                          </>
-                        )}
-
-                        {step === 1 && (
-                          <>
-                            <h3 className="text-left mb-4">
-                              Would you like to import this token?
-                            </h3>
-
-                            <DisplayToken
-                              name={values.name}
-                              address={values.address}
-                              symbol={values.symbol}
-                              decimals={values.decimals}
-                            />
-
-                            <div className="grid grid-cols-2 gap-2 mt-4">
-                              <button
-                                onClick={() =>
-                                  setStep((prevState) => prevState - 1)
-                                }
-                                className="rounded-lg text-black dark:text-white border-teal-300 hover:text-black font-bold hover:bg-teal-300"
-                              >
-                                Back
-                              </button>
-                              <button disabled={!isValid} type="submit" className="w-full hover:bg-teal-500 bg-teal-300 text-black font-bold">
-                                Import
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </form>
-                    )}
-                  </Formik>
-                </div>
-              </animated.div>
+      <AnimatedDialog
+        display={_promptTokenImport}
+        dismiss={() => promptTokenImport()}
+      >
+        <div className="p-4 px-0 rounded">
+          <div className="px-4 flex justify-between gap-2 items-center">
+            <div>
+              <h3 className="font-bold">Import tokens</h3>
             </div>
-          </Dialog>,
-          document.body
-        )}
+            <Cross dismiss={promptTokenImport} />
+          </div>
+          <Formik
+            initialValues={{
+              address: "",
+              decimals: 18,
+              symbol: "",
+              name: "",
+            }}
+            validateOnChange={true}
+            onSubmit={async (
+              { address, decimals, symbol, name },
+              { resetForm }
+            ) => {
+              try {
+                const newToken = {
+                  name,
+                  symbol,
+                  balance: "",
+                  address,
+                  decimals,
+                  type: "erc20",
+                };
+
+                await updateDefaultAssets(newToken, _chainId!);
+                setStep(0);
+                resetForm();
+                promptTokenImport();
+              } catch (error) {
+                //
+                console.error(error);
+              }
+            }}
+            validationSchema={yup.object().shape({
+              address: yup
+                .string()
+                .required("Enter a contract address")
+                .test("testing address checksum", async function (val) {
+                  const { path, createError } = this;
+
+                  if (!val || val.length === 0) return false;
+
+                  try {
+                    getAddress(val);
+                    const c = new Contract(val, ERC20ABI, _provider);
+
+                    await c.name();
+                    return true;
+                  } catch (error) {
+                    return createError({
+                      path,
+                      message: "Invalid ERC-20 Contract",
+                    });
+                  }
+                })
+                .test("checking if already has this token", function (val) {
+                  const { path, createError } = this;
+
+                  try {
+                    const alreadyHasToken = _defaultAssets.assets.find(
+                      (a) => a.address === val
+                    );
+                    if (alreadyHasToken) {
+                      return createError({
+                        path,
+                        message: "You have already imported this token.",
+                      });
+                    }
+                    return true;
+                  } catch (error) {
+                    return createError({
+                      path,
+                      message: "Invalid ERC20 Contract",
+                    });
+                  }
+                }),
+              symbol: yup.string(),
+              decimals: yup.number(),
+            })}
+          >
+            {({
+              isValid,
+              values,
+              errors,
+              dirty,
+              handleSubmit,
+              getFieldProps,
+              handleChange,
+              setFieldValue,
+            }) => (
+              <form onSubmit={handleSubmit}>
+                {step === 0 && (
+                  <>
+                    <div className="space-y-4 pt-4">
+                      <div className="flex flex-col px-4">
+                        <label
+                          htmlFor="nickname"
+                          className="text-sm pb-1"
+                        >
+                          Token Contract Address
+                        </label>
+                        <input
+                          type="text"
+                          id="address"
+                          {...getFieldProps("address")}
+                          onChange={async (e) => {
+                            handleChange(e);
+                            try {
+                              const { symbol, decimals, name } =
+                                await getTokenMetadata(e.target.value);
+                              // set fields
+                              setFieldValue("decimals", parseInt(decimals));
+                              setFieldValue("symbol", symbol);
+                              setFieldValue("name", name);
+                            } catch (error) {
+                              // reset fields
+                              setFieldValue("decimals", 0);
+                              setFieldValue("symbol", "");
+                            }
+                          }}
+                          placeholder="Contract Address"
+                          className="p-4 rounded text-black bg-white placeholder:text-black dark:bg-white disabled:bg-white disabled:opacity-30"
+                        />
+                      </div>
+                      {errors.address && (
+                        <div className="px-6">
+                          <p className="text-red-400 pt-1">
+                            {errors.address}
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex flex-col px-4">
+                        <label
+                          htmlFor="decimals"
+                          className="text-sm pb-1"
+                        >
+                          Decimals
+                        </label>
+                        <input
+                          disabled
+                          type="number"
+                          id="decimals"
+                          {...getFieldProps("decimals")}
+                          placeholder="Token Decimals"
+                          className="p-4 rounded text-black bg-white placeholder:text-black dark:bg-white disabled:bg-white disabled:opacity-30"
+                        />
+                      </div>
+                    </div>
+                    
+
+                    {(values.decimals > 0 || values.symbol.length > 0) && (
+                      <>
+                        <div className="space-y-4 pt-4">
+                          <div className="flex flex-col px-4">
+                            <label
+                              htmlFor="nickname"
+                              className="text-sm pb-1"
+                            >
+                              Token Symbol
+                            </label>
+                            <input
+                              type="text"
+                              id="symbol"
+                              {...getFieldProps("symbol")}
+                              placeholder="Token Symbol"
+                              className="p-4 rounded text-black bg-white placeholder:text-black dark:bg-white disabled:bg-white disabled:opacity-30"
+                            />
+                          </div>
+                          <div className="flex flex-col px-4">
+                            <label
+                              htmlFor="privatekey"
+                              className="text-sm pb-1"
+                            >
+                              Private Key
+                            </label>
+                            <input
+                              disabled
+                              type="number"
+                              id="decimals"
+                              {...getFieldProps("decimals")}
+                              placeholder="Token Decimals"
+                              className="p-4 rounded text-black bg-white placeholder:text-black dark:bg-white disabled:bg-white disabled:opacity-30"
+                            />
+                          </div>
+                        </div>
+                        
+                      </>
+                    )}
+
+                    <div className="mx-4 mt-8">
+                      <button
+                        disabled={!dirty || !isValid}
+                        type="button"
+                        onClick={() => setStep(1)}
+                        className="w-full full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {step === 1 && (
+                  <>
+                    <h3 className="text-left mb-4 px-4 mt-4 text-sm">
+                      Would you like to import this token?
+                    </h3>
+
+                    <DisplayToken
+                      name={values.name}
+                      address={values.address}
+                      symbol={values.symbol}
+                      decimals={values.decimals}
+                    />
+
+                    <div className="grid grid-cols-2 gap-2 mt-4 mx-4">
+                      <button
+                        onClick={() => setStep((prevState) => prevState - 1)}
+                        className="w-full full-rounded border border-neutral-400 hover:border-neutral-500 bg-transparent dark:text-neutral-100 dark:border-neutral-500 hover:dark:border-neutral-400 font-bold disabled:opacity-30"
+                      >
+                        Back
+                      </button>
+                      <button
+                        disabled={!isValid}
+                        type="submit"
+                        className="bg-violet-500 text-white font-bold tracking-wide dark:bg-violet-500 hover:dark:bg-violet-600 dark:text-black disabled:bg-opacity-50 dark:disabled:bg-opacity-50"
+                      >
+                        Import
+                      </button>
+                    </div>
+                  </>
+                )}
+              </form>
+            )}
+          </Formik>
+        </div>
+      </AnimatedDialog>
     </>
   );
 };
@@ -335,12 +317,12 @@ const DisplayToken = ({ name, address, symbol }: IProps) => {
 
   return (
     <>
-      <div className="rounded bg-white bg-opacity-10 px-4 py-1 gap-2 flex">
-        <div className="my-auto w-[36px] h-[36px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
-          <Bear extraClass="w-[48px]" input={address} />
+      <div className="rounded bg-neutral-100 dark:bg-[#1B1B1B] px-4 py-2 gap-2 flex mx-4">
+        <div className="my-auto w-[44px] h-[44px] bg-white rounded-full overflow-hidden flex justify-center items-center shadow-md text-black font-bold">
+          <Bear extraClass="w-[44px]" input={address} />
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col ml-2 mt-1">
           <h3 className="font-bold">{name}</h3>
           <p className="font-mono text-sm">
             {ownerBalance} {symbol}

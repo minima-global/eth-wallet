@@ -4,9 +4,7 @@ import { FormikContextType, FormikValues, useFormikContext } from "formik";
 import getOutputQuote from "../../components/SwapWidget/libs/getOutputQuote";
 import { appContext } from "../../AppContext";
 import { FeeAmount, Pool, Route } from "@uniswap/v3-sdk";
-import Decimal from "decimal.js";
 import { useWalletContext } from "../WalletProvider/WalletProvider";
-import createDecimal from "../../utils/createDecimal";
 
 const READABLE_FORM_LEN = 20;
 
@@ -27,11 +25,11 @@ export const QuoteContextProvider = ({ children }: Props) => {
 
   const formik: FormikContextType<FormikValues> = useFormikContext();
   const { values, setFieldValue, isSubmitting } = formik;
-  const { tokenA, tokenB, inputAmount } = values;
+  const { tokenA, tokenB,  inputMode } = values;
 
   const widgetNotReady =
-    createDecimal(inputAmount) === null ||
-    new Decimal(inputAmount).lte(0) ||
+    // createDecimal(inputAmount) === null ||
+    // new Decimal(inputAmount).lte(0) ||
     !_poolContract;
 
   useEffect(() => {
@@ -65,15 +63,15 @@ export const QuoteContextProvider = ({ children }: Props) => {
       const swapRoute = new Route([pool], tokenA, tokenB);
 
       const quoteData = await getOutputQuote(
-        tokenA,
-        values.inputAmount,
+        inputMode ? tokenA:tokenB,
+        inputMode ? values.inputAmount : values.outputAmount,
         swapRoute,
         _provider
       );
 
       setFieldValue(
-        "outputAmount",
-        toReadableAmount(quoteData[0], tokenB.decimals)
+        inputMode ? "outputAmount":"inputAmount",
+        toReadableAmount(quoteData[0], inputMode?tokenB.decimals:tokenA.decimals)
       );
     };
 
@@ -100,12 +98,14 @@ export const QuoteContextProvider = ({ children }: Props) => {
     values.receipt,
     widgetNotReady,
     values.inputAmount,
+    values.outputAmount,
     values.input,
     values.output,
     _provider,
     _poolContract,
     tokenA,
     tokenB,
+    inputMode,
     setFieldValue,
   ]);
 

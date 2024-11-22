@@ -20,7 +20,7 @@ import NavigationButton from "../UI/NavigationButton";
 import HistoryIcon from "../UI/Icons/HistoryIcon";
 import SendIcon from "../UI/Icons/SendIcon";
 import SwapIcon from "../UI/Icons/SwapIcon";
-import AppThemeSwitch from "../AppThemeSwitch";
+import useLedger from "../../hooks/useLedger";
 
 const Dashboard = () => {
   const { _network, _address } = useWalletContext();
@@ -30,6 +30,7 @@ const Dashboard = () => {
     promptSettings,
   } = useContext(appContext);
 
+  useLedger();
 
   return (
     <>
@@ -117,9 +118,7 @@ const Dashboard = () => {
             <div className="flex md:hidden">
               <UserAccount />
             </div>
-            <div className="flex items-center">
-              <AppThemeSwitch />
-              
+            <div className="flex items-center">                            
               <div
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center"

@@ -14,8 +14,6 @@
   font-weight: 500;
 
   color-scheme: light dark;
-  /* color: rgba(255, 255, 255, 0.87); */
-  /* background-color: #242424; */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -84,4 +82,17 @@ input:-webkit-autofill:active{
   input:-webkit-autofill:active{
       -webkit-box-shadow: 0 0 0 30px #1C1C1C inset !important;
   } 
+}
+
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+input:focus {
+  outline: none;
 }

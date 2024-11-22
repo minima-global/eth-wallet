@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Wallet, parseUnits, formatEther, Contract,  Signer } from "ethers";
+import { Wallet, parseUnits, formatEther, Contract,  Signer, VoidSigner } from "ethers";
 import { appContext } from "../../AppContext";
 import { GasFeeCalculated } from "../../types/GasFeeInterface";
 import { TransactionResponse } from "ethers";
@@ -34,9 +34,7 @@ type Context = {
 const WalletContext = createContext<Context | null>(null);
 
 export const WalletContextProvider = ({ children }: Props) => {
-  const { _provider, _generatedKey,
-    _triggerBalanceUpdate,
-    setTriggerBalanceUpdate, } = useContext(appContext);
+  const { _provider, _triggerBalanceUpdate, setTriggerBalanceUpdate, _userAccounts } = useContext(appContext);
   const [_network, setNetwork] = useState("");
   const [_chainId, setChainId] = useState<string | null>(null);
   const [_wallet, setWallet] = useState<Signer | null>(null);
@@ -46,11 +44,20 @@ export const WalletContextProvider = ({ children }: Props) => {
   const [step, setStep] = useState(1);
 
   useMemo(async () => {
-    if (!_generatedKey || _provider === null) return;
+    const current = _userAccounts.find(account => account.current);
 
-    const wallet = new Wallet(_generatedKey, _provider);
-    const address = await wallet.getAddress();
+    if (_provider === null || !current) return;
+
+    let wallet;
+
+    if (current.type.includes('normal')) {
+      wallet = new Wallet(current.privatekey, _provider);
+    } else {
+      wallet = new VoidSigner(current.address, _provider);
+    }
+
     const network = await _provider.getNetwork();
+    
     const poolContract = new Contract(
       "0x8E427a754b13Fa1A165Db583120daf7c3aBe4019",
       IUniswapV3PoolABI.abi,
@@ -58,14 +65,15 @@ export const WalletContextProvider = ({ children }: Props) => {
     );
     setPoolContract(poolContract);
 
-    const balance = await _provider.getBalance(address);
+    const balance = await _provider.getBalance(current.address);
     setBalance(formatEther(balance));
-    setWallet(wallet);
     setNetwork(network.name);
-    setAddress(address);
+    setAddress(current.address);
     setChainId(network.chainId);
-
-  }, [_provider, _generatedKey]);
+    
+    // this'll be null if it is not defined.. so it's ledger
+    setWallet(wallet);
+  }, [_provider, _userAccounts]);
 
   const callBalanceForApp = async () => {
     // If there is already an on-going balance call.. stop

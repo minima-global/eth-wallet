@@ -6,3 +6,4 @@ export * from "./copyToClipboard";
 export * from "./sanitizeSQL";
 export * from "./calculateGasFee";
 export * from "./createDecimal";
+export * from "./debounce";

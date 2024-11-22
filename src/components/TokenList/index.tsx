@@ -71,9 +71,10 @@ const TokenList = () => {
       <div className="grid grid-cols-[1fr_auto]">
         <h3 className="font-bold mb-2">Your Tokens</h3>
         <span onClick={callBalanceForApp} className={`dark:text-sky-500 ${_triggerBalanceUpdate && "!text-neutral-300"}`}>
-          <RefreshIcon
-            extraClass={`${_triggerBalanceUpdate && "animate-spin"}`}
+          <RefreshIcon            
             fill="currentColor"
+            size={20}
+            extraClass={_triggerBalanceUpdate && "animate-spin"}
           />
         </span>
       </div>
@@ -85,7 +86,7 @@ const TokenList = () => {
       )}
       {!_triggerBalanceUpdate && (
         <ul>
-          {tokens.map((token) => (
+          {!!tokens.length && _network && tokens.map((token) => (
             <li
               onClick={() => promptTokenDetails(token)}
               key={token.address}

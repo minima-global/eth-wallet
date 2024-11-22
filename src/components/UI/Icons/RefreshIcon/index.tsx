@@ -1,9 +1,9 @@
-const RefreshIcon = ({ fill, extraClass }) => (
+const RefreshIcon = ({ extraClass, fill, size }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className={`icon icon-tabler icon-tabler-heart-filled ${extraClass && extraClass}`}
-    width="24"
-    height="24"
+    className={extraClass}
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     strokeWidth="2.5"
     stroke={fill}
