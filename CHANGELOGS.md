@@ -71,3 +71,7 @@
 ##### [1.10.0] - 15 Nov 24
 
 - Design tweaks on Import Token/Account Importer input fields
+
+##### [1.11.0] - 22 Nov 24
+
+- Light mode tweak

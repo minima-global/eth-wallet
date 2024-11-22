@@ -15,7 +15,6 @@
 
   color-scheme: light dark;
 
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -92,4 +91,8 @@ button:focus:not(:focus-visible) {
 button {
   -webkit-tap-highlight-color: transparent;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+input:focus {
+  outline: none;
 }
